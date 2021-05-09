@@ -25,6 +25,12 @@ Megophrys.fgColors = {
   pummel = 'yellow',
 }
 
+Megophrys.onConnect = function()
+  if Megophrys.class == 'Magi' then
+    sendAll('simultaneity', 'bind all', 'fortify all')
+  end
+end
+
 Megophrys.eStopAuto = function()
   if Megophrys.autoAttacking then
     cecho('\n<red>Emergency stop: No more auto-attacks.\n')
@@ -247,6 +253,45 @@ Megophrys.toggleTargetLimb = function()
   Magi.updatePrepGauges()
 end
 
+Megophrys.hitIcewall = function()
+  if Megophrys.autoEscaping then
+    if #gmcp.Room.Info.exits < 3 then
+      Megophrys.escapingBlocked = true
+      send('cast firelash '.. Megophrys.lastExitTried)
+    end
+    Megophrys.locationsFled = Megophrys.locationsFled - 1
+  end
+end
+
+Megophrys.hitParry = function()
+  cecho('\n<cyan>TARGETED STRIKE PARRIED!\n')
+  if matches[2] == target and Megophrys.autoAttacking and not Megophrys.targetTorso then
+    Megophrys.toggleTargetLimb()
+    cecho('\n<cyan>Switching to '.. Megophrys.targetLimb ..' leg due to parry.')
+  end
+end
+
+Megophrys.hitRebounding = function()
+  if Megophrys.class == 'Magi' then
+    if (Megophrys.autoAttacking and 
+          Megophrys.killStrat == 'denizen') then
+      send('cast erode at '.. target)
+    else
+      Megophrys.Magi.element = 'air'
+      cecho('\n<cyan>Switching to air for rebounding\n')
+    end
+  end
+  cecho('\n<cyan>STOP HITTING YOURSELF STOP HITTING YOURSELF\n')
+end
+
+Megophrys.shieldOnTarget = function()
+  if Megophrys.killStrat == 'denizen' then
+    if Megophrys.class == 'Magi' then
+      send('cast disintegrate at '.. target)
+    end
+  end
+end
+
 Megophrys.pursue = function()
   if (Megophrys.targetRoom and not 
       Megophrys.autoAttacking and not 
@@ -256,6 +301,8 @@ Megophrys.pursue = function()
   else
     if Megophrys.killStrat == 'raid' and Megophrys.raidLeader then
       send('cast scry at '.. Megophrys.raidLeader)
+    elseif Megophrys.killStrat == 'denizen' and Megophrys.huntingGround then
+      send('walk to '.. huntingGround)
     else
       send('cast scry at '.. target)
     end
@@ -271,6 +318,13 @@ Megophrys.autoAttack = function()
   else
     cecho('\n<cyan>You\'re already attacking as fast as you can!\n')
   end
+end
+
+Megophrys.stopAttack = function(reason)
+  cecho('\n<cyan>'.. reason ..'. Disabling auto-attack.\n')
+  Megophrys.autoAttacking = false
+  send('diag')
+  Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
 end
 
 Megophrys.tryExit = function(exitDir)
@@ -362,7 +416,23 @@ Magi.setElement = function(element)
   end
 end
 
+Megophrys.highlightTargetRoom = function(roomName, foundPlayer)
+  for roomID, roomName in pairs(searchRoom(roomName, true, true)) do
+    unHighlightRoom((Megophrys.highlightRoom or 0))
+    Megophrys.highlightRoom = tonumber(roomID)
+    if foundPlayer == target then
+      Megophrys.targetRoom = tonumber(roomID)
+    end
+    cecho('\n<cyan>Highlighting '.. roomName .. ' ('.. roomID ..')\n')
+    highlightRoom(Megophrys.highlightRoom, 225, 125, 0, 225, 225, 0, 1, 125, 125)
+  end
+end
+
 Megophrys.Util = {}
+Megophrys.Util.gagLine = function()
+  moveCursor(0, getLineCount()) deleteLine()
+end
+
 Megophrys.Util.titleCase = function(str)
   return string.upper(string.sub(str, 1, 1)) .. string.lower(string.sub(str, 2, -1))
 end
