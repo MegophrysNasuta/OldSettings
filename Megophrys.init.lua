@@ -84,6 +84,10 @@ Megophrys.setMode = function(mode)
     cecho('\n<cyan>Raid mode activated as '.. Megophrys.class ..'!')
     setButtonStyleSheet('Raid', 'QWidget { color: cyan; }')
     
+    if Megophrys.raidLeader then
+      cecho('\n<cyan>Raid leader set to: '.. Megophrys.raidLeader ..'\n')
+    end
+    
     wsys.keepup('mass', true)
     wsys.keepup('rebounding', true)
     
@@ -241,6 +245,21 @@ Megophrys.toggleTargetLimb = function()
     Megophrys.targetLimb = 'right'
   end
   Magi.updatePrepGauges()
+end
+
+Megophrys.pursue = function()
+  if (Megophrys.targetRoom and not 
+      Megophrys.autoAttacking and not 
+      Megophrys.autoEscaping) then
+    gotoRoom(Megophrys.targetRoom)
+    Megophrys.targetRoom = nil
+  else
+    if Megophrys.killStrat == 'raid' and Megophrys.raidLeader then
+      send('cast scry at '.. Megophrys.raidLeader)
+    else
+      send('cast scry at '.. target)
+    end
+  end
 end
 
 Megophrys.autoAttack = function()
