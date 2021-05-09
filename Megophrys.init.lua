@@ -25,12 +25,16 @@ Megophrys.fgColors = {
   pummel = 'yellow',
 }
 
-Megophrys.eStopAutoAttack = function()
+Megophrys.eStopAuto = function()
   if Megophrys.autoAttacking then
     cecho('\n<red>Emergency stop: No more auto-attacks.\n')
     Megophrys.autoAttacking = false
-    send('clearqueue all')
   end
+  if Megophrys.autoEscaping then
+    cecho('\n<red>Emergency stop: No more auto-flight.\n')
+    Megophrys.autoEscaping = false
+  end
+  send('clearqueue all')
 end
 
 Megophrys.setMode = function(mode)
@@ -280,7 +284,7 @@ Megophrys.autoEscape = function()
   end
   
   if Megophrys.locationsFled == 3 then
-    send('cast aerial')
+    sendAll('cast aerial', 'diag')
     Megophrys.locationsFled = 0
     Megophrys.autoEscaping = false
     Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
