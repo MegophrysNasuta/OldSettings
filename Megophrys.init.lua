@@ -534,6 +534,28 @@ Megophrys.hoard = function()
   )
 end
 
+Megophrys.getCharInfo = function(charName)
+  local url = 'http://api.achaea.com/characters/'.. string.lower(charName) ..'.json'
+  
+  local onAPIReturn = function(_, rurl, body)
+    local charData = yajl.to_value(body)
+    local ans = string.format('%s is a level %s %s in %s.' ..
+                              '\n\tDenizens killed: %s\t\tAdventurers killed: %s\n\n',
+                              charData.fullname,
+                              charData.level,
+                              Megophrys.Util.titleCase(charData.class),
+                              Megophrys.Util.titleCase(charData.city),
+                              charData.mob_kills,
+                              charData.player_kills)
+    cecho('\n<cyan>'.. ans ..'\n')
+  end
+  
+  registerAnonymousEventHandler('sysGetHttpDone',
+                                onAPIReturn,
+                                true)  -- true here means delete after firing once
+  getHTTP(url)
+end
+
 
 cecho('\n<cyan>Megophrys v1.1 initialised. Enjoy :)\n')
 Megophrys.setMode('denizen')
