@@ -493,7 +493,48 @@ Megophrys.setTarget = function(t)
   })
 end
 
+Megophrys.doWhileSelfish = function(func)
+  sendAll('curing defences off', 'generosity')
+  tempTimer(.75, function()
+    func()
+    sendAll('selfishness', 'curing defences on')
+  end)
+end
 
-cecho('\n<cyan>Megophrys v1.0 initialised. Enjoy :)\nDefaulting to HUNT\n')
+Megophrys.dropWhileSelfish = function(item)
+  Megophrys.doWhileSelfish(function() send('drop '.. item) end)
+end
+
+Megophrys.giveWhileSelfish = function(amt, item, tgt)
+  Megophrys.doWhileSelfish(function()
+    if item == 'sovereigns' then
+      send('get'.. amt ..' sovereigns from pack')
+    end
+    if amt then
+      send('give'.. amt ..' '.. item .. ' to ' .. tgt)
+    else
+      send('give '.. item .. ' to ' .. tgt)
+    end
+  end)
+end
+
+Megophrys.offerWhileSelfish = function(corpse)
+  Megophrys.doWhileSelfish(function() send('offer '.. (corpse or 'corpses')) end)
+end
+
+Megophrys.sellWhileSelfish = function(item, merchant)
+  Megophrys.doWhileSelfish(function() send('sell '.. item ..' to '.. merchant) end)
+end
+
+Megophrys.hoard = function()
+  sendAll(
+    'g gold',
+    'put sovereigns in pack',
+    'inr all'
+  )
+end
+
+
+cecho('\n<cyan>Megophrys v1.1 initialised. Enjoy :)\n')
 Megophrys.setMode('denizen')
 Megophrys.setTarget('none')
