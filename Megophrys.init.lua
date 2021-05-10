@@ -25,6 +25,88 @@ Megophrys.fgColors = {
   pummel = 'yellow',
 }
 
+-- adapted from Romaen's original list
+Megophrys.prioDefault = {
+  -- 1
+  {"latched"},
+  -- 2
+  {"aeon", "anorexia", "crushedthroat", 
+   "calcifiedskull", "calcifiedtorso"},
+  -- 3
+  {"paralysis", "heartseed", "skullfractures", "retribution",
+   "grievouswounds"},
+  -- 4
+  {"impatience", "torntendons", "hypothermia", "unweavingbody",
+   "unweavingmind", "unweavingspirit", "mindravaged", "mycalium"},
+  -- 5
+  {"itching", "lovers", "pacified", "peace", "scytherus", "hypochondria",
+   "hellsight", "guilt"},
+  -- 6
+  {"entangled", "asthma", "weariness", "clumsiness", "sensitivity", 
+   "shadowmadness", "tension", "flushings", "rebbies", "timeloop"},
+  -- 7
+  {"damagedrightleg", "damagedleftleg", "mangledrightleg", 
+   "mangledleftleg", "concussion", "darkshade", "depression", 
+   "tonguetied"},
+  -- 8
+  {"brokenrightleg", "brokenleftleg", "confusion", "hallucinations", 
+   "hypersomnia", "pyramides"},
+  -- 9
+  {"mangledhead", "stupidity", "voyria", "slickness", "spiritburn", "tenderskin",
+   "disrupted", "parasite", "sandfever"},
+  -- 10
+  {"brokenrightarm", "brokenleftarm", "wristfractures"},
+  -- 11
+  {"nausea", "haemophilia", "addiction", "lethargy", "whisperingmadness", "crackedribs"},
+  -- 12
+  {"damagedhead", "recklessness", "pressure"}, 
+  -- 13
+  {"damagedrightarm", "damagedleftarm", "healthleech", "manaleech", "temperedmelancholic",
+   "temperedcholeric", "temperedsanguine", "temperedphlegmatic", "justice"},
+  -- 14
+  {"mangledrightarm", "mangledleftarm", "shyness", "dizziness", "disloyalty",
+   "dissonance"},
+  -- 15
+  {"generosity", "deadening", "agoraphobia", "loneliness", "claustrophobia",
+   "vertigo", "shivering", "frozen"},
+  -- 16
+  {"mildtrauma", "serioustrauma"},
+  -- 17
+  {"epilepsy"},
+  -- 18
+  {"slashedthroat", "laceratedthroat", "stuttering", "burning"},
+  -- 19
+  {"selarnia"},
+  -- 20
+  {"kkractlebrand", "bound", "daeggerimpale", "impaled", "transfixation", "webbed", "prone", "sleeping"},
+}
+
+Megophrys.resetCuringPrios = function(theseAffs)
+  local cmd = 'curing priority'
+  for priority, affList in spairs(Megophrys.prioDefault) do
+    for _, aff in spairs(affList) do
+      local addAff = true
+      if theseAffs and type(theseAffs) == 'table' then
+        addAff = false
+        for _, selectedAff in pairs(theseAffs) do
+          if selectedAff == aff then
+            addAff = true
+            break
+          end
+        end
+      end
+      if addAff then cmd = table.concat({cmd, aff, priority}, ' ') end
+    end
+    if priority % 5 == 0 and cmd ~= 'curing priority' then
+      send(cmd)
+      cmd = 'curing priority'
+    end
+  end
+  if cmd ~= 'curing priority' then
+    send(cmd)
+  end
+end
+
 Megophrys.onConnect = function()
   if Megophrys.class == 'Magi' then
     sendAll('simultaneity', 'bind all', 'fortify all')
@@ -599,3 +681,4 @@ end
 
 cecho('\n<cyan>Megophrys v1.1 initialised. Enjoy :)\n')
 Megophrys.setMode('denizen')
+Megophrys.resetCuringPrios()
