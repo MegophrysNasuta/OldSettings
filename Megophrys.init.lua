@@ -294,9 +294,13 @@ Megophrys.shieldOnTarget = function()
 end
 
 Megophrys.pursue = function()
-  if (Megophrys.targetRoom and not 
-      Megophrys.autoAttacking and not 
-      Megophrys.autoEscaping) then
+  if Megophrys.targetRoom then
+    if Megophrys.autoAttacking then
+      Megophrys.stopAttack('Engaging pursuit')
+    end
+    if Megophrys.autoEscaping then
+      Megophrys.stopEscape('Engaging pursuit')
+    end
     gotoRoom(Megophrys.targetRoom)
     Megophrys.targetRoom = nil
   else
@@ -443,7 +447,7 @@ Megophrys.highlightTargetRoom = function(roomName, foundPlayer)
   for roomID, roomName in pairs(searchRoom(roomName, true, true)) do
     unHighlightRoom((Megophrys.highlightRoom or 0))
     Megophrys.highlightRoom = tonumber(roomID)
-    if foundPlayer == target then
+    if string.lower(foundPlayer) == string.lower(target) then
       Megophrys.targetRoom = tonumber(roomID)
     end
     cecho('\n<cyan>Highlighting '.. roomName .. ' ('.. roomID ..')\n')
