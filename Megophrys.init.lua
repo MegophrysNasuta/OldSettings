@@ -41,6 +41,8 @@ Megophrys.eStopAuto = function()
     Megophrys.autoEscaping = false
   end
   send('clearqueue all')
+
+  Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
 end
 
 Megophrys.setMode = function(mode)
@@ -256,7 +258,6 @@ end
 Megophrys.hitIcewall = function()
   if Megophrys.autoEscaping then
     if #gmcp.Room.Info.exits < 3 then
-      Megophrys.escapingBlocked = true
       send('cast firelash '.. Megophrys.lastExitTried)
     end
     Megophrys.locationsFled = Megophrys.locationsFled - 1
@@ -327,40 +328,62 @@ Megophrys.stopAttack = function(reason)
   Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
 end
 
-Megophrys.tryExit = function(exitDir)
-  send(exitDir)
-  Megophrys.locationsFled = Megophrys.locationsFled + 1
-  Megophrys.lastExitTried = exitDir
+Megophrys.stopEscape = function(reason)
+  cecho('\n<red>'.. reason ..'. Disabling auto-flight.\n')
+  Megophrys.autoEscaping = false
+  send('diag')
+  Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
 end
 
-Megophrys.autoEscape = function()
+Megophrys.tryExit = function(exitDir)
+  cecho('\n<red>Fleeing '.. exitDir ..'!\n')
+  send(exitDir)
+  Megophrys.lastExitTried = exitDir
+  Megophrys.locationsFled = Megophrys.locationsFled + 1
+  tempTimer(0.5, Megophrys.autoEscape)
+end
+
+Megophrys.autoEscape = function(reset)
   if Megophrys.autoAttacking then
     Megpohrys.autoAttacking = false
   end
 
+  if not gmcp.Room or not gmcp.Room.Info or not gmcp.Room.Info.exits then
+    Megophrys.stopEscape('No exits detected')
+    return
+  end
+
+  if reset == true then
+    cecho('\nResetting auto-flight...\n')
+    Megophrys.fleeingFromRoom = gmcp.Room.Info.num
+    Megophrys.locationsFled = 0
+    Megophrys.lastExitTried = 'none'
+  end
+
+  if Megophrys.locationsFled > 3 then
+    send('cast aerial')
+    return
+  end
+
   Megophrys.autoEscaping = true
-  Megophrys.escapingBlocked = false
   Megophrys.priorityLabel:echo('<center>Priority: FLEE</center>')
 
-  while Megophrys.locationsFled <= 3 and not Megophrys.escapingBlocked do
-    local tries = 1
-    for exitDir, roomID in pairs(gmcp.Room.Info.exits) do
-      if tries == #gmcp.Room.Info.exits then
-        Megophrys.tryExit(exitDir)
-      elseif exitDir ~= Megophrys.lastExitTried then
-        if math.random(10) < 8 then
-          Megophrys.tryExit(exitDir)
-        end
-      end
-      tries = tries + 1
+  local exitInverse = {
+    n='s', ne='sw', e='w', se='nw', s='n', sw='ne', w='e', nw='se',
+    out='in', up='down', down='up', none=nil
+  }
+  exitInverse['in'] = 'out'  -- reserved word (in)
+
+  local moved = false
+  for exitDir, roomID in pairs(gmcp.Room.Info.exits) do
+    if roomID ~= Megophrys.fleeingFromRoom and exitDir ~= exitInverse[Megophrys.lastExitTried] then
+      Megophrys.tryExit(exitDir)
+      moved = true
+      break
     end
   end
-  
-  if Megophrys.locationsFled == 3 then
-    sendAll('cast aerial', 'diag')
-    Megophrys.locationsFled = 0
-    Megophrys.autoEscaping = false
-    Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
+  if not moved then
+    Megophrys.stopEscape('Cornered! Manual retry if desired')
   end
 end
 
@@ -559,4 +582,3 @@ end
 
 cecho('\n<cyan>Megophrys v1.1 initialised. Enjoy :)\n')
 Megophrys.setMode('denizen')
-Megophrys.setTarget('none')
