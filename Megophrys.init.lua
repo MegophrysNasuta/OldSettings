@@ -294,6 +294,7 @@ Megophrys.shieldOnTarget = function()
 end
 
 Megophrys.pursue = function()
+  Megophrys.priorityLabel:echo('<center>Priority: PURSUIT</center>')
   if Megophrys.targetRoom then
     if Megophrys.autoAttacking then
       Megophrys.stopAttack('Engaging pursuit')
@@ -306,12 +307,24 @@ Megophrys.pursue = function()
   else
     if Megophrys.killStrat == 'raid' and Megophrys.raidLeader then
       send('cast scry at '.. Megophrys.raidLeader)
+      Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
     elseif Megophrys.killStrat == 'denizen' and Megophrys.huntingGround then
       send('walk to '.. huntingGround)
     else
       send('cast scry at '.. target)
+      Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
     end
   end
+end
+
+Megophrys.endSpeedwalk = function()
+  if Megophrys.killStrat == 'raid' and Megophrys.raidLeader then
+    send('fol '.. Megophrys.raidLeader)
+  elseif Megophrys.killStrat == 'pummel' then
+    send('fol '.. target)
+    Megophrys.autoAttack()
+  end
+  Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
 end
 
 Megophrys.autoAttack = function()
