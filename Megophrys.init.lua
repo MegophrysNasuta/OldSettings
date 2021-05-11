@@ -97,7 +97,7 @@ Megophrys.resetCuringPrios = function(theseAffs)
       end
       if addAff then cmd = table.concat({cmd, aff, priority}, ' ') end
     end
-    if priority % 5 == 0 and cmd ~= 'curing priority' then
+    if priority % 10 == 0 and cmd ~= 'curing priority' then
       send(cmd)
       cmd = 'curing priority'
     end
@@ -111,6 +111,9 @@ Megophrys.onConnect = function()
   if Megophrys.class == 'Magi' then
     sendAll('simultaneity', 'bind all', 'fortify all')
   end
+  Megophrys.setMode('denizen')
+  Megophrys.resetCuringPrios()
+  cecho('\n<cyan>Megophrys v1.1 initialised. Enjoy :)\n')
 end
 
 Megophrys.eStopAuto = function()
@@ -125,6 +128,21 @@ Megophrys.eStopAuto = function()
   send('clearqueue all')
 
   Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
+end
+
+Megophrys.setEnemies = function(enemyList)
+  Megophrys.enemies = {}
+  disableTrigger('reject_forced_unenemy_all')
+  send('unenemy all')
+  for enemy in string.gmatch(enemyList, '[^, ]+') do
+    if enemy ~= 'and' then
+      Megophrys.enemies[#Megophrys.enemies + 1] = string.lower(enemy)
+    end
+  end
+  send('enemy '.. table.concat(Megophrys.enemies, ' / enemy '))
+  tempTimer(0.25, function()
+    enableTrigger('reject_forced_unenemy_all')
+  end)
 end
 
 Megophrys.setMode = function(mode)
@@ -334,7 +352,21 @@ Megophrys.toggleTargetLimb = function()
   else
     Megophrys.targetLimb = 'right'
   end
+  cecho('\n<cyan>Targetting '.. Megophrys.targetLimb ..' leg.\n')
   Magi.updatePrepGauges()
+end
+
+Megophrys.flyingBlocked = function()
+  if Megophrys.autoEscaping then
+    send('golem barrier')
+    Megophrys.stopEscape('Can\'t fly -- trying barrier')
+  end
+end
+
+Megophrys.flyingSuccess = function()
+  if Megophrys.autoEscaping then
+    Megophrys.stopEscape('Flying (safe)')
+  end
 end
 
 Megophrys.hitIcewall = function()
@@ -401,7 +433,7 @@ end
 
 Megophrys.endSpeedwalk = function()
   if Megophrys.killStrat == 'raid' and Megophrys.raidLeader then
-    send('fol '.. Megophrys.raidLeader)
+    sendAll('land', 'fol '.. Megophrys.raidLeader)
   elseif Megophrys.killStrat == 'pummel' then
     send('fol '.. target)
     Megophrys.autoAttack()
@@ -677,8 +709,3 @@ Megophrys.getCharInfo = function(charName)
                                 true)  -- true here means delete after firing once
   getHTTP(url)
 end
-
-
-cecho('\n<cyan>Megophrys v1.1 initialised. Enjoy :)\n')
-Megophrys.setMode('denizen')
-Megophrys.resetCuringPrios()
