@@ -108,6 +108,7 @@ Megophrys.resetCuringPrios = function(theseAffs)
 end
 
 Megophrys.onConnect = function()
+  sendAll('health', 'mana')  -- reset power bars
   if Megophrys.class == 'Magi' then
     sendAll('simultaneity', 'bind all', 'fortify all')
   end
@@ -180,8 +181,9 @@ Megophrys.setMode = function(mode)
       Magi.targetMaybeFrozen = false
       Megophrys.targetRebounding = false
       Megophrys.resetTargetWounds()
+      Magi.setElement('earth')
       Magi.followUp = 'golem timeflux '.. target
-      
+
       cecho('\n<cyan>Auto-attacks will be staffstrikes'..
             '\nElement: '.. Magi.element ..
             '\nFollow up: '.. Magi.followUp ..
@@ -230,7 +232,6 @@ Megophrys.Magi.nextAttack = function()
   local targetRebounding = Megophrys.targetRebounding
   local targetProne = Megophrys.targetProne
   local targetTransfixed = Magi.targetTransfixed
-  local targetHits = Megophrys.targetHits
   
   if killStrat == 'denizen' then
     send('staffcast '.. staffCasts[Magi.element] ..' at '.. target ..
@@ -243,12 +244,12 @@ Megophrys.Magi.nextAttack = function()
     end
     
     if killStrat == 'raid' then
-      if (targetHits or 0) % 3 == 0 then
+      if (Megophrys.targetHits or 0) % 3 == 0 then
         send('cast transfix at '.. target)
       else
         send('staffcast '.. staffCasts[Magi.element] ..' at '.. target)
       end
-      targetHits = targetHits + 1
+      Megophrys.targetHits = Megophrys.targetHits + 1
     else
       local targetTorso = false
       local limbIsPrepped = false
@@ -287,14 +288,14 @@ Megophrys.Magi.nextAttack = function()
         end
       else
         Megophrys.priorityLabel:echo('<center>Priority: LIMB PREP</center>')
-        if not targetRebounding then
+        if targetRebounding then
           Magi.setElement('air')
         else
           Magi.setElement('earth')
         end
       end
       
-      local cmd = 'staffstrike '.. target ..' with '.. element
+      local cmd = 'staffstrike '.. target ..' with '.. Magi.element
       
       if targetProne and not Magi.targetMaybeFrozen then   -- spring freezing trap
         Magi.targetMaybeFrozen = true
@@ -432,13 +433,13 @@ Megophrys.pursue = function()
 end
 
 Megophrys.endSpeedwalk = function()
+  Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
   if Megophrys.killStrat == 'raid' and Megophrys.raidLeader then
-    sendAll('land', 'fol '.. Megophrys.raidLeader)
+    sendAll('land', 'call elementals', 'golem return', 'fol '.. Megophrys.raidLeader)
   elseif Megophrys.killStrat == 'pummel' then
-    send('fol '.. target)
+    sendAll('land', 'call elementals', 'golem return', 'fol '.. target)
     Megophrys.autoAttack()
   end
-  Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
 end
 
 Megophrys.autoAttack = function()
@@ -533,7 +534,14 @@ Megophrys.updateBars = function(currHealth, currMana)
       width='25%', height='3.5%'
     })
   end
-  if not Megophrys.maxHealth or not Megophrys.maxMana then return end
+  if not Megophrys.affTable then
+    Megophrys.affTable = Geyser.Label:new({
+      name='affTable',
+      x='-26%', y='77.5%',
+      width='25%', height='7.5%',
+      fgColor='white', color='black'
+    })
+  end
 
   -- literally from https://wiki.mudlet.org/w/manual:geyser#Styling_a_gauge
   Megophrys.hpGauge.front:setStyleSheet([[background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f04141, stop: 0.1 #ef2929, stop: 0.49 #cc0000, stop: 0.5 #a40000, stop: 1 #cc0000);
@@ -568,10 +576,22 @@ Megophrys.updateBars = function(currHealth, currMana)
             '%</center>')
   end
 
-  local healthPct = fmtPctLabel(currHealth, Megophrys.maxHealth)
-  local manaPct = fmtPctLabel(currMana, Megophrys.maxMana)
-  Megophrys.hpGauge:setValue(currHealth, Megophrys.maxHealth, healthPct)
-  Megophrys.mpGauge:setValue(currMana, Megophrys.maxMana, manaPct)
+  local maxhp = tonumber(gmcp.Char.Vitals.maxhp)
+  local maxmp = tonumber(gmcp.Char.Vitals.maxmp)
+  local healthPct = fmtPctLabel(currHealth, maxhp)
+  local manaPct = fmtPctLabel(currMana, maxmp)
+  Megophrys.hpGauge:setValue(currHealth, maxhp, healthPct)
+  Megophrys.mpGauge:setValue(currMana, maxmp, manaPct)
+
+  local affTable = '<center><b>Afflictions:</b><ul>'
+  local anyAffs = false
+  for _, affName in pairs(wsys.aff) do
+    anyAffs = true
+    affTable = affTable ..'<li>'.. affName ..'</li>'
+  end
+  if not anyAffs then affTable = affTable ..'<li>N/A</li>' end
+  affTable = affTable ..'</ul></center>'
+  Megophrys.affTable:echo(affTable)
 end
 
 Magi.updatePrepGauges = function()
