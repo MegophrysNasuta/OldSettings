@@ -9,9 +9,10 @@ Megophrys.onConnect = function()
 end
 
 Megophrys.endSpeedwalk = function()
+  Megophrys.inPursuit = false
   Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
   if Megophrys.class == 'Magi' then
-    sendAll('land', 'call elementals', 'golem return')
+    sendAll('land', 'golem return')
   end
   if Megophrys.killStrat == 'raid' and Megophrys.raidLeader then
     send('fol '.. Megophrys.raidLeader)

@@ -39,8 +39,8 @@ Megophrys.highlightTargetRoom = function(roomName, foundPlayer)
   end
   Megophrys.targetRoomLabel = Geyser.Label:new({
     name='targetRoomLabel',
-    x='55.5%', y=0,
-    height='14px',
+    x='-750px', y=0,
+    height='14px', width='250px',
     fgColor=Megophrys.fgColors[Megophrys.killStrat], color='black',
     message=message
   })

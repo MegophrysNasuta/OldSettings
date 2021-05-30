@@ -232,15 +232,15 @@ Magi.updatePrepGauges = function()
   if not Magi.limbGauge then
     Magi.limbGauge = Geyser.Gauge:new({
       name='limbGauge',
-      x='47.5%', y=0,
-      width='7.5%', height='2%'
+      x='-915px', y=0,
+      width='150px', height='2%'
     })
   end
   if not Magi.torsoGauge then
     Magi.torsoGauge = Geyser.Gauge:new({
       name='torsoGauge',
-      x='47.5%', y='2%',
-      width='7.5%', height='2%'
+      x='-915px', y='2%',
+      width='150px', height='2%'
     })
   end
   local targetLimb = Megophrys.targetLimb

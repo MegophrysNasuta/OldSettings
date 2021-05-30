@@ -76,6 +76,7 @@ Megophrys.autoAttack = function()
   else
     cecho('\n<cyan>You\'re already attacking as fast as you can!\n')
   end
+  Megophrys.updateMissionCtrlBar()
 end
 
 Megophrys.autoEscape = function(reset)
@@ -120,6 +121,7 @@ Megophrys.autoEscape = function(reset)
   if not moved then
     Megophrys.stopEscape('Cornered! Manual retry if desired')
   end
+  Megophrys.updateMissionCtrlBar()
 end
 
 Megophrys.eStopAuto = function()
@@ -134,6 +136,7 @@ Megophrys.eStopAuto = function()
   send('clearqueue all')
 
   Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
+  Megophrys.updateMissionCtrlBar()
 end
 
 Megophrys.pursue = function()
@@ -145,6 +148,7 @@ Megophrys.pursue = function()
     if Megophrys.autoEscaping then
       Megophrys.stopEscape('Engaging pursuit')
     end
+    Megophrys.inPursuit = true
     gotoRoom(Megophrys.targetRoom)
     Megophrys.targetRoom = nil
   else
@@ -152,12 +156,14 @@ Megophrys.pursue = function()
       send('cast scry at '.. Megophrys.raidLeader)
       Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
     elseif Megophrys.killStrat == 'denizen' and Megophrys.huntingGround then
+      Megophrys.inPursuit = true
       send('walk to '.. Megophrys.huntingGround)
     else
       send('cast scry at '.. target)
       Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
     end
   end
+  Megophrys.updateMissionCtrlBar()
 end
 
 Megophrys.resetCuringPrios = function(theseAffs)
@@ -246,8 +252,8 @@ Megophrys.setMode = function(mode)
   Megophrys.priorityLabel = nil
   Megophrys.priorityLabel = Geyser.Label:new({
     name='priorityLabel',
-    x='40%', y=0,
-    width='7.5%', height='2%',
+    x='-1070px', y=0,
+    width='150px', height='2%',
     fgColor=Megophrys.fgColors[Megophrys.killStrat], color='black',
     message='<center>Priority: IDLE</center>'
   })
@@ -285,8 +291,8 @@ Megophrys.setTarget = function(t)
   Megophrys.targetLabel = nil
   Megophrys.targetLabel = Geyser.Label:new({
     name='targetLabel',
-    x='40%', y='2%',
-    width='7.5%', height='2%',
+    x='-1070px', y='2%',
+    width='150px', height='2%',
     fgColor=Megophrys.fgColors[Megophrys.killStrat], color='black',
     message='<center>Target: '.. target ..'</center>'
   })
@@ -297,6 +303,7 @@ Megophrys.stopAttack = function(reason)
   Megophrys.autoAttacking = false
   send('diag')
   Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
+  Megophrys.updateMissionCtrlBar()
 end
 
 Megophrys.stopEscape = function(reason)
@@ -304,6 +311,7 @@ Megophrys.stopEscape = function(reason)
   Megophrys.autoEscaping = false
   send('diag')
   Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
+  Megophrys.updateMissionCtrlBar()
 end
 
 Megophrys.tryExit = function(exitDir)
@@ -318,21 +326,21 @@ Megophrys.updateBars = function()
   if not Megophrys.hpGauge then
     Megophrys.hpGauge = Geyser.Gauge:new({
       name='hpGauge',
-      x='-25%', y='64.5%',
+      x='-25%', y=0,
       width='25%', height='3.5%'
     })
   end
   if not Megophrys.mpGauge then
     Megophrys.mpGauge = Geyser.Gauge:new({
       name='mpGauge',
-      x='-25%', y='68%',
+      x='-25%', y='3.5%',
       width='25%', height='3.5%'
     })
   end
   if not Megophrys.affTable then
     Megophrys.affTable = Geyser.Label:new({
       name='affTable',
-      x='-26%', y='71.5%',
+      x='-26%', y='7%',
       width='25%', height='7.5%',
       fgColor='white', color='black'
     })
@@ -392,4 +400,116 @@ Megophrys.updateBars = function()
   if not anyAffs then affTable = affTable ..'<li>N/A</li>' end
   affTable = affTable ..'</ul></center>'
   Megophrys.affTable:echo(affTable)
+end
+
+Megophrys.updateMissionCtrlBar = function()
+  Megophrys.atkBtn = nil
+  Megophrys.fleeBtn = nil
+  Megophrys.chaseBtn = nil
+  Megophrys.stopBtn = nil
+
+  local doin_stuff = false
+
+  Megophrys.atkBtn = Geyser.Label:new({
+    name="attackButton",
+    x="42.5%", y="4%",
+    width="7.5%", height="7.5%",
+    fgColor="white",
+    message="<center>ATTACK</center>"
+  })
+  Megophrys.atkBtn:setFontSize(18)
+  if Megophrys.autoAttacking then
+    doin_stuff = true
+    Megophrys.atkBtn:setStyleSheet([[
+      background-color: firebrick;
+      border-radius: 12px;
+      border: 4px inset crimson;
+      font-weight: bold;
+    ]])
+  else
+    Megophrys.atkBtn:setStyleSheet([[
+      background-color: crimson;
+      border-radius: 12px;
+      border: 4px outset firebrick;
+      font-weight: bold;
+    ]])
+  end
+  Megophrys.atkBtn:setClickCallback("Megophrys.autoAttack")
+
+  Megophrys.fleeBtn = Geyser.Label:new({
+    name="fleeButton",
+    x="50%", y="4%",
+    width="7.5%", height="7.5%",
+    fgColor="white",
+    message="<center>FLEE</center>"
+  })
+  Megophrys.fleeBtn:setFontSize(18)
+  if Megophrys.autoEscaping then
+    doin_stuff = true
+    Megophrys.fleeBtn:setStyleSheet([[
+      background-color: darkorange;
+      border-radius: 12px;
+      border: 4px inset orange;
+      font-weight: bold;
+    ]])
+  else
+    Megophrys.fleeBtn:setStyleSheet([[
+      background-color: goldenrod;
+      border-radius: 12px;
+      border: 4px outset darkgoldenrod;
+      font-weight: bold;
+    ]])
+  end
+  Megophrys.fleeBtn:setClickCallback("Megophrys.autoEscape")
+
+  Megophrys.chaseBtn = Geyser.Label:new({
+    name="chaseButton",
+    x="57.5%", y="4%",
+    width="7.5%", height="7.5%",
+    fgColor="white",
+    message="<center>PURSUE</center>"
+  })
+  Megophrys.chaseBtn:setFontSize(18)
+  if Megophrys.inPursuit then
+    doin_stuff = true
+    Megophrys.chaseBtn:setStyleSheet([[
+      background-color: darkgreen;
+      border-radius: 12px;
+      border: 4px inset forestgreen;
+      font-weight: bold;
+    ]])
+  else
+    Megophrys.chaseBtn:setStyleSheet([[
+      background-color: green;
+      border-radius: 12px;
+      border: 4px outset darkgreen;
+      font-weight: bold;
+    ]])
+  end
+  Megophrys.chaseBtn:setClickCallback("Megophrys.pursue")
+
+  Megophrys.stopBtn = Geyser.Label:new({
+    name="stopButton",
+    x="65%", y="4%",
+    width="7.5%", height="7.5%",
+    fgColor="white",
+    message="<center>STOP</center>"
+  })
+  Megophrys.stopBtn:setFontSize(18)
+  if doin_stuff then
+    Megophrys.stopBtn:setStyleSheet([[
+      background-color: #444;
+      border-radius: 12px;
+      border: 4px outset #333;
+      font-weight: bold;
+    ]])
+  else
+    Megophrys.stopBtn:setStyleSheet([[
+      background-color: #222;
+      border-radius: 12px;
+      border: 4px inset #333;
+      font-weight: bold;
+    ]])
+  end
+  Megophrys.stopBtn:setClickCallback("Megophrys.eStopAuto")
 end
