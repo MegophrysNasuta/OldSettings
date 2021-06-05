@@ -31,7 +31,7 @@ end
 
 Megophrys.flyingSuccess = function()
   if Megophrys.autoEscaping then
-    Megophrys.stopEscape('Flying (safe)')
+    Megophrys.stopEscape('Flying (done)')
   end
 end
 
@@ -63,6 +63,7 @@ Megophrys.hitIcewall = function()
       send('cast firelash '.. Megophrys.lastExitTried)
     end
     Megophrys.locationsFled = Megophrys.locationsFled - 1
+    Megophrys.escapeBlocked = true
   end
 end
 
