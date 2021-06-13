@@ -27,6 +27,7 @@ Megophrys.endSpeedwalk = function()
       else
         send('cast aerial')
       end
+      Megophrys.autoEscaping = false
     else
       send('fol '.. target)
       Megophrys.autoAttack()

@@ -31,6 +31,28 @@ Megophrys.sellWhileSelfish = function(item, merchant)
   Megophrys.doWhileSelfish(function() send('sell '.. item ..' to '.. merchant) end)
 end
 
+Megophrys.highlightPanicRoom = function()
+  Megophrys.panicRoomLabel = nil
+  local message = 'Panic Room: None'
+  Megophrys.panicRoomLabel = Geyser.Label:new({
+    name='panicRoomLabel',
+    x='-750px', y='15px',
+    height='14px', width='250px',
+    fgColor=Megophrys.fgColors[Megophrys.killStrat], color='black',
+    message=message
+  })
+
+  if not Megophrys.fleeingToRoom then return end
+  local roomID = Megophrys.fleeingToRoom
+
+  unHighlightRoom((Megophrys.highlightedPanicRoom or 0))
+  Megophrys.highlightedPanicRoom = tonumber(roomID)
+  local foundRoomName = getRoomName(Megophrys.highlightedPanicRoom)
+  Megophrys.panicRoomLabel:echo('Panic Room: '.. foundRoomName)
+  cecho('\n<cyan>Highlighting '.. foundRoomName .. ' ('.. roomID ..')\n')
+  highlightRoom(Megophrys.highlightedPanicRoom, 225, 0, 125, 225, 0, 225, 1, 125, 125)
+end
+
 Megophrys.highlightTargetRoom = function(roomName, foundPlayer)
   Megophrys.targetRoomLabel = nil
   local message = 'Target Room: None'
@@ -48,17 +70,18 @@ Megophrys.highlightTargetRoom = function(roomName, foundPlayer)
   if not roomName or not foundPlayer then return end
 
   for roomID, foundRoomName in pairs(searchRoom(roomName, true, true)) do
-    unHighlightRoom((Megophrys.highlightRoom or 0))
-    Megophrys.highlightRoom = tonumber(roomID)
+    unHighlightRoom((Megophrys.highlightedTargetRoom or 0))
+    Megophrys.highlightedTargetRoom = tonumber(roomID)
     local foundTarget = (string.lower(foundPlayer or '') == string.lower(target))
     if foundTarget then
-      Megophrys.targetRoom = Megophrys.highlightRoom
+      Megophrys.targetRoom = Megophrys.highlightedTargetRoom
       Megophrys.targetRoomLabel:echo('Target Room: '.. foundRoomName)
     end
     cecho('\n<cyan>Highlighting '.. foundRoomName .. ' ('.. roomID ..')\n')
-    highlightRoom(Megophrys.highlightRoom, 225, 125, 0, 225, 225, 0, 1, 125, 125)
+    highlightRoom(Megophrys.highlightedTargetRoom, 225, 125, 0, 225, 225, 0, 1, 125, 125)
   end
 end
+
 Megophrys.Util = {}
 Megophrys.Util.gagLine = function()
   moveCursor(0, getLineCount()) deleteLine()

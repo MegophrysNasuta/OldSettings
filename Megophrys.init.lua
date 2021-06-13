@@ -118,10 +118,10 @@ Megophrys.autoEscape = function()
                               getRoomArea(gmcp.Room.Info.num)
                             ))
   Megophrys.escapeBlocked = false
-  Megophrys.escapeDelayed = false
 
   Megophrys.priorityLabel:echo('<center>Priority: FLEE</center>')
   Megophrys.updateMissionCtrlBar()
+  Megophrys.highlightPanicRoom()
   gotoRoom(Megophrys.fleeingToRoom)
 end
 
