@@ -122,6 +122,7 @@ Megophrys.autoEscape = function()
   Megophrys.priorityLabel:echo('<center>Priority: FLEE</center>')
   Megophrys.updateMissionCtrlBar()
   Megophrys.highlightPanicRoom()
+  send('lose '.. target)
   gotoRoom(Megophrys.fleeingToRoom)
 end
 

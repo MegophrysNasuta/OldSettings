@@ -27,13 +27,16 @@ Megophrys.endSpeedwalk = function()
       else
         send('cast aerial')
       end
-      Megophrys.autoEscaping = false
     else
       send('fol '.. target)
       Megophrys.autoAttack()
     end
   end
+  if Megophrys.autoEscaping then
+    Megophrys.stopEscape('Safe')
+  end
 end
+registerAnonymousEventHandler('mmapper arrived', 'Megophrys.endSpeedwalk')
 
 Megophrys.flyingBlocked = function()
   if Megophrys.autoEscaping and Megophrys.class == 'Magi' then
