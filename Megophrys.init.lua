@@ -1,6 +1,7 @@
 Megophrys = (Megophrys or {})
 Megophrys.class = (Megophrys.class or 'Magi')
 Megophrys.locationsFled = (Megophrys.locationsFled or 0)
+Megophrys.shieldIsUp = (Megophrys.shieldIsUp or false)
 Megophrys.targetLimb = (Megophrys.targetLimb or 'left')
 Megophrys.targetRebounding = (Megophrys.targetRebounding or false)
 Megophrys.targetProne = (Megophrys.targetProne or false)
@@ -71,6 +72,7 @@ Megophrys.setGuidance = function(mode)
   Megophrys.autoAttacking = false
   Megophrys.autoEscaping = false
   Megophrys.autoResisting = false
+  Megophrys.inPursuit = false
 
   mode = string.lower(mode or '')
   if mode == 'fight' then
@@ -81,14 +83,19 @@ Megophrys.setGuidance = function(mode)
     Megophrys.autoResisting = true
   elseif mode == 'rushdown' then
     Megophrys.inPursuit = true
-  else
+  elseif mode ~= 'idle' then
     cecho('\n<orange>Unknown mode: "'.. mode ..'"\n')
   end
 end
 
+Megophrys.setOpponentClass = function(cls)
+  if Megophrys.killStrat == 'raid' or Megophrys.riposteUp then return end
+  Megophrys.opponentClass = string.lower(tostring(cls))
+end
+
 Megophrys.autoAttack = function()
-  Megophrys.setGuidance('fight')
   if not Megophrys.autoAttacking then
+    Megophrys.setGuidance('fight')
     cecho('\n<cyan>Commencing auto-attack with '.. Megophrys.class ..'...\n')
     Megophrys[Megophrys.class].nextAttack()
     Megophrys.priorityLabel:echo('<center>Priority: DAMAGE</center>')
@@ -98,7 +105,7 @@ Megophrys.autoAttack = function()
   Megophrys.updateMissionCtrlBar()
 end
 
-Megophrys.autoEscape = function(reset)
+Megophrys.autoEscape = function()
   Megophrys.setGuidance('flight')
 
   if not gmcp.Room or not gmcp.Room.Info or not gmcp.Room.Info.exits then
@@ -106,49 +113,27 @@ Megophrys.autoEscape = function(reset)
     return
   end
 
-  if reset == true then
-    cecho('\nResetting auto-flight...\n')
-    Megophrys.fleeingFromRoom = gmcp.Room.Info.num
-    Megophrys.locationsFled = 0
-    Megophrys.lastExitTried = 'none'
-    Megophrys.escapeBlocked = false
-    Megophrys.escapeDelayed = false
-  end
+  cecho('\nCommencing auto-flight...\n')
+  Megophrys.fleeingToRoom = Megophrys.Util.randomChoice(getAreaRooms(
+                              getRoomArea(gmcp.Room.Info.num)
+                            ))
+  Megophrys.escapeBlocked = false
+  Megophrys.escapeDelayed = false
 
-  if Megophrys.locationsFled > 3 then
-    send('cast aerial')
-    Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
-    return
-  end
-
-  Megophrys.autoEscaping = true
   Megophrys.priorityLabel:echo('<center>Priority: FLEE</center>')
-
-  local exitInverse = {
-    n='s', ne='sw', e='w', se='nw', s='n', sw='ne', w='e', nw='se',
-    out='in', up='down', down='up', none=nil
-  }
-  exitInverse['in'] = 'out'  -- reserved word (in)
-
-  local moved = false
-  for exitDir, roomID in pairs(gmcp.Room.Info.exits) do
-    if (roomID ~= Megophrys.fleeingFromRoom and
-        exitDir ~= exitInverse[Megophrys.lastExitTried] and
-        not (Megophrys.escapeBlocked and exitDir == Megophrys.lastExitTried)) then
-      Megophrys.tryExit(exitDir)
-      moved = true
-      break
-    end
-  end
-  if not moved then
-    Megophrys.stopEscape('Cornered! Manual retry if desired')
-  end
   Megophrys.updateMissionCtrlBar()
+  gotoRoom(Megophrys.fleeingToRoom)
 end
 
 Megophrys.autoResist = function()
   Megophrys.setGuidance('DieWithHonor')
   Megophrys.priorityLabel:echo('<center>Priority: HEAL</center>')
+
+  if Megophrys.shieldIsUp then
+    send('cast reflection at me')
+  else
+    send('golem return / golem barrier')
+  end
 end
 
 Megophrys.eStopAuto = function()
@@ -252,15 +237,9 @@ Megophrys.setMode = function(mode)
 
     wsys.unkeepup('mass', true)
     wsys.unkeepup('rebounding', true)
-
-    Megophrys[Megophrys.class].setMode()
   elseif Megophrys.killStrat == 'pummel' then
     wsys.keepup('mass', true)
     wsys.keepup('rebounding', true)
-
-    Megophrys.Magi.setMode()
-    if Megophrys.class == 'Magi' then
-    end
   elseif Megophrys.killStrat == 'raid' then
     cecho('\n<cyan>Raid mode activated as '.. Megophrys.class ..'!')
 
@@ -270,8 +249,6 @@ Megophrys.setMode = function(mode)
 
     wsys.keepup('mass', true)
     wsys.keepup('rebounding', true)
-
-    Megophrys[Megophrys.class].setMode()
   end
   
   Megophrys.priorityLabel = nil
@@ -284,6 +261,7 @@ Megophrys.setMode = function(mode)
   })
   Megophrys.setTarget('none')
   Megophrys.highlightTargetRoom()
+  Megophrys[Megophrys.class].setMode()
 end
 
 Megophrys.setTarget = function(t)
@@ -345,14 +323,6 @@ Megophrys.stopResist = function(reason)
   send('diag')
   Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
   Megophrys.updateMissionCtrlBar()
-end
-
-Megophrys.tryExit = function(exitDir)
-  cecho('\n<red>Fleeing '.. exitDir ..'!\n')
-  send(exitDir)
-  Megophrys.lastExitTried = exitDir
-  Megophrys.locationsFled = Megophrys.locationsFled + 1
-  tempTimer(0.5, Megophrys.autoEscape)
 end
 
 Megophrys.updateBars = function()
@@ -422,6 +392,9 @@ Megophrys.updateBars = function()
   Megophrys.mpGauge:setValue(currMana, maxmp, manaPct)
 
   local affTable = '<center><b>Afflictions:</b><ul>'
+  if Megophrys.opponentClass then
+    affTable = '<center><b>Afflictions: ('.. Megophrys.opponentClass ..'):</b><ul>'
+  end
   local anyAffs = false
   for aff, _ in pairs(wsysf.affs) do
     if (aff ~= 'blindness' and aff ~= 'deafness' and
@@ -434,7 +407,7 @@ Megophrys.updateBars = function()
   affTable = affTable ..'</ul></center>'
   Megophrys.affTable:echo(affTable)
 
-  if currHealth < 800 then
+  if currHealth > 0 and currHealth < 800 then
     send('touch crystal / absorb energy')
   end
 end
@@ -497,7 +470,7 @@ Megophrys.updateMissionCtrlBar = function()
       font-weight: bold;
     ]])
   end
-  Megophrys.fleeBtn:setClickCallback("Megophrys.autoEscape")
+  Megophrys.fleeBtn:setClickCallback("Megophrys.autoEscape", 1)
 
   Megophrys.chaseBtn = Geyser.Label:new({
     name="chaseButton",
@@ -549,7 +522,7 @@ Megophrys.updateMissionCtrlBar = function()
       font-weight: bold;
     ]])
   end
-  Megophrys.chaseBtn:setClickCallback("Megophrys.autoResist")
+  Megophrys.resistBtn:setClickCallback("Megophrys.autoResist")
 
   Megophrys.stopBtn = Geyser.Label:new({
     name="stopButton",

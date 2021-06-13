@@ -24,7 +24,7 @@ Megophrys.Magi.setMode = function()
           '\nFollow up: '.. Magi.followUp ..
           '\nTarget is: '.. target ..'\n')
   elseif Megophrys.killStrat == 'raid' then
-    setButtonStyleSheet('PvP', 'QWidget { color: cyan; }')
+    setButtonStyleSheet('Raid', 'QWidget { color: cyan; }')
     Magi.followUp = 'golem timeflux '.. target
     cecho('\n<cyan>Auto-attacks will be staffcasts'..
           '\nElement: '.. Magi.element ..
@@ -32,7 +32,7 @@ Megophrys.Magi.setMode = function()
           '\nTarget is: '.. target ..'\n')
   elseif Megophrys.killStrat == 'pummel' then
     cecho('\n<cyan>Magi PvP (Ice) mode activated!')
-    setButtonStyleSheet('Raid', 'QWidget { color: cyan; }')
+    setButtonStyleSheet('PvP', 'QWidget { color: cyan; }')
 
     Magi.timefluxUp = false
     Megophrys.targetTorso = false

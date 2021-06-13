@@ -9,6 +9,7 @@ Megophrys.onConnect = function()
 end
 
 Megophrys.endSpeedwalk = function()
+  local endingPursuit = Megophrys.inPursuit
   Megophrys.inPursuit = false
   Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
   if Megophrys.class == 'Magi' then
@@ -17,21 +18,33 @@ Megophrys.endSpeedwalk = function()
   if Megophrys.killStrat == 'raid' and Megophrys.raidLeader then
     send('fol '.. Megophrys.raidLeader)
   elseif Megophrys.killStrat == 'pummel' then
-    send('fol '.. target)
-    Megophrys.autoAttack()
+    if endingPursuit then
+      send('embed focus')
+    end
+    if Megophrys.autoEscaping then
+      if Megophrys.opponentClass and Megophrys.opponentClass == 'airlord' then
+        Megophrys.autoResist()
+      else
+        send('cast aerial')
+      end
+    else
+      send('fol '.. target)
+      Megophrys.autoAttack()
+    end
   end
 end
 
 Megophrys.flyingBlocked = function()
   if Megophrys.autoEscaping and Megophrys.class == 'Magi' then
-    send('golem barrier')
     Megophrys.stopEscape('Can\'t fly -- trying barrier')
+    Megophrys.autoResist()
   end
 end
 
 Megophrys.flyingSuccess = function()
   if Megophrys.autoEscaping then
     Megophrys.stopEscape('Flying (done)')
+    Megophrys.autoResist()
   end
 end
 
@@ -93,5 +106,20 @@ Megophrys.shieldOnTarget = function()
     if Megophrys.class == 'Magi' then
       send('cast disintegrate at '.. target)
     end
+  end
+end
+
+Megophrys.shieldsUp = function()
+  Megophrys.shieldIsUp = true
+end
+
+Megophrys.shieldsDown = function()
+  Megophrys.shieldIsUp = false
+end
+
+Megophrys.underPressure = function()
+  if Megophrys.autoEscaping then
+    Megophrys.stopEscape('Blocked by pressure')
+    Megophrys.autoResist()
   end
 end

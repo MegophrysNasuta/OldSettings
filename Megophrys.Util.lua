@@ -50,11 +50,9 @@ Megophrys.highlightTargetRoom = function(roomName, foundPlayer)
   for roomID, foundRoomName in pairs(searchRoom(roomName, true, true)) do
     unHighlightRoom((Megophrys.highlightRoom or 0))
     Megophrys.highlightRoom = tonumber(roomID)
-    if (Megophrys.killStrat == 'pummel' and
-            string.lower(foundPlayer or '') == string.lower(target)) or
-       (Megophrys.killStrat == 'raid' and
-            string.lower(foundPlayer or '') == string.lower(Megophrys.raidLeader)) then
-      Megophrys.targetRoom = tonumber(roomID)
+    local foundTarget = (string.lower(foundPlayer or '') == string.lower(target))
+    if foundTarget then
+      Megophrys.targetRoom = Megophrys.highlightRoom
       Megophrys.targetRoomLabel:echo('Target Room: '.. foundRoomName)
     end
     cecho('\n<cyan>Highlighting '.. foundRoomName .. ' ('.. roomID ..')\n')
@@ -82,4 +80,13 @@ Megophrys.Util.hiliteSelection = function(fg_color)
   fg(fg_color)
   deselect()
   resetFormat()
+end
+
+Megophrys.Util.randomChoice = function(tbl)
+  -- https://stackoverflow.com/a/37468712
+  local keyset = {}
+  for _ in pairs(tbl) do
+    table.insert(keyset, _)
+  end
+  return tbl[keyset[math.random(#keyset)]]
 end
