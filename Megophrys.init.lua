@@ -265,7 +265,10 @@ Megophrys.setTarget = function(t)
   send('st '.. t)
   cecho('\n<cyan>Target changed to '.. t ..'.')
   Megophrys.resetTargetWounds()
-  Megophrys.resetCuringPrios()
+
+  if t ~= 'none' then
+    Megophrys.resetCuringPrios()
+  end
 
   if Megophrys.killStrat ~= 'denizen' then
     sendAll('unally '.. t, 'enemy '.. t)

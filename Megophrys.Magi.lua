@@ -152,6 +152,7 @@ Megophrys.Magi.nextAttack = function()
           elseif killStrat == 'fiyah' then
             Megophrys.priorityLabel:echo('<center>Priority: DEHYDRATE</center>')
             Magi.followUp = 'golem dehydrate '.. target
+            Megophrys.targetHits = 0
           end
           Magi.setElement('air')
           targetTorso = false
@@ -176,42 +177,54 @@ Megophrys.Magi.nextAttack = function()
         local timeToFreeze = (limbIsPrepped and (skipTorso or torsoIsPrepped))
         if timeToFreeze and not Magi.targetMaybeFrozen then
           Magi.targetMaybeFrozen = true
-          Magi.skipNextEq = true
           sendAll('clearqueue all',
                   ('setalias nextAttack staffstrike '.. target ..' with air '..
                    targetLimb ..' leg / golem smash '.. target ..' '.. Magi.golemSmashTarget),
-                  'queue add eqbal nextAttack',
-                  'setalias nextAttack cast deepfreeze',
                   'queue add eqbal nextAttack')
+          return
         else
           if Magi.targetFrozen then
             -- kill condition met: pummel to death
             Megophrys.priorityLabel:echo('<center>Priority: PUMMEL</center>')
             Magi.setElement('water')
-            cmd = 'staffstrike '.. target ..' with '.. Magi.element ..' torso'
-            Magi.followUp = 'golem pummel '.. target
+            cmd = 'staffstrike '.. target ..' with '.. Magi.element
+            if (Megophrys.targetHits or 0) == 0 then
+              Magi.followUp = 'golem hypothermia '.. target
+            else
+              Magi.followUp = 'golem pummel '.. target
+            end
+            targetTorso = true
           elseif targetMaybeFrozen then
-            -- we've just done deepfreeze so we're going to hypothermia and see if it sticks
-            -- if it sticks we make kill condition
+            -- we've hopefully tripped our limb prep and proned, so now we
+            -- either need to trip torso and deepfreeze or just deepfreeze
+            -- if it sticks we hypothermia and make kill condition
             -- otherwise we're back to prepping limbs
             Magi.targetFrozen = true
             Magi.setElement('water')
-            cmd = 'staffstrike '.. target ..' with '.. Magi.element ..' torso'
-            Magi.followUp = 'golem hypothermia '.. target
-            Magi.targetMaybeFrozen = false
-          else
-            if targetLimb and not targetTorso then
-              cmd = cmd .. ' ' .. targetLimb .. ' leg'
+            if skipTorso then
+              sendAll('clearqueue all',
+                      'setalias nextAttack cast deepfreeze',
+                      'queue add eqbal nextAttack')
             else
-              cmd = cmd .. ' torso'
+              sendAll('clearqueue all',
+                      ('setalias nextAttack staffstrike '.. target ..' with '..
+                       Magi.element ..' torso / golem smash '..
+                       target ..' '.. Magi.golemSmashTarget),
+                      'queue add eqbal nextAttack',
+                      'setalias nextAttack cast deepfreeze',
+                      'queue add eqbal nextAttack')
+              Magi.skipNextEq = true
             end
+            Magi.targetMaybeFrozen = false
+            Megophrys.targetHits = 0
+            return
           end
         end
       elseif killStrat == 'fiyah' then
         if Magi.targetDehydrated then
           Megophrys.priorityLabel:echo('<center>Priority: DESTROY/center>')
           Magi.setElement('fire')
-          cmd = 'staffstrike '.. target ..' with '.. Magi.element ..' torso'
+          cmd = 'staffstrike '.. target ..' with '.. Magi.element
           if (Megophrys.targetHits or 0) % 3 == 0 then
             Magi.followUp = 'golem destroy '.. target
           elseif (Megophrys.targetHits or 0) % 3 == 1 then
@@ -219,16 +232,16 @@ Megophrys.Magi.nextAttack = function()
           else
             Magi.followUp = 'golem destabilise heat / golem scorch '.. target
           end
-        else
-          if targetLimb and not targetTorso then
-            cmd = cmd .. ' ' .. targetLimb .. ' leg'
-          else
-            cmd = cmd .. ' torso'
-          end
+          targetTorso = true
         end
       end
 
       if killStrat == 'pummel' or killStrat == 'fiyah' then
+        if targetLimb and not targetTorso then
+          cmd = cmd .. ' ' .. targetLimb .. ' leg'
+        else
+          cmd = cmd .. ' torso'
+        end
         sendAll(
           'clearqueue all',
           'setalias nextAttack '.. cmd .. '/' .. Magi.followUp,
