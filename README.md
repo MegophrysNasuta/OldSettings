@@ -1,5 +1,9 @@
 # Megophrys
 
+[Nasuta](https://www.achaea.com/game/honors/Nasuta)'s settings for
+[Achaea](https://www.achaea.com/) on
+[Mudlet](https://www.mudlet.org/)
+
 ## AS-IS NO WARRANTY
 
 This is open-source for educational purposes and is not guaranteed to work

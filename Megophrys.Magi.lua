@@ -76,7 +76,7 @@ Megophrys.Magi.nextAttack = function()
   local skipTorso = Magi.skipTorso
   local timefluxUp = Magi.timefluxUp
   local targetLimb = Megophrys.targetLimb
-  local targetWounds = lb[target]
+  local targetWounds = lb[target].hits
   local targetRebounding = Megophrys.targetRebounding
   local targetTransfixed = Magi.targetTransfixed
 
@@ -124,11 +124,11 @@ Megophrys.Magi.nextAttack = function()
       local torsoIsUnderPrepped = false         -- 84-91%
 
       if targetLimb then
-        local targetLimbDmg = targetWounds[targetLimb ..' leg']
-        if targetLimbDmg.dmg >= 91 then
+        local targetLimbDmg = (targetWounds[targetLimb ..' leg'] or 0)
+        if targetLimbDmg >= 91 then
           limbIsPrepped = true
           cecho('\n<gold>LIMB IS PREPPED!\n')
-        elseif targetLimbDmg.dmg >= 84 then
+        elseif targetLimbDmg >= 84 then
           limbIsUnderPrepped = true
         end
 
@@ -138,21 +138,21 @@ Megophrys.Magi.nextAttack = function()
           otherLimb = 'right'
         end
 
-        local otherLimbDmg = targetWounds[otherLimb ..' leg']
-        if otherLimbDmg.dmg >= 91 then
+        local otherLimbDmg = (targetWounds[otherLimb ..' leg'] or 0)
+        if otherLimbDmg >= 91 then
           otherLimbIsPrepped = true
           cecho('\n<gold>OTHER LIMB IS PREPPED!\n')
-        elseif otherLimbDmg.dmg >= 84 then
+        elseif otherLimbDmg >= 84 then
           otherLimbIsUnderPrepped = true
         end
       end
 
       if not skipTorso then
-        local targetTorsoDmg = targetWounds.torso
-        if targetTorsoDmg.dmg >= 91 then
+        local targetTorsoDmg = (targetWounds.torso or 0)
+        if targetTorsoDmg >= 91 then
           torsoIsPrepped = true
           cecho('\n<gold>TORSO IS PREPPED!\n')
-        elseif targetTorsoDmg.dmg >= 84 then
+        elseif targetTorsoDmg >= 84 then
           torsoIsUnderPrepped = true
         end
       end
@@ -162,7 +162,7 @@ Megophrys.Magi.nextAttack = function()
           -- switch legs
           Megophrys.priorityLabel:echo('<center>Priority: LIMB 2 PREP</center>')
           Magi.setElement('earth')
-          Megophrys.targetLimb = otherLimb ..' leg'
+          targetLimb = otherLimb ..' leg'
         elseif not torsoIsPrepped and not skipTorso then
           -- work on prepping torso once limb is done
           Megophrys.priorityLabel:echo('<center>Priority: TORSO PREP</center>')
@@ -240,7 +240,6 @@ Megophrys.Magi.nextAttack = function()
             end
             Magi.targetMaybeFrozen = false
             Megophrys.targetHits = 0
-            Magi.updatePrepGauges()
             return
           end
         end
@@ -272,15 +271,7 @@ Megophrys.Magi.nextAttack = function()
           'queue add eqbal nextAttack'
         )
         Megophrys.targetHits = Megophrys.targetHits + 1
-
-        -- reset limb damage if we hit L2 break
-        if targetLimbDmg.dmg >= 100 then
-          targetLimbDmg.dmg = 0
-        end
-
-        if targetTorsoDmg.dmg >= 100 then
-          targetTorsoDmg.dmg = 0
-        end
+        Magi.updatePrepGauges()
       end
     end
   end
@@ -315,11 +306,11 @@ Magi.toggleDualLegPrep = function()
   Magi.dualPrep = not Magi.dualPrep
 
   if Magi.dualPrep then
-    cecho('\n<cyan>Toggled to single-leg prep!\n')
-    setButtonStyleSheet('DualPrep', 'QWidget {color: grey}')
-  else
     cecho('\n<cyan>Toggled to dual-leg prep!\n')
     setButtonStyleSheet('DualPrep', 'QWidget {color: cyan}')
+  else
+    cecho('\n<cyan>Toggled to single-leg prep!\n')
+    setButtonStyleSheet('DualPrep', 'QWidget {color: grey}')
   end
 
   Magi.updatePrepGauges()
@@ -383,7 +374,7 @@ Magi.updatePrepGauges = function()
   end
   if not Magi.otherLimbGauge then
     Magi.otherLimbGauge = Geyser.Gauge:new({
-      name='torsoGauge',
+      name='otherLimbGauge',
       x='-915px', y='2%',
       width='150px', height='2%'
     })
@@ -404,9 +395,14 @@ Magi.updatePrepGauges = function()
     otherLimb = 'right'
   end
 
-  local targetLimbWounds = lb[target][targetLimb ..' leg']
-  local otherLimbWounds = lb[target][otherLimb ..' leg']
-  local targetTorsoWounds = lb[target].torso
+  local targetLimbWounds = 0
+  local otherLimbWounds = 0
+  local targetTorsoWounds = 0
+  if lb[target] then
+    targetLimbWounds = lb[target].hits[targetLimb ..' leg']
+    otherLimbWounds = lb[target].hits[otherLimb ..' leg']
+    targetTorsoWounds = lb[target].hits.torso
+  end
   local limbLabel = '<center>'.. string.upper(targetLimb) ..' LEG</center>'
   local otherLimbLabel = '<center>NONE</center>'
   local torsoLabel = '<center>NONE</center>'
@@ -416,7 +412,7 @@ Magi.updatePrepGauges = function()
   if not Magi.skipTorso then
     torsoLabel = '<center>TORSO</center>'
   end
-  Magi.limbGauge:setValue(targetLimbWounds.dmg, 100, limbLabel)
-  Magi.otherLimbGauge:setValue(otherLimbWounds.dmg, 100, otherLimbLabel)
-  Magi.torsoGauge:setValue(targetTorsoWounds.dmg, 100, torsoLabel)
+  Magi.limbGauge:setValue(targetLimbWounds, 100, limbLabel)
+  Magi.otherLimbGauge:setValue(otherLimbWounds, 100, otherLimbLabel)
+  Magi.torsoGauge:setValue(targetTorsoWounds, 100, torsoLabel)
 end
