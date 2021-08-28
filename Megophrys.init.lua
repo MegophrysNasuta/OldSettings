@@ -201,13 +201,7 @@ end
 Megophrys.resetTargetWounds = function()
   cecho('\t<cyan>Resetting target wounds...\n')
   Megophrys.targetHits = 0
-  Megophrys.targetWounds = (Megophrys.targetWounds or {})
-  Megophrys.targetWounds['right leg'] = {dmg=0, trackedHits=0}
-  Megophrys.targetWounds['left leg'] = {dmg=0, trackedHits=0}
-  Megophrys.targetWounds['right arm'] = {dmg=0, trackedHits=0}
-  Megophrys.targetWounds['left arm'] = {dmg=0, trackedHits=0}
-  Megophrys.targetWounds.torso = {dmg=0, trackedHits=0}
-  Megophrys.targetWounds.head = {dmg=0, trackedHits=0}
+  lb.resetAll(target)
   Megophrys.Magi.updatePrepGauges()
 end
 
@@ -261,17 +255,19 @@ Megophrys.setMode = function(mode)
 end
 
 Megophrys.setTarget = function(t)
-  target = t
-  send('st '.. t)
-  cecho('\n<cyan>Target changed to '.. t ..'.')
+  if t == 'none' then target = 'none' else
+    target = Megophrys.Util.titleCase(t)
+  end
+  send('st '.. target)
+  cecho('\n<cyan>Target changed to '.. target ..'.')
   Megophrys.resetTargetWounds()
 
-  if t ~= 'none' then
+  if target ~= 'none' then
     Megophrys.resetCuringPrios()
   end
 
   if Megophrys.killStrat ~= 'denizen' then
-    sendAll('unally '.. t, 'enemy '.. t)
+    sendAll('unally '.. target, 'enemy '.. target)
   end
 
   -- set temp trigger to highlight the target string
@@ -286,7 +282,7 @@ Megophrys.setTarget = function(t)
         Megophrys.Util.hiliteSelection('red')
         done = false
       end
-      lpos = selectString(Megophrys.Util.titleCase(t), idx)
+      lpos = selectString(target, idx)
       if lpos ~= -1 then
         Megophrys.Util.hiliteSelection('red')
         done = false
@@ -424,7 +420,7 @@ Megophrys.updateMissionCtrlBar = function()
 
   Megophrys.atkBtn = Geyser.Label:new({
     name="attackButton",
-    x="35%", y="4%",
+    x="35%", y="6%",
     width="7.5%", height="7.5%",
     fgColor="white",
     message="<center>ATTACK</center>"
@@ -450,7 +446,7 @@ Megophrys.updateMissionCtrlBar = function()
 
   Megophrys.fleeBtn = Geyser.Label:new({
     name="fleeButton",
-    x="42.5%", y="4%",
+    x="42.5%", y="6%",
     width="7.5%", height="7.5%",
     fgColor="white",
     message="<center>FLEE</center>"
@@ -476,7 +472,7 @@ Megophrys.updateMissionCtrlBar = function()
 
   Megophrys.chaseBtn = Geyser.Label:new({
     name="chaseButton",
-    x="50%", y="4%",
+    x="50%", y="6%",
     width="7.5%", height="7.5%",
     fgColor="white",
     message="<center>PURSUE</center>"
@@ -502,7 +498,7 @@ Megophrys.updateMissionCtrlBar = function()
 
   Megophrys.resistBtn = Geyser.Label:new({
     name="resistButton",
-    x="57.5%", y="4%",
+    x="57.5%", y="6%",
     width="7.5%", height="7.5%",
     fgColor="white",
     message="<center>RESIST</center>"
@@ -528,7 +524,7 @@ Megophrys.updateMissionCtrlBar = function()
 
   Megophrys.stopBtn = Geyser.Label:new({
     name="stopButton",
-    x="65%", y="4%",
+    x="65%", y="6%",
     width="7.5%", height="7.5%",
     fgColor="white",
     message="<center>STOP</center>"

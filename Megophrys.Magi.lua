@@ -70,12 +70,13 @@ end
 
 Megophrys.Magi.nextAttack = function()
   local Magi = Megophrys.Magi
+  local dualPrep = Magi.dualPrep
   local killStrat = Megophrys.killStrat
   local staffCasts = Magi.staffCasts
   local skipTorso = Magi.skipTorso
   local timefluxUp = Magi.timefluxUp
   local targetLimb = Megophrys.targetLimb
-  local targetWounds = Megophrys.targetWounds
+  local targetWounds = lb[target]
   local targetRebounding = Megophrys.targetRebounding
   local targetTransfixed = Magi.targetTransfixed
 
@@ -113,19 +114,36 @@ Megophrys.Magi.nextAttack = function()
       end
       Megophrys.targetHits = Megophrys.targetHits + 1
     else
+      local otherLimb = ''
       local targetTorso = false
       local limbIsPrepped = false
-      local limbIsUnderPrepped = false      -- 86-91%
+      local limbIsUnderPrepped = false          -- 84-91%
+      local otherLimbIsPrepped = false
+      local otherLlimbIsUnderPrepped = false    -- 84-91%
       local torsoIsPrepped = false
-      local torsoIsUnderPrepped = false     -- 86-91%
+      local torsoIsUnderPrepped = false         -- 84-91%
 
       if targetLimb then
         local targetLimbDmg = targetWounds[targetLimb ..' leg']
         if targetLimbDmg.dmg >= 91 then
           limbIsPrepped = true
           cecho('\n<gold>LIMB IS PREPPED!\n')
-        elseif targetLimbDmg.dmg >= 86 then
+        elseif targetLimbDmg.dmg >= 84 then
           limbIsUnderPrepped = true
+        end
+
+        if targetLimb == 'right' then
+          otherLimb = 'left'
+        else
+          otherLimb = 'right'
+        end
+
+        local otherLimbDmg = targetWounds[otherLimb ..' leg']
+        if otherLimbDmg.dmg >= 91 then
+          otherLimbIsPrepped = true
+          cecho('\n<gold>OTHER LIMB IS PREPPED!\n')
+        elseif otherLimbDmg.dmg >= 84 then
+          otherLimbIsUnderPrepped = true
         end
       end
 
@@ -134,13 +152,18 @@ Megophrys.Magi.nextAttack = function()
         if targetTorsoDmg.dmg >= 91 then
           torsoIsPrepped = true
           cecho('\n<gold>TORSO IS PREPPED!\n')
-        elseif targetTorsoDmg.dmg >= 86 then
+        elseif targetTorsoDmg.dmg >= 84 then
           torsoIsUnderPrepped = true
         end
       end
 
       if limbIsPrepped then
-        if not torsoIsPrepped and not skipTorso then
+        if not otherLimbIsPrepped and dualPrep then
+          -- switch legs
+          Megophrys.priorityLabel:echo('<center>Priority: LIMB 2 PREP</center>')
+          Magi.setElement('earth')
+          Megophrys.targetLimb = otherLimb ..' leg'
+        elseif not torsoIsPrepped and not skipTorso then
           -- work on prepping torso once limb is done
           Megophrys.priorityLabel:echo('<center>Priority: TORSO PREP</center>')
           Magi.setElement('earth')
@@ -159,29 +182,29 @@ Megophrys.Magi.nextAttack = function()
         end
       else
         Megophrys.priorityLabel:echo('<center>Priority: LIMB PREP</center>')
-        if (targetRebounding or (not targetTorso and limbIsUnderPrepped) or
-            (targetTorso and torsoIsUnderPrepped)) then
+        local useAirBending = (
+            targetRebounding or
+            (Megophrys.targetHits == 0) or  -- first hit in case of rebounding
+            (not targetTorso and limbIsUnderPrepped) or
+            (targetTorso and torsoIsUnderPrepped)
+        )
+        if useAirBending then
           Magi.setElement('air')
         else
-          if (Megophrys.targetHits or 0) < 1 then
-            Magi.setElement('air')
-          else
-            Magi.setElement('earth')
-          end
+          Magi.setElement('earth')
         end
       end
 
       local cmd = 'staffstrike '.. target ..' with '.. Magi.element
 
       if killStrat == 'pummel' then
-        local timeToFreeze = (limbIsPrepped and (skipTorso or torsoIsPrepped))
+        local timeToFreeze = (
+            limbIsPrepped and 
+            (skipTorso or torsoIsPrepped) and
+            (not dualPrep or otherLimbIsPrepped)
+        )
         if timeToFreeze and not Magi.targetMaybeFrozen then
           Magi.targetMaybeFrozen = true
-          sendAll('clearqueue all',
-                  ('setalias nextAttack staffstrike '.. target ..' with air '..
-                   targetLimb ..' leg / golem smash '.. target ..' '.. Magi.golemSmashTarget),
-                  'queue add eqbal nextAttack')
-          return
         else
           if Magi.targetFrozen then
             -- kill condition met: pummel to death
@@ -201,22 +224,23 @@ Megophrys.Magi.nextAttack = function()
             -- otherwise we're back to prepping limbs
             Magi.targetFrozen = true
             Magi.setElement('water')
-            if skipTorso then
-              sendAll('clearqueue all',
-                      'setalias nextAttack cast deepfreeze',
-                      'queue add eqbal nextAttack')
-            else
+            if dualPrep then
               sendAll('clearqueue all',
                       ('setalias nextAttack staffstrike '.. target ..' with '..
-                       Magi.element ..' torso / golem smash '..
+                       Magi.element ..' '.. otherLimb ..' leg / golem smash '..
                        target ..' '.. Magi.golemSmashTarget),
                       'queue add eqbal nextAttack',
                       'setalias nextAttack cast deepfreeze',
                       'queue add eqbal nextAttack')
               Magi.skipNextEq = true
+            else
+              sendAll('clearqueue all',
+                      'setalias nextAttack cast deepfreeze',
+                      'queue add eqbal nextAttack')
             end
             Magi.targetMaybeFrozen = false
             Megophrys.targetHits = 0
+            Magi.updatePrepGauges()
             return
           end
         end
@@ -287,8 +311,22 @@ Magi.setElement = function(element)
   end
 end
 
+Magi.toggleDualLegPrep = function()
+  Magi.dualPrep = not Magi.dualPrep
+
+  if Magi.dualPrep then
+    cecho('\n<cyan>Toggled to single-leg prep!\n')
+    setButtonStyleSheet('DualPrep', 'QWidget {color: grey}')
+  else
+    cecho('\n<cyan>Toggled to dual-leg prep!\n')
+    setButtonStyleSheet('DualPrep', 'QWidget {color: cyan}')
+  end
+
+  Magi.updatePrepGauges()
+end
+
 Magi.toggleGolemSmashTarget = function()
-  if Magi.golemSmashTarget == 'arms' then
+  if Magi.golemSmashTarget and Magi.golemSmashTarget == 'arms' then
     cecho('\n<cyan>Golem will smash legs!\n')
     setButtonStyleSheet('Arms', 'QWidget {color: grey}')
     Magi.golemSmashTarget = 'legs'
@@ -303,10 +341,10 @@ Magi.toggleSkipTorso = function()
   Magi.skipTorso = not Magi.skipTorso
 
   if Magi.skipTorso then
-    cecho('\n<cyan>Skipping torso! (Only prepping limb.)\n')
+    cecho('\n<cyan>Skipping torso! (Only prepping leg(s).)\n')
     setButtonStyleSheet('Torso', 'QWidget {color: grey}')
   else
-    cecho('\n<cyan>Prepping torso as well as '.. Megophrys.targetLimb ..' leg.\n')
+    cecho('\n<cyan>Prepping torso as well as leg(s).\n')
     setButtonStyleSheet('Torso', 'QWidget {color: cyan}')
   end
 
@@ -343,21 +381,42 @@ Magi.updatePrepGauges = function()
       width='150px', height='2%'
     })
   end
-  if not Magi.torsoGauge then
-    Magi.torsoGauge = Geyser.Gauge:new({
+  if not Magi.otherLimbGauge then
+    Magi.otherLimbGauge = Geyser.Gauge:new({
       name='torsoGauge',
       x='-915px', y='2%',
       width='150px', height='2%'
     })
   end
+  if not Magi.torsoGauge then
+    Magi.torsoGauge = Geyser.Gauge:new({
+      name='torsoGauge',
+      x='-915px', y='4%',
+      width='150px', height='2%'
+    })
+  end
   local targetLimb = Megophrys.targetLimb
-  local targetLimbWounds = Megophrys.targetWounds[targetLimb ..' leg']
-  local targetTorsoWounds = Megophrys.targetWounds.torso
+  local otherLimb = ''
+
+  if targetLimb == 'right' then
+    otherLimb = 'left'
+  else
+    otherLimb = 'right'
+  end
+
+  local targetLimbWounds = lb[target][targetLimb ..' leg']
+  local otherLimbWounds = lb[target][otherLimb ..' leg']
+  local targetTorsoWounds = lb[target].torso
   local limbLabel = '<center>'.. string.upper(targetLimb) ..' LEG</center>'
+  local otherLimbLabel = '<center>NONE</center>'
   local torsoLabel = '<center>NONE</center>'
+  if Magi.dualPrep then
+    otherLimbLabel = '<center>'.. string.upper(otherLimb) ..' LEG</center>'
+  end
   if not Magi.skipTorso then
     torsoLabel = '<center>TORSO</center>'
   end
   Magi.limbGauge:setValue(targetLimbWounds.dmg, 100, limbLabel)
+  Magi.otherLimbGauge:setValue(otherLimbWounds.dmg, 100, otherLimbLabel)
   Magi.torsoGauge:setValue(targetTorsoWounds.dmg, 100, torsoLabel)
 end
