@@ -15,7 +15,7 @@ Megophrys.fgColors = {
 -- adapted from Romaen's original list
 Megophrys.prioDefault = {
   -- 1
-  {"latched"},
+  {"latched", "sleeping", "prone"},
   -- 2
   {"aeon", "anorexia", "crushedthroat", 
    "calcifiedskull", "calcifiedtorso"},
@@ -65,7 +65,7 @@ Megophrys.prioDefault = {
   -- 19
   {"selarnia"},
   -- 20
-  {"kkractlebrand", "bound", "daeggerimpale", "impaled", "transfixation", "webbed", "prone", "sleeping"},
+  {"kkractlebrand", "bound", "daeggerimpale", "impaled", "transfixation", "webbed"},
 }
 
 Megophrys.setGuidance = function(mode)
@@ -93,15 +93,14 @@ Megophrys.setOpponentClass = function(cls)
   Megophrys.opponentClass = string.lower(tostring(cls))
 end
 
-Megophrys.autoAttack = function()
-  if not Megophrys.autoAttacking then
-    Megophrys.setGuidance('fight')
-    cecho('\n<cyan>Commencing auto-attack with '.. Megophrys.class ..'...\n')
+Megophrys.autoAttack = function(start)
+  Megophrys.setGuidance('fight')
+  cecho('\n<cyan>Commencing auto-attack with '.. Megophrys.class ..'...\n')
+  Megophrys[Megophrys.class].nextAttack()
+  if start then
     Megophrys[Megophrys.class].nextAttack()
-    Megophrys.priorityLabel:echo('<center>Priority: DAMAGE</center>')
-  else
-    cecho('\n<cyan>You\'re already attacking as fast as you can!\n')
   end
+  Megophrys.priorityLabel:echo('<center>Priority: DAMAGE</center>')
   Megophrys.updateMissionCtrlBar()
 end
 
@@ -118,6 +117,7 @@ Megophrys.autoEscape = function()
                               getRoomArea(gmcp.Room.Info.num)
                             ))
   Megophrys.escapeBlocked = false
+  Megophrys.escapeDelayed = false
 
   Megophrys.priorityLabel:echo('<center>Priority: FLEE</center>')
   Megophrys.updateMissionCtrlBar()
@@ -129,26 +129,21 @@ end
 Megophrys.autoResist = function()
   Megophrys.setGuidance('DieWithHonor')
   Megophrys.priorityLabel:echo('<center>Priority: HEAL</center>')
-
-  if Megophrys.shieldIsUp then
-    send('cast reflection at me')
-  else
-    send('golem return / golem barrier')
-  end
+  
+  wsys.keepup('shield', true)
+  wsys.keepup('reflections', true)
 end
 
 Megophrys.eStopAuto = function()
   if Megophrys.autoAttacking then
     cecho('\n<red>Emergency stop: No more auto-attacks.\n')
-    Megophrys.autoAttacking = false
+    Megophrys.stopAttack('Emergency stop lever')
   end
   if Megophrys.autoEscaping then
-    cecho('\n<red>Emergency stop: No more auto-flight.\n')
-    Megophrys.autoEscaping = false
+    Megophrys.stopEscape('Emergency stop lever')
   end
   if Megophrys.autoResisting then
-    cecho('\n<red>Emergency stop: No more auto-resist.\n')
-    Megophrys.autoResisting = false
+    Megophrys.stopResist('Emergency stop lever')
   end
   send('clearqueue all')
 
@@ -271,6 +266,10 @@ Megophrys.setTarget = function(t)
   cecho('\n<cyan>Target changed to '.. t ..'.')
   Megophrys.resetTargetWounds()
   
+  if Megophrys.killStrat ~= 'denizen' then
+    sendAll('unally '.. t, 'enemy '.. t)
+  end
+  
   -- set temp trigger to highlight the target string
   if hilite_trigger_id then killTrigger(hilite_trigger_id) end
   hilite_trigger_id = tempTrigger(t, function() 
@@ -321,6 +320,8 @@ end
 Megophrys.stopResist = function(reason)
   cecho('\n<red>'.. reason ..'. Disabling auto-resist.\n')
   Megophrys.autoResisting = false
+  wsys.unkeepup('shield', true)
+  wsys.unkeepup('reflections', true)
   send('diag')
   Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
   Megophrys.updateMissionCtrlBar()
@@ -407,10 +408,6 @@ Megophrys.updateBars = function()
   if not anyAffs then affTable = affTable ..'<li>N/A</li>' end
   affTable = affTable ..'</ul></center>'
   Megophrys.affTable:echo(affTable)
-
-  if currHealth > 0 and currHealth < 800 then
-    send('touch crystal / absorb energy')
-  end
 end
 
 Megophrys.updateMissionCtrlBar = function()
@@ -445,7 +442,7 @@ Megophrys.updateMissionCtrlBar = function()
       font-weight: bold;
     ]])
   end
-  Megophrys.atkBtn:setClickCallback("Megophrys.autoAttack")
+  Megophrys.atkBtn:setClickCallback("Megophrys.autoAttack", 1)
 
   Megophrys.fleeBtn = Geyser.Label:new({
     name="fleeButton",

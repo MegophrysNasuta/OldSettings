@@ -40,7 +40,7 @@ Megophrys.Magi.setMode = function()
     Magi.targetMaybeFrozen = false
     Megophrys.targetRebounding = false
     Megophrys.resetTargetWounds()
-    Magi.setElement('earth')
+    Magi.setElement('air')
     Magi.followUp = 'golem timeflux '.. target
 
     cecho('\n<cyan>Auto-attacks will be staffstrikes'..
@@ -48,6 +48,23 @@ Megophrys.Magi.setMode = function()
           '\nFollow up: '.. Magi.followUp ..
           '\nTarget is: '.. target ..
           '\n  on limb: '.. Megophrys.targetLimb)
+  elseif Megophrys.killStrat == 'fiyah' then
+    cecho('\n<cyan>Magi PvP (Fire) mode activated!')
+    setButtonStyleSheet('PvP', 'QWidget { color: cyan; }')
+
+    Magi.timefluxUp = false
+    Megophrys.targetTorso = false
+    Megophrys.targetRebounding = false
+    Megophrys.resetTargetWounds()
+    Magi.setElement('air')
+    Magi.followUp = 'golem timeflux '.. target
+
+    cecho('\n<cyan>Auto-attacks will be staffstrikes'..
+          '\nElement: '.. Magi.element ..
+          '\nFollow up: '.. Magi.followUp ..
+          '\nTarget is: '.. target ..
+          '\n  on limb: '.. Megophrys.targetLimb)
+    sendAll('setalias nextAction cast efreeti', 'queue add eqbal nextAction')
   end
 end
 
@@ -60,53 +77,68 @@ Megophrys.Magi.nextAttack = function()
   local targetLimb = Megophrys.targetLimb
   local targetWounds = Megophrys.targetWounds
   local targetRebounding = Megophrys.targetRebounding
-  local targetProne = Megophrys.targetProne
   local targetTransfixed = Magi.targetTransfixed
-  
+
   if killStrat == 'denizen' then
-    send('staffcast '.. staffCasts[Magi.element] ..' at '.. target ..
-         '/ golem squeeze '.. target)
+    sendAll('setalias nextAttack staffcast '.. staffCasts[Magi.element] ..' at '.. 
+            target ..'/ golem squeeze '.. target, 'queue add eqbal nextAttack')
   else
+    Magi.golemSmashTarget = 'arms'
     if timefluxUp then
-      Magi.followUp = 'golem smash '.. target .. ' legs'
+      if killStrat == 'fiyah' then
+        if Magi.infernoDown then
+          Magi.followUp = 'golem inferno'
+        else
+          Magi.followUp = 'golem scorch '.. target
+        end
+      else
+        Magi.followUp = 'golem smash '.. target .. ' '.. Magi.golemSmashTarget
+      end
     else
       Magi.followUp = 'golem timeflux '.. target
     end
-    
+
     if killStrat == 'raid' then
       if not Megophrys.Magi.targetTransfixed then
-        send('cast transfix at '.. target)
-      elseif (Megophrys.targetHits or 0) % 3 == 0 then
+        sendAll('setalias nextAttack cast transfix at '.. target,
+                'queue add eqbal nextAttack')
+      elseif (Megophrys.targetHits or 0) % 4 == 0 then
         Megophrys.targetHits = 1
         Megophrys.Magi.targetTransfixed = false
-        send('cast transfix at '.. target)
+        sendAll('setalias nextAttack cast transfix at '.. target,
+                'queue add eqbal nextAttack')
       else
-        send('staffcast '.. staffCasts[Magi.element] ..' at '.. target)
+        sendAll('setalias nextAttack staffcast '.. staffCasts[Magi.element] ..' at '.. target,
+                'queue add eqbal nextAttack')
       end
       Megophrys.targetHits = Megophrys.targetHits + 1
     else
       local targetTorso = false
       local limbIsPrepped = false
+      local limbIsUnderPrepped = false      -- 86-91%
       local torsoIsPrepped = false
-      
+      local torsoIsUnderPrepped = false     -- 86-91%
+
       if targetLimb then
         local targetLimbDmg = targetWounds[targetLimb ..' leg']
-        local avgLimbDmg = (targetLimbDmg.dmg / targetLimbDmg.trackedHits)
-        if (100 - targetLimbDmg.dmg) <= avgLimbDmg then
+        if targetLimbDmg.dmg >= 91 then
           limbIsPrepped = true
           cecho('\n<gold>LIMB IS PREPPED!\n')
+        elseif targetLimbDmg.dmg >= 86 then
+          limbIsUnderPrepped = true
         end
       end
-      
+
       if not skipTorso then
         local targetTorsoDmg = targetWounds.torso
-        local avgTorsoDmg = (targetTorsoDmg.dmg / targetTorsoDmg.trackedHits)
-        if (100 - targetTorsoDmg.dmg) <= avgTorsoDmg then
+        if targetTorsoDmg.dmg >= 91 then
           torsoIsPrepped = true
           cecho('\n<gold>TORSO IS PREPPED!\n')
+        elseif targetTorsoDmg.dmg >= 86 then
+          torsoIsUnderPrepped = true
         end
       end
-      
+
       if limbIsPrepped then
         if not torsoIsPrepped and not skipTorso then
           -- work on prepping torso once limb is done
@@ -115,41 +147,78 @@ Megophrys.Magi.nextAttack = function()
           targetTorso = true
         else
           -- otherwise go back to limb with air to prone them
-          -- staying prone unlocks next step of attack sequence (targetProne)
-          Megophrys.priorityLabel:echo('<center>Priority: FREEZE</center>')
+          if killStrat == 'pummel' then
+            Megophrys.priorityLabel:echo('<center>Priority: FREEZE</center>')
+          elseif killStrat == 'fiyah' then
+            Megophrys.priorityLabel:echo('<center>Priority: DEHYDRATE</center>')
+            Magi.followUp = 'golem dehydrate '.. target
+          end
           Magi.setElement('air')
           targetTorso = false
         end
       else
         Megophrys.priorityLabel:echo('<center>Priority: LIMB PREP</center>')
-        if targetRebounding then
+        if (targetRebounding or (not targetTorso and limbIsUnderPrepped) or
+            (targetTorso and torsoIsUnderPrepped)) then
           Magi.setElement('air')
         else
-          Magi.setElement('earth')
+          if (Megophrys.targetHits or 0) < 1 then
+            Magi.setElement('air')
+          else
+            Magi.setElement('earth')
+          end
         end
       end
-      
+
       local cmd = 'staffstrike '.. target ..' with '.. Magi.element
-      
-      if targetProne and not Magi.targetMaybeFrozen then   -- spring freezing trap
-        Magi.targetMaybeFrozen = true
-        sendAll('clearqueue all', 'cast deepfreeze')
-      else
-        if Magi.targetFrozen then
-          -- kill condition met: pummel to death
-          Megophrys.priorityLabel:echo('<center>Priority: PUMMEL</center>')
-          Magi.setElement('water')
+
+      if killStrat == 'pummel' then
+        local timeToFreeze = (limbIsPrepped and (skipTorso or torsoIsPrepped))
+        if timeToFreeze and not Magi.targetMaybeFrozen then
+          Magi.targetMaybeFrozen = true
+          Magi.skipNextEq = true
+          sendAll('clearqueue all',
+                  ('setalias nextAttack staffstrike '.. target ..' with air '..
+                   targetLimb ..' leg / golem smash '.. target ..' '.. Magi.golemSmashTarget),
+                  'queue add eqbal nextAttack',
+                  'setalias nextAttack cast deepfreeze',
+                  'queue add eqbal nextAttack')
+        else
+          if Magi.targetFrozen then
+            -- kill condition met: pummel to death
+            Megophrys.priorityLabel:echo('<center>Priority: PUMMEL</center>')
+            Magi.setElement('water')
+            cmd = 'staffstrike '.. target ..' with '.. Magi.element ..' torso'
+            Magi.followUp = 'golem pummel '.. target
+          elseif targetMaybeFrozen then
+            -- we've just done deepfreeze so we're going to hypothermia and see if it sticks
+            -- if it sticks we make kill condition
+            -- otherwise we're back to prepping limbs
+            Magi.targetFrozen = true
+            Magi.setElement('water')
+            cmd = 'staffstrike '.. target ..' with '.. Magi.element ..' torso'
+            Magi.followUp = 'golem hypothermia '.. target
+            Magi.targetMaybeFrozen = false
+          else
+            if targetLimb and not targetTorso then
+              cmd = cmd .. ' ' .. targetLimb .. ' leg'
+            else
+              cmd = cmd .. ' torso'
+            end
+          end
+        end
+      elseif killStrat == 'fiyah' then
+        if Magi.targetDehydrated then
+          Megophrys.priorityLabel:echo('<center>Priority: DESTROY/center>')
+          Magi.setElement('fire')
           cmd = 'staffstrike '.. target ..' with '.. Magi.element ..' torso'
-          Magi.followUp = 'golem pummel '.. target
-        elseif targetMaybeFrozen then
-          -- we've just done deepfreeze so we're going to hypothermia and see if it sticks
-          -- if it sticks we make kill condition
-          -- otherwise we're back to prepping limbs
-          Magi.targetFrozen = true
-          Magi.setElement('water')
-          cmd = 'staffstrike '.. target ..' with '.. Magi.element ..' torso'
-          Magi.followUp = 'golem hypothermia '.. target
-          Magi.targetMaybeFrozen = false
+          if (Megophrys.targetHits or 0) % 3 == 0 then
+            Magi.followUp = 'golem destroy '.. target
+          elseif (Megophrys.targetHits or 0) % 3 == 1 then
+            Magi.followUp = 'golem conflagrate '.. target
+          else
+            Magi.followUp = 'golem destabilise heat / golem scorch '.. target
+          end
         else
           if targetLimb and not targetTorso then
             cmd = cmd .. ' ' .. targetLimb .. ' leg'
@@ -157,11 +226,24 @@ Megophrys.Magi.nextAttack = function()
             cmd = cmd .. ' torso'
           end
         end
-    
+      end
+
+      if killStrat == 'pummel' or killStrat == 'fiyah' then
         sendAll(
           'clearqueue all',
-          cmd .. '/' .. Magi.followUp
+          'setalias nextAttack '.. cmd .. '/' .. Magi.followUp,
+          'queue add eqbal nextAttack'
         )
+        Megophrys.targetHits = Megophrys.targetHits + 1
+
+        -- reset limb damage if we hit L2 break
+        if targetLimbDmg.dmg >= 100 then
+          targetLimbDmg.dmg = 0
+        end
+
+        if targetTorsoDmg.dmg >= 100 then
+          targetTorsoDmg.dmg = 0
+        end
       end
     end
   end
