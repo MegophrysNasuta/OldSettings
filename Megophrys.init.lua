@@ -246,7 +246,7 @@ Megophrys.setMode = function(mode)
     wsys.keepup('mass', true)
     wsys.keepup('rebounding', true)
   end
-  
+
   Megophrys.priorityLabel = nil
   Megophrys.priorityLabel = Geyser.Label:new({
     name='priorityLabel',
@@ -265,11 +265,12 @@ Megophrys.setTarget = function(t)
   send('st '.. t)
   cecho('\n<cyan>Target changed to '.. t ..'.')
   Megophrys.resetTargetWounds()
-  
+  Megophrys.resetCuringPrios()
+
   if Megophrys.killStrat ~= 'denizen' then
     sendAll('unally '.. t, 'enemy '.. t)
   end
-  
+
   -- set temp trigger to highlight the target string
   if hilite_trigger_id then killTrigger(hilite_trigger_id) end
   hilite_trigger_id = tempTrigger(t, function() 
