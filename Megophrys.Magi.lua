@@ -287,6 +287,18 @@ Magi.setElement = function(element)
   end
 end
 
+Magi.toggleGolemSmashTarget = function()
+  if Magi.golemSmashTarget == 'arms' then
+    cecho('\n<cyan>Golem will smash legs!\n')
+    setButtonStyleSheet('Arms', 'QWidget {color: grey}')
+    Magi.golemSmashTarget = 'legs'
+  else
+    cecho('\n<cyan>Golem will smash arms!\n')
+    setButtonStyleSheet('Arms', 'QWidget {color: cyan}')
+    Magi.golemSmashTarget = 'arms'
+  end
+end
+
 Magi.toggleSkipTorso = function()
   Magi.skipTorso = not Magi.skipTorso
 
