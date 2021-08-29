@@ -72,23 +72,24 @@ Megophrys.Magi.nextAttack = function()
   local Magi = Megophrys.Magi
   local killStrat = Megophrys.killStrat
   local staffCasts = Magi.staffCasts
+  local setNextAttack = 'setalias nextAttack stand / wield staff / '
 
   if killStrat == 'denizen' then
-    sendAll('setalias nextAttack staffcast '.. staffCasts[Magi.element] ..' at '.. 
+    sendAll(setNextAttack .. staffCasts[Magi.element] ..' at '.. 
             target ..'/ golem squeeze '.. target, 'queue addclear eqbal nextAttack')
   else
     Magi.setGolemStrat()
     if killStrat == 'raid' then
       if not Megophrys.Magi.targetTransfixed then
-        sendAll('setalias nextAttack cast transfix at '.. target,
+        sendAll(setNextAttack ..'cast transfix at '.. target,
                 'queue addclear eqbal nextAttack')
       elseif (Megophrys.targetHits or 0) % 4 == 0 then
         Megophrys.targetHits = 1
         Megophrys.Magi.targetTransfixed = false
-        sendAll('setalias nextAttack cast transfix at '.. target,
+        sendAll(setNextAttack ..'cast transfix at '.. target,
                 'queue addclear eqbal nextAttack')
       else
-        sendAll('setalias nextAttack staffcast '.. staffCasts[Magi.element] ..' at '.. target,
+        sendAll(setNextAttack ..'staffcast '.. staffCasts[Magi.element] ..' at '.. target,
                 'queue addclear eqbal nextAttack')
       end
       Megophrys.targetHits = Megophrys.targetHits + 1
@@ -139,7 +140,7 @@ Megophrys.Magi.nextAttack = function()
           cmd = cmd .. ' torso'
         end
         sendAll(
-          'setalias nextAttack '.. cmd .. '/' .. Magi.followUp,
+          setNextAttack .. cmd .. '/' .. Magi.followUp,
           'queue addclear eqbal nextAttack'
         )
         Megophrys.targetHits = Megophrys.targetHits + 1
