@@ -74,22 +74,23 @@ Megophrys.Magi.nextAttack = function()
   local staffCasts = Magi.staffCasts
   local setNextAttack = 'setalias nextAttack stand / wield staff / '
 
+  local staffSpell = staffCasts[Magi.element]
   if killStrat == 'denizen' then
-    sendAll(setNextAttack .. staffCasts[Magi.element] ..' at '.. 
-            target ..'/ golem squeeze '.. target, 'queue addclear eqbal nextAttack')
+    sendAll(setNextAttack ..'staffcast '.. staffSpell ..' at &tar / golem squeeze &tar',
+            'queue addclear eqbal nextAttack')
   else
     Magi.setGolemStrat()
     if killStrat == 'raid' then
       if not Megophrys.Magi.targetTransfixed then
-        sendAll(setNextAttack ..'cast transfix at '.. target,
+        sendAll(setNextAttack ..'cast transfix at &tar',
                 'queue addclear eqbal nextAttack')
       elseif (Megophrys.targetHits or 0) % 4 == 0 then
         Megophrys.targetHits = 1
         Megophrys.Magi.targetTransfixed = false
-        sendAll(setNextAttack ..'cast transfix at '.. target,
+        sendAll(setNextAttack ..'cast transfix at &tar',
                 'queue addclear eqbal nextAttack')
       else
-        sendAll(setNextAttack ..'staffcast '.. staffCasts[Magi.element] ..' at '.. target,
+        sendAll(setNextAttack ..'staffcast '.. staffSpell ..' at &tar',
                 'queue addclear eqbal nextAttack')
       end
       Megophrys.targetHits = Megophrys.targetHits + 1
@@ -97,7 +98,7 @@ Megophrys.Magi.nextAttack = function()
       local prepStatus = Magi.nextLimbPrepAttack()
       local targetLimb = prepStatus.targetLimb
       local targetTorso = prepStatus.targetTorso
-      local cmd = 'staffstrike '.. target ..' with '.. Magi.element
+      local cmd = 'staffstrike &tar with '.. Magi.element
 
       if killStrat == 'pummel' then
         if prepStatus.ready and not Magi.targetMaybeFrozen then
@@ -108,12 +109,12 @@ Megophrys.Magi.nextAttack = function()
           -- kill condition met: pummel to death
           Megophrys.priorityLabel:echo('<center>Priority: PUMMEL</center>')
           Magi.setElement('water')
-          cmd = 'staffstrike '.. target ..' with '.. Magi.element
+          cmd = 'staffstrike &tar with '.. Magi.element
           if not Magi.targetFrozen then
-            Magi.followUp = 'golem hypothermia '.. target
+            Magi.followUp = 'golem hypothermia &tar'
             Magi.targetFrozen = true
           else
-            Magi.followUp = 'golem pummel '.. target
+            Magi.followUp = 'golem pummel &tar'
           end
           targetTorso = true
         end
@@ -121,13 +122,13 @@ Megophrys.Magi.nextAttack = function()
         if Magi.targetDehydrated then
           Megophrys.priorityLabel:echo('<center>Priority: DESTROY/center>')
           Magi.setElement('fire')
-          cmd = 'staffstrike '.. target ..' with '.. Magi.element
+          cmd = 'staffstrike &tar with '.. Magi.element
           if (Megophrys.targetHits or 0) % 3 == 0 then
-            Magi.followUp = 'golem destroy '.. target
+            Magi.followUp = 'golem destroy &tar'
           elseif (Megophrys.targetHits or 0) % 3 == 1 then
-            Magi.followUp = 'golem conflagrate '.. target
+            Magi.followUp = 'golem conflagrate &tar'
           else
-            Magi.followUp = 'golem destabilise heat / golem scorch '.. target
+            Magi.followUp = 'golem destabilise heat / golem scorch &tar'
           end
           targetTorso = true
         end
