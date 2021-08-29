@@ -201,10 +201,10 @@ Megophrys.Magi.nextAttack = function()
             limbIsBroken and
             (skipTorso or torsoIsPrepped)
         )
-        if prepConditionsMet then
-          if targetRebounding then
-            Magi.setElement('air')
-          elseif killStrat == 'pummel' then
+        if useAirBending then
+          Magi.setElement('air')
+        elseif prepConditionsMet then
+          if killStrat == 'pummel' then
             Magi.setElement('water')
           elseif killStrat == 'fiyah' then
             Magi.setElement('fire')
@@ -215,8 +215,6 @@ Megophrys.Magi.nextAttack = function()
           else
             targetTorso = true
           end
-        elseif useAirBending then
-          Magi.setElement('air')
         else
           Magi.setElement('earth')
         end
@@ -234,22 +232,19 @@ Megophrys.Magi.nextAttack = function()
           if not Magi.targetMaybeFrozen then
             sendAll('clearqueue all', 'cast deepfreeze')
             Magi.targetMaybeFrozen = true
-            Megophrys.targetHits = 0
             return
-          elseif Magi.targetFrozen then
+          else
             -- kill condition met: pummel to death
             Megophrys.priorityLabel:echo('<center>Priority: PUMMEL</center>')
             Magi.setElement('water')
             cmd = 'staffstrike '.. target ..' with '.. Magi.element
-            if (Megophrys.targetHits or 0) == 0 then
+            if not Magi.targetFrozen then
+              Magi.targetFrozen = true
               Magi.followUp = 'golem hypothermia '.. target
             else
               Magi.followUp = 'golem pummel '.. target
             end
             targetTorso = true
-          else
-            -- UGH the kill trap failed and we're back to prepping legs
-            Megophrys.stopAttack('KILL CONDITION FAILED')
           end
         end
       elseif killStrat == 'fiyah' then
