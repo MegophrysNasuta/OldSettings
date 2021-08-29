@@ -70,14 +70,8 @@ end
 
 Megophrys.Magi.nextAttack = function()
   local Magi = Megophrys.Magi
-  local dualPrep = Magi.dualPrep
   local killStrat = Megophrys.killStrat
   local staffCasts = Magi.staffCasts
-  local skipTorso = Magi.skipTorso
-  local timefluxUp = Magi.timefluxUp
-  local targetLimb = Megophrys.targetLimb
-  local targetRebounding = Megophrys.targetRebounding
-  local targetTransfixed = Magi.targetTransfixed
 
   if killStrat == 'denizen' then
     sendAll('setalias nextAttack staffcast '.. staffCasts[Magi.element] ..' at '.. 
@@ -100,8 +94,8 @@ Megophrys.Magi.nextAttack = function()
       Megophrys.targetHits = Megophrys.targetHits + 1
     else
       local prepStatus = Magi.nextLimbPrepAttack()
-      targetLimb = prepStatus.targetLimb
-      targetTorso = prepStatus.targetTorso
+      local targetLimb = prepStatus.targetLimb
+      local targetTorso = prepStatus.targetTorso
       local cmd = 'staffstrike '.. target ..' with '.. Magi.element
 
       if killStrat == 'pummel' then
@@ -238,7 +232,7 @@ Magi.nextLimbPrepAttack = function()
   else
     Megophrys.priorityLabel:echo('<center>Priority: LIMB PREP</center>')
     local useAirBending = (
-        targetRebounding or
+        Megophrys.targetRebounding or
         (Megophrys.targetHits == 0) or  -- first hit in case of rebounding
         (not targetTorso and limbIsUnderPrepped) or
         (targetTorso and torsoIsUnderPrepped)
@@ -305,7 +299,7 @@ end
 
 Magi.setGolemStrat = function()
   Magi.golemSmashTarget = 'arms'
-  if timefluxUp then
+  if Magi.timefluxUp then
     if killStrat == 'fiyah' then
       if Magi.infernoDown then
         Magi.followUp = 'golem inferno'
