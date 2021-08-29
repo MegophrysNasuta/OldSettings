@@ -72,7 +72,7 @@ Megophrys.Magi.nextAttack = function()
   local Magi = Megophrys.Magi
   local killStrat = Megophrys.killStrat
   local staffCasts = Magi.staffCasts
-  local setNextAttack = 'setalias nextAttack stand / wield staff / '
+  local setNextAttack = 'setalias nextAttack stand / wield staff217211 / '
 
   local staffSpell = staffCasts[Magi.element]
   if killStrat == 'denizen' then
