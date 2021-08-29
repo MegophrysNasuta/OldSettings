@@ -116,8 +116,10 @@ Megophrys.Magi.nextAttack = function()
     else
       local otherLimb = ''
       local targetTorso = false
+      local limbIsBroken = false
       local limbIsPrepped = false
       local limbIsUnderPrepped = false          -- 84-91%
+      local otherLimbIsBroken = false
       local otherLimbIsPrepped = false
       local otherLlimbIsUnderPrepped = false    -- 84-91%
       local torsoIsPrepped = false
@@ -125,7 +127,10 @@ Megophrys.Magi.nextAttack = function()
 
       if targetLimb then
         local targetLimbDmg = (targetWounds[targetLimb ..' leg'] or 0)
-        if targetLimbDmg >= 91 then
+        if targetLimbDmg >= 100 then
+          limbIsBroken = true
+          cecho('\n<gold>LIMB IS BROKEN!\n')
+        elseif targetLimbDmg >= 91 then
           limbIsPrepped = true
           cecho('\n<gold>LIMB IS PREPPED!\n')
         elseif targetLimbDmg >= 84 then
@@ -139,7 +144,10 @@ Megophrys.Magi.nextAttack = function()
         end
 
         local otherLimbDmg = (targetWounds[otherLimb ..' leg'] or 0)
-        if otherLimbDmg >= 91 then
+        if otherLimbDmg >= 100 then
+          otherLimbIsBroken = true
+          cecho('\n<gold>OTHER LIMB IS BROKEN!\n')
+        elseif otherLimbDmg >= 91 then
           otherLimbIsPrepped = true
           cecho('\n<gold>OTHER LIMB IS PREPPED!\n')
         elseif otherLimbDmg >= 84 then
@@ -157,6 +165,7 @@ Megophrys.Magi.nextAttack = function()
         end
       end
 
+      local prepConditionsMet = false
       if limbIsPrepped then
         if not otherLimbIsPrepped and dualPrep then
           -- switch legs
@@ -188,7 +197,25 @@ Megophrys.Magi.nextAttack = function()
             (not targetTorso and limbIsUnderPrepped) or
             (targetTorso and torsoIsUnderPrepped)
         )
-        if useAirBending then
+        prepConditionsMet = (
+            limbIsBroken and
+            (skipTorso or torsoIsPrepped)
+        )
+        if prepConditionsMet then
+          if targetRebounding then
+            Magi.setElement('air')
+          elseif killStrat == 'pummel' then
+            Magi.setElement('water')
+          elseif killStrat == 'fiyah' then
+            Magi.setElement('fire')
+          end
+
+          if dualPrep then
+            targetLimb = otherLimb ..' leg'
+          else
+            targetTorso = true
+          end
+        elseif useAirBending then
           Magi.setElement('air')
         else
           Magi.setElement('earth')
@@ -198,15 +225,18 @@ Megophrys.Magi.nextAttack = function()
       local cmd = 'staffstrike '.. target ..' with '.. Magi.element
 
       if killStrat == 'pummel' then
-        local timeToFreeze = (
-            limbIsPrepped and 
+        local killPreConditionsMet = (
+            limbIsBroken and
             (skipTorso or torsoIsPrepped) and
-            (not dualPrep or otherLimbIsPrepped)
+            (not dualPrep or otherLimbIsBroken)
         )
-        if timeToFreeze and not Magi.targetMaybeFrozen then
-          Magi.targetMaybeFrozen = true
-        else
-          if Magi.targetFrozen then
+        if killPreConditionsMet then
+          if not Magi.targetMaybeFrozen then
+            sendAll('clearqueue all', 'cast deepfreeze')
+            Magi.targetMaybeFrozen = true
+            Megophrys.targetHits = 0
+            return
+          elseif Magi.targetFrozen then
             -- kill condition met: pummel to death
             Megophrys.priorityLabel:echo('<center>Priority: PUMMEL</center>')
             Magi.setElement('water')
@@ -217,30 +247,9 @@ Megophrys.Magi.nextAttack = function()
               Magi.followUp = 'golem pummel '.. target
             end
             targetTorso = true
-          elseif targetMaybeFrozen then
-            -- we've hopefully tripped our limb prep and proned, so now we
-            -- either need to trip torso and deepfreeze or just deepfreeze
-            -- if it sticks we hypothermia and make kill condition
-            -- otherwise we're back to prepping limbs
-            Magi.targetFrozen = true
-            Magi.setElement('water')
-            if dualPrep then
-              sendAll('clearqueue all',
-                      ('setalias nextAttack staffstrike '.. target ..' with '..
-                       Magi.element ..' '.. otherLimb ..' leg / golem smash '..
-                       target ..' '.. Magi.golemSmashTarget),
-                      'queue add eqbal nextAttack',
-                      'setalias nextAttack cast deepfreeze',
-                      'queue add eqbal nextAttack')
-              Magi.skipNextEq = true
-            else
-              sendAll('clearqueue all',
-                      'setalias nextAttack cast deepfreeze',
-                      'queue add eqbal nextAttack')
-            end
-            Magi.targetMaybeFrozen = false
-            Megophrys.targetHits = 0
-            return
+          else
+            -- UGH the kill trap failed and we're back to prepping legs
+            Megophrys.stopAttack('KILL CONDITION FAILED')
           end
         end
       elseif killStrat == 'fiyah' then
