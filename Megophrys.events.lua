@@ -61,8 +61,8 @@ Megophrys.getCharInfo = function(charName)
                               '\n\tDenizens killed: %s\t\tAdventurers killed: %s\n\n',
                               charData.fullname,
                               charData.level,
-                              charData.class.lower().title(),
-                              charData.city.lower().title(),
+                              string.title(string.lower(charData.class)),
+                              string.title(string.lower(charData.city)),
                               charData.mob_kills,
                               charData.player_kills)
     cecho('\n<cyan>'.. ans ..'\n')

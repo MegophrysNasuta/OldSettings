@@ -18,14 +18,14 @@ Megophrys.Magi.setMode = function()
   Magi.resetModeButtonStyles()
   if Megophrys.killStrat == 'denizen' then
     setButtonStyleSheet('Hunt', 'QWidget { color: cyan; }')
-    Magi.followUp = 'golem squeeze '.. target
+    Magi.followUp = 'golem squeeze &tar'
     cecho('\n<cyan>Auto-attacks will be staffcasts'..
           '\nElement: '.. Magi.element ..
           '\nFollow up: '.. Magi.followUp ..
           '\nTarget is: '.. target ..'\n')
   elseif Megophrys.killStrat == 'raid' then
     setButtonStyleSheet('Raid', 'QWidget { color: cyan; }')
-    Magi.followUp = 'golem timeflux '.. target
+    Magi.followUp = 'golem timeflux &tar'
     cecho('\n<cyan>Auto-attacks will be staffcasts'..
           '\nElement: '.. Magi.element ..
           '\nFollow up: '.. Magi.followUp ..
@@ -41,7 +41,7 @@ Megophrys.Magi.setMode = function()
     Megophrys.targetRebounding = false
     Megophrys.resetTargetWounds()
     Magi.setElement('air')
-    Magi.followUp = 'golem timeflux '.. target
+    Magi.followUp = 'golem timeflux &tar'
 
     cecho('\n<cyan>Auto-attacks will be staffstrikes'..
           '\nElement: '.. Magi.element ..
@@ -287,21 +287,21 @@ Magi.resetModeButtonStyles = function()
 end
 
 Magi.setElement = function(element)
-  local elem = string.lower(tostring(element))
+  local elem = tostring(element):lower()
   if elem == 'fire' or elem == 'water' or elem == 'air' or elem == 'earth' then
     Magi.element = elem
     Magi.resetElementButtonStyles()
-    setButtonStyleSheet(elem.lower().title(), 'QWidget { color: cyan; }')
+    setButtonStyleSheet(elem:title(), 'QWidget { color: cyan; }')
     cecho('\n<cyan>Element set to: '.. Magi.element ..'\n')
   else
-    cecho('\n<red>Unknown element: '.. element ..' (ignored)\n')
+    cecho('\n<red>Unknown element: '.. elem ..' (ignored)\n')
   end
 end
 
 Magi.setGolemStrat = function()
   Magi.golemSmashTarget = 'arms'
   if Magi.timefluxUp then
-    if killStrat == 'fiyah' then
+    if Megophrys.killStrat == 'fiyah' then
       if Magi.infernoDown then
         Magi.followUp = 'golem inferno'
       else

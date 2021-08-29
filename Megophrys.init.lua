@@ -256,13 +256,13 @@ end
 
 Megophrys.setTarget = function(t)
   if t == 'none' then target = 'none' else
-    target = t.lower().title()
+    target = string.title(string.lower(tostring(t)))
   end
   send('st '.. target)
   cecho('\n<cyan>Target changed to '.. target ..'.')
   Megophrys.resetTargetWounds()
 
-  if target ~= 'none' then
+  if target ~= 'none' and Megophrys.killStrat ~= 'raid' then
     Megophrys.resetCuringPrios()
   end
 
