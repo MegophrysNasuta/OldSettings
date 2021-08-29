@@ -417,12 +417,9 @@ Magi.updatePrepGauges = function()
   end
   local limbLabel = '<center>'.. string.upper(targetLimb) ..' LEG</center>'
   local otherLimbLabel = '<center>NONE</center>'
-  local torsoLabel = '<center>NONE</center>'
+  local torsoLabel = '<center>TORSO</center>'
   if Magi.dualPrep then
     otherLimbLabel = '<center>'.. string.upper(otherLimb) ..' LEG</center>'
-  end
-  if not Magi.skipTorso then
-    torsoLabel = '<center>TORSO</center>'
   end
   Magi.limbGauge:setValue(targetLimbWounds, 100, limbLabel)
   Magi.otherLimbGauge:setValue(otherLimbWounds, 100, otherLimbLabel)
