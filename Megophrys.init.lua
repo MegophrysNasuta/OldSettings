@@ -256,7 +256,7 @@ end
 
 Megophrys.setTarget = function(t)
   if t == 'none' then target = 'none' else
-    target = Megophrys.Util.titleCase(t)
+    target = t.lower().title()
   end
   send('st '.. target)
   cecho('\n<cyan>Target changed to '.. target ..'.')

@@ -95,10 +95,6 @@ Megophrys.hoard = function()
   )
 end
 
-Megophrys.Util.titleCase = function(str)
-  return string.upper(string.sub(str, 1, 1)) .. string.lower(string.sub(str, 2, -1))
-end
-
 Megophrys.Util.hiliteSelection = function(fg_color)
   fg(fg_color)
   deselect()

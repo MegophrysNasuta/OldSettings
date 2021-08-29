@@ -64,7 +64,7 @@ Megophrys.Magi.setMode = function()
           '\nFollow up: '.. Magi.followUp ..
           '\nTarget is: '.. target ..
           '\n  on limb: '.. Megophrys.targetLimb)
-    sendAll('setalias nextAction cast efreeti', 'queue add eqbal nextAction')
+    sendAll('setalias nextAction cast efreeti', 'queue addclear eqbal nextAction')
   end
 end
 
@@ -75,21 +75,21 @@ Megophrys.Magi.nextAttack = function()
 
   if killStrat == 'denizen' then
     sendAll('setalias nextAttack staffcast '.. staffCasts[Magi.element] ..' at '.. 
-            target ..'/ golem squeeze '.. target, 'queue add eqbal nextAttack')
+            target ..'/ golem squeeze '.. target, 'queue addclear eqbal nextAttack')
   else
     Magi.setGolemStrat()
     if killStrat == 'raid' then
       if not Megophrys.Magi.targetTransfixed then
         sendAll('setalias nextAttack cast transfix at '.. target,
-                'queue add eqbal nextAttack')
+                'queue addclear eqbal nextAttack')
       elseif (Megophrys.targetHits or 0) % 4 == 0 then
         Megophrys.targetHits = 1
         Megophrys.Magi.targetTransfixed = false
         sendAll('setalias nextAttack cast transfix at '.. target,
-                'queue add eqbal nextAttack')
+                'queue addclear eqbal nextAttack')
       else
         sendAll('setalias nextAttack staffcast '.. staffCasts[Magi.element] ..' at '.. target,
-                'queue add eqbal nextAttack')
+                'queue addclear eqbal nextAttack')
       end
       Megophrys.targetHits = Megophrys.targetHits + 1
     else
@@ -139,9 +139,8 @@ Megophrys.Magi.nextAttack = function()
           cmd = cmd .. ' torso'
         end
         sendAll(
-          'clearqueue all',
           'setalias nextAttack '.. cmd .. '/' .. Magi.followUp,
-          'queue add eqbal nextAttack'
+          'queue addclear eqbal nextAttack'
         )
         Megophrys.targetHits = Megophrys.targetHits + 1
       end
@@ -290,7 +289,7 @@ Magi.setElement = function(element)
   if elem == 'fire' or elem == 'water' or elem == 'air' or elem == 'earth' then
     Magi.element = elem
     Magi.resetElementButtonStyles()
-    setButtonStyleSheet(Megophrys.Util.titleCase(elem), 'QWidget { color: cyan; }')
+    setButtonStyleSheet(elem.lower().title(), 'QWidget { color: cyan; }')
     cecho('\n<cyan>Element set to: '.. Magi.element ..'\n')
   else
     cecho('\n<red>Unknown element: '.. element ..' (ignored)\n')
