@@ -146,6 +146,7 @@ Megophrys.eStopAuto = function()
     Megophrys.stopResist('Emergency stop lever')
   end
   send('clearqueue all')
+  mmp.stop()
 
   Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
   Megophrys.updateMissionCtrlBar()
@@ -442,7 +443,7 @@ Megophrys.updateMissionCtrlBar = function()
       font-weight: bold;
     ]])
   end
-  Megophrys.atkBtn:setClickCallback("Megophrys.autoAttack", 1)
+  Megophrys.atkBtn:setClickCallback("Megophrys.autoAttack")
 
   Megophrys.fleeBtn = Geyser.Label:new({
     name="fleeButton",

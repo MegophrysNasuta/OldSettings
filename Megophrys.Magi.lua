@@ -101,9 +101,10 @@ Megophrys.Magi.nextAttack = function()
       local cmd = 'staffstrike &tar with '.. Magi.element
 
       if killStrat == 'pummel' then
-        if prepStatus.ready and not Magi.targetMaybeFrozen then
+        if Megophrys.killPreConditionsMet and not Magi.targetMaybeFrozen then
           sendAll('clearqueue all', 'cast deepfreeze')
           Magi.targetMaybeFrozen = true
+          Megophrys.killPreConditionsMet = false
           return
         elseif Magi.targetMaybeFrozen then
           -- kill condition met: pummel to death
@@ -235,7 +236,9 @@ Magi.nextLimbPrepAttack = function()
     local useAirBending = (
         Megophrys.targetRebounding or
         (Megophrys.targetHits == 0) or  -- first hit in case of rebounding
+        (dualPrep and otherLimbIsPrepped) or
         (not targetTorso and limbIsUnderPrepped) or
+        (not targetTorso and otherLimbIsUnderPrepped) or
         (targetTorso and torsoIsUnderPrepped)
     )
     prepConditionsMet = (
@@ -261,11 +264,21 @@ Magi.nextLimbPrepAttack = function()
     end
   end
 
-  local killPreConditionsMet = (
-      limbIsBroken and
-      (skipTorso or torsoIsPrepped) and
-      (not dualPrep or otherLimbIsBroken)
-  )
+  local killPreConditionsMet = false
+  if dualPrep then
+    killPreConditionsMet = otherLimbIsBroken
+  else
+    killPreConditionsMet = limbIsBroken
+  end
+
+  if not skipTorso then
+    killPreConditionsMet = killPreConditionsMet and torsoIsPrepped
+  end
+
+  if not Megophrys.killPreConditionsMet and killPreConditionsMet then
+    Megophrys.killPreConditionsMet = true
+  end
+
   return {
     ready = killPreconditionsMet,
     targetLimb = targetLimb,
