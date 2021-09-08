@@ -1,34 +1,31 @@
 Megophrys.doWhileSelfish = function(func)
-  sendAll('curing defences off', 'generosity')
-  tempTimer(.75, function()
-    func()
-    sendAll('selfishness', 'curing defences on')
-  end)
+  cmd = func()
+  send('generosity / '.. cmd ..' / selfishness')
 end
 
 Megophrys.dropWhileSelfish = function(item)
-  Megophrys.doWhileSelfish(function() send('drop '.. item) end)
+  Megophrys.doWhileSelfish(function() return 'drop '.. item end)
 end
 
 Megophrys.giveWhileSelfish = function(amt, item, tgt)
   Megophrys.doWhileSelfish(function()
     if item == 'sovereigns' then
-      send('get'.. amt ..' sovereigns from pack')
+      return 'get'.. amt ..' sovereigns from pack'
     end
     if amt then
-      send('give'.. amt ..' '.. item .. ' to ' .. tgt)
+      return 'give'.. amt ..' '.. item .. ' to ' .. tgt
     else
-      send('give '.. item .. ' to ' .. tgt)
+      return 'give '.. item .. ' to ' .. tgt
     end
   end)
 end
 
 Megophrys.offerWhileSelfish = function(corpse)
-  Megophrys.doWhileSelfish(function() send('offer '.. (corpse or 'corpses')) end)
+  Megophrys.doWhileSelfish(function() return 'offer '.. (corpse or 'corpses') end)
 end
 
 Megophrys.sellWhileSelfish = function(item, merchant)
-  Megophrys.doWhileSelfish(function() send('sell '.. item ..' to '.. merchant) end)
+  Megophrys.doWhileSelfish(function() return 'sell '.. item ..' to '.. merchant end)
 end
 
 Megophrys.highlightPanicRoom = function()

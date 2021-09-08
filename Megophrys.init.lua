@@ -93,15 +93,12 @@ Megophrys.setOpponentClass = function(cls)
   Megophrys.opponentClass = string.lower(tostring(cls))
 end
 
-Megophrys.autoAttack = function(start)
+Megophrys.autoAttack = function()
   Megophrys.setGuidance('fight')
   cecho('\n<cyan>Commencing auto-attack with '.. Megophrys.class ..'...\n')
-  Megophrys[Megophrys.class].nextAttack()
-  if start then
-    Megophrys[Megophrys.class].nextAttack()
-  end
   Megophrys.priorityLabel:echo('<center>Priority: DAMAGE</center>')
   Megophrys.updateMissionCtrlBar()
+  Megophrys[Megophrys.class].nextAttack()
 end
 
 Megophrys.autoEscape = function()
@@ -203,6 +200,7 @@ Megophrys.resetTargetWounds = function()
   cecho('\t<cyan>Resetting target wounds...\n')
   Megophrys.targetHits = 0
   lb.resetAll(target)
+  Megophrys.limbHasBroken = false
   Megophrys.Magi.updatePrepGauges()
 end
 
@@ -264,16 +262,16 @@ Megophrys.setTarget = function(t)
   Megophrys.resetTargetWounds()
 
   if target ~= 'none' and Megophrys.killStrat ~= 'raid' then
-    Megophrys.resetCuringPrios()
+    send('curing priority reset')
   end
 
-  if Megophrys.killStrat ~= 'denizen' then
+  if Megophrys.killStrat ~= 'denizen' and target ~= 'none' then
     sendAll('unally '.. target, 'enemy '.. target)
   end
 
   -- set temp trigger to highlight the target string
   if hilite_trigger_id then killTrigger(hilite_trigger_id) end
-  hilite_trigger_id = tempTrigger(t, function() 
+  hilite_trigger_id = tempTrigger(target, function() 
     idx = 1
     done = false
     while not done do
@@ -304,6 +302,7 @@ end
 
 Megophrys.stopAttack = function(reason)
   cecho('\n<cyan>'.. reason ..'. Disabling auto-attack.\n')
+  killTimer(Megophrys.autoAttackTimerId)
   Megophrys.autoAttacking = false
   send('diag')
   Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')

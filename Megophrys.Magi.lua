@@ -16,6 +16,7 @@ Magi.staffCasts = {
 Megophrys.Magi.setMode = function()
   local Magi = Megophrys.Magi
   Magi.resetModeButtonStyles()
+  Megophrys.timeUntilNextAttack = 1.6
   if Megophrys.killStrat == 'denizen' then
     setButtonStyleSheet('Hunt', 'QWidget { color: cyan; }')
     Magi.followUp = 'golem squeeze &tar'
@@ -31,6 +32,7 @@ Megophrys.Magi.setMode = function()
           '\nFollow up: '.. Magi.followUp ..
           '\nTarget is: '.. target ..'\n')
   elseif Megophrys.killStrat == 'pummel' then
+    Megophrys.timeUntilNextAttack = 2.0
     cecho('\n<cyan>Magi PvP (Ice) mode activated!')
     setButtonStyleSheet('PvP', 'QWidget { color: cyan; }')
 
@@ -40,7 +42,7 @@ Megophrys.Magi.setMode = function()
     Magi.targetMaybeFrozen = false
     Megophrys.targetRebounding = false
     Megophrys.resetTargetWounds()
-    Magi.setElement('air')
+    Magi.setElement('air', 'first strike')
     Magi.followUp = 'golem timeflux &tar'
 
     cecho('\n<cyan>Auto-attacks will be staffstrikes'..
@@ -49,6 +51,7 @@ Megophrys.Magi.setMode = function()
           '\nTarget is: '.. target ..
           '\n  on limb: '.. Megophrys.targetLimb)
   elseif Megophrys.killStrat == 'fiyah' then
+    Megophrys.timeUntilNextAttack = 2.0
     cecho('\n<cyan>Magi PvP (Fire) mode activated!')
     setButtonStyleSheet('PvP', 'QWidget { color: cyan; }')
 
@@ -56,7 +59,7 @@ Megophrys.Magi.setMode = function()
     Megophrys.targetTorso = false
     Megophrys.targetRebounding = false
     Megophrys.resetTargetWounds()
-    Magi.setElement('air')
+    Magi.setElement('air', 'first strike')
     Magi.followUp = 'golem timeflux '.. target
 
     cecho('\n<cyan>Auto-attacks will be staffstrikes'..
@@ -109,7 +112,7 @@ Megophrys.Magi.nextAttack = function()
         elseif Magi.targetMaybeFrozen then
           -- kill condition met: pummel to death
           Megophrys.priorityLabel:echo('<center>Priority: PUMMEL</center>')
-          Magi.setElement('water')
+          Magi.setElement('water', 'freezing')
           cmd = 'staffstrike &tar with '.. Magi.element
           if not Magi.targetFrozen then
             Magi.followUp = 'golem hypothermia &tar'
@@ -122,7 +125,7 @@ Megophrys.Magi.nextAttack = function()
       elseif killStrat == 'fiyah' then
         if Magi.targetDehydrated then
           Megophrys.priorityLabel:echo('<center>Priority: DESTROY/center>')
-          Magi.setElement('fire')
+          Magi.setElement('fire', 'burning')
           cmd = 'staffstrike &tar with '.. Magi.element
           if (Megophrys.targetHits or 0) % 3 == 0 then
             Magi.followUp = 'golem destroy &tar'
@@ -149,9 +152,19 @@ Megophrys.Magi.nextAttack = function()
       end
     end
   end
+
+  Megophrys.autoAttackTimerId = tempTimer(Megophrys.timeUntilNextAttack,
+                                          Magi.nextAttack)
 end
 
 Magi.nextLimbPrepAttack = function()
+  if Megophrys.killPreConditionsMet then
+    return {
+      targetLimb = Megophrys.targetLimb,
+      targetTorso = true
+    }
+  end
+
   local otherLimb = ''
   local targetTorso = false
   local limbIsBroken = false
@@ -160,6 +173,7 @@ Magi.nextLimbPrepAttack = function()
   local otherLimbIsBroken = false
   local otherLimbIsPrepped = false
   local otherLlimbIsUnderPrepped = false    -- 84-91%
+  local torsoIsBroken = false
   local torsoIsPrepped = false
   local torsoIsUnderPrepped = false         -- 84-91%
   local targetWounds = lb[target].hits
@@ -199,7 +213,10 @@ Magi.nextLimbPrepAttack = function()
 
   if not skipTorso then
     local targetTorsoDmg = (targetWounds.torso or 0)
-    if targetTorsoDmg >= 91 then
+    if targetTorsoDmg >= 100 then
+      torsoIsBroken = true
+      cecho('\n<gold>TORSO IS BROKEN!\n')
+    elseif targetTorsoDmg >= 91 then
       torsoIsPrepped = true
       cecho('\n<gold>TORSO IS PREPPED!\n')
     elseif targetTorsoDmg >= 84 then
@@ -207,80 +224,72 @@ Magi.nextLimbPrepAttack = function()
     end
   end
 
-  local prepConditionsMet = false
   if limbIsPrepped then
-    if not otherLimbIsPrepped and dualPrep then
+    if Megophrys.targetRebounding then
+      Magi.setElement('air', 'rebounding')
+    else
+      Magi.setElement('earth', 'limb prep')
+    end
+
+    if dualPrep and not otherLimbIsPrepped then
       -- switch legs
       Megophrys.priorityLabel:echo('<center>Priority: LIMB 2 PREP</center>')
-      Magi.setElement('earth')
-      targetLimb = otherLimb ..' leg'
-    elseif not torsoIsPrepped and not skipTorso then
+      targetLimb = otherLimb
+    elseif not skipTorso and not torsoIsPrepped then
       -- work on prepping torso once limb is done
       Megophrys.priorityLabel:echo('<center>Priority: TORSO PREP</center>')
-      Magi.setElement('earth')
       targetTorso = true
     else
       -- otherwise go back to limb with air to prone them
-      if killStrat == 'pummel' then
-        Megophrys.priorityLabel:echo('<center>Priority: FREEZE</center>')
-      elseif killStrat == 'fiyah' then
-        Megophrys.priorityLabel:echo('<center>Priority: DEHYDRATE</center>')
+      Megophrys.priorityLabel:echo('<center>Priority: L2 BREAKS</center>')
+      if killStrat == 'fiyah' then
         Magi.followUp = 'golem dehydrate '.. target
         Megophrys.targetHits = 0
       end
-      Magi.setElement('air')
+      Magi.setElement('air', 'proning')
       targetTorso = false
+    end
+  elseif limbIsBroken or Megophrys.limbHasBroken then
+    Megophrys.limbHasBroken = true
+    Megophrys.killPreConditionsMet = true
+
+    if Megophrys.targetProne then
+      if killStrat == 'pummel' then
+        Magi.setElement('water', 'freezing')
+      elseif killStrat == 'fiyah' then
+        Magi.setElement('fire', 'burning')
+      end
+    else
+      Magi.setElement('air', 'proning')
+    end
+
+    if dualPrep and not otherLimbIsBroken then
+      targetLimb = otherLimb
+      Megophrys.killPreConditionsMet = false
+    elseif not skipTorso and not torsoIsBroken then
+      targetTorso = true
+      Megophrys.killPreConditionsMet = false
     end
   else
     Megophrys.priorityLabel:echo('<center>Priority: LIMB PREP</center>')
-    local useAirBending = (
+    local airBendForRebound = (
         Megophrys.targetRebounding or
-        (Megophrys.targetHits == 0) or  -- first hit in case of rebounding
-        (dualPrep and otherLimbIsPrepped) or
-        (not targetTorso and limbIsUnderPrepped) or
-        (not targetTorso and otherLimbIsUnderPrepped) or
-        (targetTorso and torsoIsUnderPrepped)
+        (Megophrys.targetHits == 0)  -- first hit in case of rebounding
     )
-    prepConditionsMet = (
-        limbIsBroken and
-        (skipTorso or torsoIsPrepped)
+    local airBendForUnderPrep = (
+        (targetTorso and torsoIsUnderPrepped) or
+        (not targetTorso and (limbIsUnderPrepped or otherLimbIsUnderPrepped))
     )
-    if useAirBending then
-      Magi.setElement('air')
-    elseif prepConditionsMet then
-      if killStrat == 'pummel' then
-        Magi.setElement('water')
-      elseif killStrat == 'fiyah' then
-        Magi.setElement('fire')
-      end
-
-      if dualPrep then
-        targetLimb = otherLimb ..' leg'
-      else
-        targetTorso = true
-      end
+    if airBendForRebound then
+      Magi.setElement('air', 'rebounding')
+    elseif airBendForUnderPrep then
+      Magi.setElement('air', 'underprep')
     else
-      Magi.setElement('earth')
+      Magi.setElement('earth', 'limb prep')
     end
   end
 
-  local killPreConditionsMet = false
-  if dualPrep then
-    killPreConditionsMet = otherLimbIsBroken
-  else
-    killPreConditionsMet = limbIsBroken
-  end
-
-  if not skipTorso then
-    killPreConditionsMet = killPreConditionsMet and torsoIsPrepped
-  end
-
-  if not Megophrys.killPreConditionsMet and killPreConditionsMet then
-    Megophrys.killPreConditionsMet = true
-  end
-
   return {
-    ready = killPreconditionsMet,
     targetLimb = targetLimb,
     targetTorso = targetTorso
   }
@@ -299,13 +308,17 @@ Magi.resetModeButtonStyles = function()
   setButtonStyleSheet('Raid', 'QWidget { color: white; }')
 end
 
-Magi.setElement = function(element)
+Magi.setElement = function(element, reason)
   local elem = tostring(element):lower()
   if elem == 'fire' or elem == 'water' or elem == 'air' or elem == 'earth' then
     Magi.element = elem
     Magi.resetElementButtonStyles()
     setButtonStyleSheet(elem:title(), 'QWidget { color: cyan; }')
-    cecho('\n<cyan>Element set to: '.. Magi.element ..'\n')
+    if reason then
+      cecho('\n<cyan>Element set to: '.. Magi.element ..' ('.. reason ..')\n')
+    else
+      cecho('\n<cyan>Element set to: '.. Magi.element ..'\n')
+    end
   else
     cecho('\n<red>Unknown element: '.. elem ..' (ignored)\n')
   end
