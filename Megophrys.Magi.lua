@@ -1,7 +1,6 @@
 Megophrys.Magi = (Megophrys.Magi or {})
 local Magi = Megophrys.Magi
 Magi.element = (Magi.element or 'air')
-Magi.skipTorso = (Magi.skipTorso or false)
 Magi.skipTransfix = (Magi.skipTransfix or false)
 Magi.targetTransfixed = (Magi.targetTransfixed or false)
 Magi.timefluxUp = (Magi.timefluxUp or false)
@@ -13,28 +12,107 @@ Magi.staffCasts = {
   water = 'horripilation',
 }
 
+Megophrys.Magi.onConnect = function()
+  sendAll('simultaneity', 'bind all', 'fortify all')
+end
+
+Megophrys.Magi.makeClassToolbars = function()
+  Megophrys.magiToolbar = Geyser.Container:new({
+    name='magi_toolbar',
+    x=200, y=0, width=150, height=16
+  })
+
+  Magi.elemLabel = Geyser.Label:new({
+    name='elem_label',
+    x=0, y=0, width=80, height=20,
+    bgColor='black',
+    message='Element:'
+  }, Megophrys.magiToolbar)
+  Magi.earthButton = Geyser.Label:new({
+    name='earth_button',
+    x=80, y=0, width=30, height=20,
+    bgColor='black'
+  }, Megophrys.magiToolbar)
+  Magi.fireButton = Geyser.Label:new({
+    name='fire_button',
+    x=110, y=0, width=30, height=20,
+    bgColor='black'
+  }, Megophrys.magiToolbar)
+  Magi.airButton = Geyser.Label:new({
+    name='air_button',
+    x=140, y=0, width=30, height=20,
+    bgColor='black'
+  }, Megophrys.magiToolbar)
+  Magi.waterButton = Geyser.Label:new({
+    name='water_button',
+    x=170, y=0, width=30, height=20,
+    bgColor='black'
+  }, Megophrys.magiToolbar)
+
+  Magi.nextGolemMoveLabel = Geyser.Label:new({
+    name='next_golem_move_label',
+    x=0, y=20, width=70, height=20,
+    bgColor='black',
+    message='Golem will:'
+  }, Megophrys.magiToolbar)
+  Magi.nextGolemMoveButton = Geyser.Label:new({
+    name='next_golem_move',
+    x=70, y=20, width=130, height=20,
+    bgColor='black'
+  }, Megophrys.magiToolbar)
+
+  Magi.golemSmashLabel = Geyser.Label:new({
+    name='golem_smash_label',
+    x=0, y=40, width=70, height=20,
+    bgColor='black',
+    message='Smashing:'
+  }, Megophrys.magiToolbar)
+  Magi.golemSmashButton = Geyser.Label:new({
+    name='golem_smash_move',
+    x=70, y=40, width=130, height=20,
+    bgColor='black'
+  }, Megophrys.magiToolbar)
+end
+
 Megophrys.Magi.setMode = function()
   local Magi = Megophrys.Magi
-  Magi.resetModeButtonStyles()
-  Megophrys.timeUntilNextAttack = 1.6
-  if Megophrys.killStrat == 'denizen' then
-    setButtonStyleSheet('Hunt', 'QWidget { color: cyan; }')
+  local killStrat = Megophrys.killStrat
+
+  Megophrys.specialMoveButton:echo(
+    'Embed Focus',
+    Megophrys.fgColors[killStrat],
+    'c'
+  )
+
+  Megophrys.timeUntilNextAttack = 1.93
+  if killStrat == 'denizen' then
+    Megophrys.nextMoveButton:echo('Staffcast', Megophrys.fgColors[killStrat], 'c')
+    Magi.nextGolemMoveButton:echo('Squeeze', Megophrys.fgColors[killStrat], 'c')
+    Magi.golemSmashButton:echo('N/A', 'grey', 'c')
+    Magi.setElement('air')
     Magi.followUp = 'golem squeeze &tar'
     cecho('\n<cyan>Auto-attacks will be staffcasts'..
           '\nElement: '.. Magi.element ..
           '\nFollow up: '.. Magi.followUp ..
           '\nTarget is: '.. target ..'\n')
-  elseif Megophrys.killStrat == 'raid' then
-    setButtonStyleSheet('Raid', 'QWidget { color: cyan; }')
+  elseif killStrat == 'raid' then
+    Magi.setElement('earth')
+    if Magi.skipTransfix then
+      Megophrys.nextMoveButton:echo('Staffcast', Megophrys.fgColors[killStrat], 'c')
+    else
+      Megophrys.nextMoveButton:echo('Transfix', Megophrys.fgColors[killStrat], 'c')
+    end
+    Magi.nextGolemMoveButton:echo('Timeflux', Megophrys.fgColors[killStrat], 'c')
     Magi.followUp = 'golem timeflux &tar'
     cecho('\n<cyan>Auto-attacks will be staffcasts'..
           '\nElement: '.. Magi.element ..
           '\nFollow up: '.. Magi.followUp ..
           '\nTarget is: '.. target ..'\n')
-  elseif Megophrys.killStrat == 'pummel' then
-    Megophrys.timeUntilNextAttack = 2.0
+  elseif killStrat == 'pummel' then
+    Megophrys.nextMoveButton:echo('Staffstrike', Megophrys.fgColors[killStrat], 'c')
+    Magi.nextGolemMoveButton:echo('Timeflux', Megophrys.fgColors[killStrat], 'c')
+    Megophrys.timeUntilNextAttack = 2.33
     cecho('\n<cyan>Magi PvP (Ice) mode activated!')
-    setButtonStyleSheet('PvP', 'QWidget { color: cyan; }')
 
     Magi.timefluxUp = false
     Megophrys.targetTorso = false
@@ -50,10 +128,11 @@ Megophrys.Magi.setMode = function()
           '\nFollow up: '.. Magi.followUp ..
           '\nTarget is: '.. target ..
           '\n  on limb: '.. Megophrys.targetLimb)
-  elseif Megophrys.killStrat == 'fiyah' then
-    Megophrys.timeUntilNextAttack = 2.0
+  elseif killStrat == 'fiyah' then
+    Megophrys.nextMoveButton:echo('Staffstrike', Megophrys.fgColors[killStrat], 'c')
+    Magi.nextGolemMoveButton:echo('Timeflux', Megophrys.fgColors[killStrat], 'c')
+    Megophrys.timeUntilNextAttack = 2.33
     cecho('\n<cyan>Magi PvP (Fire) mode activated!')
-    setButtonStyleSheet('PvP', 'QWidget { color: cyan; }')
 
     Magi.timefluxUp = false
     Megophrys.targetTorso = false
@@ -69,7 +148,31 @@ Megophrys.Magi.setMode = function()
           '\n  on limb: '.. Megophrys.targetLimb)
     sendAll('setalias nextAction cast efreeti', 'queue addclear eqbal nextAction')
   end
+
+  if killStrat ~= 'denizen' then Magi.setGolemStrat() end
 end
+
+Megophrys.Magi.subMode = function(n)
+  if n == 1 then
+    Magi.setElement('earth')
+  elseif n == 2 then
+    Magi.setElement('fire')
+  elseif n == 3 then
+    Magi.setElement('air')
+  elseif n == 4 then
+    Magi.setElement('water')
+  else
+    error('Bad sub mode: '.. n ..'!')
+  end
+end
+
+Megophrys.Magi.doSpecial = function() send('embed focus') end
+
+Megophrys.Magi.toggleOne = Magi.toggleSkipTransfix
+Megophrys.Magi.toggleTwo = Megophrys.toggleDualPrep
+Megophrys.Magi.toggleThree = Megophrys.toggleTargetLimb
+Megophrys.Magi.toggleFour = Megophrys.toggleSkipTorso
+Megophrys.Magi.toggleFive = Magi.toggleGolemSmashTarget
 
 Megophrys.Magi.nextAttack = function()
   local Magi = Megophrys.Magi
@@ -79,20 +182,24 @@ Megophrys.Magi.nextAttack = function()
 
   local staffSpell = staffCasts[Magi.element]
   if killStrat == 'denizen' then
+    Megophrys.nextMoveButton:echo('Staffcast', Megophrys.fgColors[killStrat], 'c')
     sendAll(setNextAttack ..'staffcast '.. staffSpell ..' at &tar / golem squeeze &tar',
             'queue addclear eqbal nextAttack')
   else
     Magi.setGolemStrat()
     if killStrat == 'raid' then
       if not Megophrys.Magi.targetTransfixed then
+        Megophrys.nextMoveButton:echo('Transfix', Megophrys.fgColors[killStrat], 'c')
         sendAll(setNextAttack ..'cast transfix at &tar',
                 'queue addclear eqbal nextAttack')
       elseif (Megophrys.targetHits or 0) % 4 == 0 then
         Megophrys.targetHits = 1
         Megophrys.Magi.targetTransfixed = false
+        Megophrys.nextMoveButton:echo('Transfix', Megophrys.fgColors[killStrat], 'c')
         sendAll(setNextAttack ..'cast transfix at &tar',
                 'queue addclear eqbal nextAttack')
       else
+        Megophrys.nextMoveButton:echo('Staffcast', Megophrys.fgColors[killStrat], 'c')
         sendAll(setNextAttack ..'staffcast '.. staffSpell ..' at &tar',
                 'queue addclear eqbal nextAttack')
       end
@@ -102,9 +209,11 @@ Megophrys.Magi.nextAttack = function()
       local targetLimb = prepStatus.targetLimb
       local targetTorso = prepStatus.targetTorso
       local cmd = 'staffstrike &tar with '.. Magi.element
+      Megophrys.nextMoveButton:echo('Staffstrike', Megophrys.fgColors[killStrat], 'c')
 
       if killStrat == 'pummel' then
         if Megophrys.killPreConditionsMet and not Magi.targetMaybeFrozen then
+          Megophrys.nextMoveButton:echo('Deepfreeze', Megophrys.fgColors[killStrat], 'c')
           sendAll('clearqueue all', 'cast deepfreeze')
           Magi.targetMaybeFrozen = true
           Megophrys.killPreConditionsMet = false
@@ -115,9 +224,11 @@ Megophrys.Magi.nextAttack = function()
           Magi.setElement('water', 'freezing')
           cmd = 'staffstrike &tar with '.. Magi.element
           if not Magi.targetFrozen then
+            Megophrys.nextMoveButton:echo('Hypothermia', Megophrys.fgColors[killStrat], 'c')
             Magi.followUp = 'golem hypothermia &tar'
             Magi.targetFrozen = true
           else
+            Megophrys.nextMoveButton:echo('Pummel', Megophrys.fgColors[killStrat], 'c')
             Magi.followUp = 'golem pummel &tar'
           end
           targetTorso = true
@@ -128,10 +239,13 @@ Megophrys.Magi.nextAttack = function()
           Magi.setElement('fire', 'burning')
           cmd = 'staffstrike &tar with '.. Magi.element
           if (Megophrys.targetHits or 0) % 3 == 0 then
+            Megophrys.nextMoveButton:echo('Try Destroy', Megophrys.fgColors[killStrat], 'c')
             Magi.followUp = 'golem destroy &tar'
           elseif (Megophrys.targetHits or 0) % 3 == 1 then
+            Megophrys.nextMoveButton:echo('Conflagrate', Megophrys.fgColors[killStrat], 'c')
             Magi.followUp = 'golem conflagrate &tar'
           else
+            Megophrys.nextMoveButton:echo('Heat / Scorch', Megophrys.fgColors[killStrat], 'c')
             Magi.followUp = 'golem destabilise heat / golem scorch &tar'
           end
           targetTorso = true
@@ -178,8 +292,8 @@ Magi.nextLimbPrepAttack = function()
   local torsoIsUnderPrepped = false         -- 84-91%
   local targetWounds = lb[target].hits
   local targetLimb = Megophrys.targetLimb
-  local skipTorso = Megophrys.Magi.skipTorso
-  local dualPrep = Megophrys.Magi.dualPrep
+  local skipTorso = Megophrys.skipTorso
+  local dualPrep = Megophrys.dualPrep
 
   if targetLimb then
     local targetLimbDmg = (targetWounds[targetLimb ..' leg'] or 0)
@@ -296,159 +410,88 @@ Magi.nextLimbPrepAttack = function()
 end
 
 Magi.resetElementButtonStyles = function()
-  setButtonStyleSheet('Earth', 'QWidget { color: white; }')
-  setButtonStyleSheet('Air', 'QWidget { color: white; }')
-  setButtonStyleSheet('Fire', 'QWidget { color: white; }')
-  setButtonStyleSheet('Water', 'QWidget { color: white; }')
-end
-
-Magi.resetModeButtonStyles = function()
-  setButtonStyleSheet('Hunt', 'QWidget { color: white; }')
-  setButtonStyleSheet('PvP', 'QWidget { color: white; }')
-  setButtonStyleSheet('Raid', 'QWidget { color: white; }')
+  Magi.earthButton:echo('Ea', 'white', 'c')
+  Magi.fireButton:echo('Fi', 'white', 'c')
+  Magi.airButton:echo('Ai', 'white', 'c')
+  Magi.waterButton:echo('Wa', 'white', 'c')
 end
 
 Magi.setElement = function(element, reason)
   local elem = tostring(element):lower()
-  if elem == 'fire' or elem == 'water' or elem == 'air' or elem == 'earth' then
-    Magi.element = elem
-    Magi.resetElementButtonStyles()
-    setButtonStyleSheet(elem:title(), 'QWidget { color: cyan; }')
-    if reason then
-      cecho('\n<cyan>Element set to: '.. Magi.element ..' ('.. reason ..')\n')
-    else
-      cecho('\n<cyan>Element set to: '.. Magi.element ..'\n')
-    end
+
+  if elem == 'earth' then
+    button = Magi.earthButton
+  elseif elem == 'fire' then
+    button = Magi.fireButton
+  elseif elem == 'air' then
+    button = Magi.airButton
+  elseif elem == 'water' then
+    button = Magi.waterButton
   else
     cecho('\n<red>Unknown element: '.. elem ..' (ignored)\n')
+  end
+
+  Magi.element = elem
+  Magi.resetElementButtonStyles()
+  button:echo(string.title(string.sub(elem, 1, 2)), Megophrys.fgColors[Megophrys.killStrat], 'c')
+
+  if reason then
+    cecho('\n<cyan>Element set to: '.. Magi.element ..' ('.. reason ..')\n')
+  else
+    cecho('\n<cyan>Element set to: '.. Magi.element ..'\n')
   end
 end
 
 Magi.setGolemStrat = function()
   Magi.golemSmashTarget = 'arms'
+  Magi.golemSmashButton:echo('Arms', Megophrys.fgColors[Megophrys.killStrat], 'c')
   if Magi.timefluxUp then
     if Megophrys.killStrat == 'fiyah' then
       if Magi.infernoDown then
         Magi.followUp = 'golem inferno'
+        Magi.nextGolemMoveButton:echo('Inferno', Megophrys.fgColors[killStrat], 'c')
       else
         Magi.followUp = 'golem scorch '.. target
+        Magi.nextGolemMoveButton:echo('Scorch', Megophrys.fgColors[killStrat], 'c')
       end
     else
       Magi.followUp = 'golem smash '.. target .. ' '.. Magi.golemSmashTarget
+      Magi.nextGolemMoveButton:echo('Smash', Megophrys.fgColors[killStrat], 'c')
     end
   else
     Magi.followUp = 'golem timeflux '.. target
+    Magi.nextGolemMoveButton:echo('Timeflux', Megophrys.fgColors[killStrat], 'c')
   end
-end
-
-Magi.toggleDualLegPrep = function()
-  Magi.dualPrep = not Magi.dualPrep
-
-  if Magi.dualPrep then
-    cecho('\n<cyan>Toggled to dual-leg prep!\n')
-    setButtonStyleSheet('DualPrep', 'QWidget {color: cyan}')
-  else
-    cecho('\n<cyan>Toggled to single-leg prep!\n')
-    setButtonStyleSheet('DualPrep', 'QWidget {color: grey}')
-  end
-
-  Magi.updatePrepGauges()
 end
 
 Magi.toggleGolemSmashTarget = function()
+  local killStrat = Megophrys.killStrat
   if Magi.golemSmashTarget and Magi.golemSmashTarget == 'arms' then
     cecho('\n<cyan>Golem will smash legs!\n')
-    setButtonStyleSheet('Arms', 'QWidget {color: grey}')
+    Magi.golemSmashButton:echo('Legs', Megophrys.fgColors[killStrat], 'c')
     Magi.golemSmashTarget = 'legs'
   else
     cecho('\n<cyan>Golem will smash arms!\n')
-    setButtonStyleSheet('Arms', 'QWidget {color: cyan}')
+    Magi.golemSmashButton:echo('Arms', Megophrys.fgColors[killStrat], 'c')
     Magi.golemSmashTarget = 'arms'
   end
 end
 
-Magi.toggleSkipTorso = function()
-  Magi.skipTorso = not Magi.skipTorso
-
-  if Magi.skipTorso then
-    cecho('\n<cyan>Skipping torso! (Only prepping leg(s).)\n')
-    setButtonStyleSheet('Torso', 'QWidget {color: grey}')
-  else
-    cecho('\n<cyan>Prepping torso as well as leg(s).\n')
-    setButtonStyleSheet('Torso', 'QWidget {color: cyan}')
-  end
-
-  Magi.updatePrepGauges()
-end
-
 Magi.toggleSkipTransfix = function()
+  local killStrat = Megophrys.killStrat
   Magi.skipTransfix = not Magi.skipTransfix
+
+  if Megophrys.killStrat == 'raid' then
+    if Magi.skipTransfix then
+      Megophrys.nextMoveButton:echo('Staffcast', Megophrys.fgColors[killStrat], 'c')
+    else
+      Megophrys.nextMoveButton:echo('Transfix', Megophrys.fgColors[killStrat], 'c')
+    end
+  end
 
   if Magi.skipTransfix then
     cecho('\n<cyan>Skipping transfix! (Only doing damage.)\n')
-    setButtonStyleSheet('Transfix', 'QWidget {color: grey}')
   else
     cecho('\n<cyan>Adding transfix to raid rotation.\n')
-    setButtonStyleSheet('Transfix', 'QWidget {color: cyan}')
   end
-end
-
-Megophrys.toggleTargetLimb = function()
-  if Megophrys.targetLimb == 'right' then
-    Megophrys.targetLimb = 'left'
-  else
-    Megophrys.targetLimb = 'right'
-  end
-  cecho('\n<cyan>Targetting '.. Megophrys.targetLimb ..' leg.\n')
-  Magi.updatePrepGauges()
-end
-
-Magi.updatePrepGauges = function()
-  if not Magi.limbGauge then
-    Magi.limbGauge = Geyser.Gauge:new({
-      name='limbGauge',
-      x='-915px', y=0,
-      width='150px', height='2%'
-    })
-  end
-  if not Magi.otherLimbGauge then
-    Magi.otherLimbGauge = Geyser.Gauge:new({
-      name='otherLimbGauge',
-      x='-915px', y='2%',
-      width='150px', height='2%'
-    })
-  end
-  if not Magi.torsoGauge then
-    Magi.torsoGauge = Geyser.Gauge:new({
-      name='torsoGauge',
-      x='-915px', y='4%',
-      width='150px', height='2%'
-    })
-  end
-  local targetLimb = Megophrys.targetLimb
-  local otherLimb = ''
-
-  if targetLimb == 'right' then
-    otherLimb = 'left'
-  else
-    otherLimb = 'right'
-  end
-
-  local targetLimbWounds = 0
-  local otherLimbWounds = 0
-  local targetTorsoWounds = 0
-  if lb[target] then
-    targetLimbWounds = lb[target].hits[targetLimb ..' leg']
-    otherLimbWounds = lb[target].hits[otherLimb ..' leg']
-    targetTorsoWounds = lb[target].hits.torso
-  end
-  local limbLabel = '<center>'.. string.upper(targetLimb) ..' LEG</center>'
-  local otherLimbLabel = '<center>NONE</center>'
-  local torsoLabel = '<center>TORSO</center>'
-  if Magi.dualPrep then
-    otherLimbLabel = '<center>'.. string.upper(otherLimb) ..' LEG</center>'
-  end
-  Magi.limbGauge:setValue(targetLimbWounds, 100, limbLabel)
-  Magi.otherLimbGauge:setValue(otherLimbWounds, 100, otherLimbLabel)
-  Magi.torsoGauge:setValue(targetTorsoWounds, 100, torsoLabel)
 end

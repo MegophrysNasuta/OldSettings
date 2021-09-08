@@ -1,6 +1,5 @@
 Megophrys = (Megophrys or {})
-Megophrys.class = (Megophrys.class or 'Magi')
-Megophrys.locationsFled = (Megophrys.locationsFled or 0)
+Megophrys.class = nil
 Megophrys.shieldIsUp = (Megophrys.shieldIsUp or false)
 Megophrys.targetLimb = (Megophrys.targetLimb or 'left')
 Megophrys.targetRebounding = (Megophrys.targetRebounding or false)
@@ -10,6 +9,7 @@ Megophrys.fgColors = {
   denizen = 'cyan',
   raid = 'orange',
   pummel = 'yellow',
+  fiyah = 'yellow',
 }
 
 -- adapted from Romaen's original list
@@ -67,6 +67,53 @@ Megophrys.prioDefault = {
   -- 20
   {"kkractlebrand", "bound", "daeggerimpale", "impaled", "transfixation", "webbed"},
 }
+
+Megophrys.makeClassToolbars = function()
+  Megophrys.modeToolbar = Geyser.Container:new({
+    name='mode_switches',
+    x=0, y=0, width=200, height=16
+  })
+
+  if Megophrys.magiToolbar then
+    Megophrys.magiToolbar:hide()
+  end
+
+  Megophrys.modeLabel = Geyser.Label:new({
+    name='mode_label',
+    x=0, y=0, width=70, height=20,
+    bgColor='black',
+    message='AI Mode:'
+  }, Megophrys.modeToolbar)
+  Megophrys.modeButton = Geyser.Label:new({
+    name='current_mode',
+    x=70, y=0, width=130, height=20,
+    bgColor='black'
+  }, Megophrys.modeToolbar)
+
+  Megophrys.nextMoveLabel = Geyser.Label:new({
+    name='next_move_label',
+    x=0, y=20, width=70, height=20,
+    bgColor='black',
+    message='Next move:'
+  }, Megophrys.modeToolbar)
+  Megophrys.nextMoveButton = Geyser.Label:new({
+    name='next_move',
+    x=70, y=20, width=130, height=20,
+    bgColor='black'
+  }, Megophrys.modeToolbar)
+
+  Megophrys.specialMoveLabel = Geyser.Label:new({
+    name='special_label',
+    x=0, y=40, width=70, height=20,
+    bgColor='black',
+    message='Special:'
+  }, Megophrys.modeToolbar)
+  Megophrys.specialMoveButton = Geyser.Label:new({
+    name='special_move',
+    x=70, y=40, width=130, height=20,
+    bgColor='black'
+  }, Megophrys.modeToolbar)
+end
 
 Megophrys.setGuidance = function(mode)
   Megophrys.autoAttacking = false
@@ -221,14 +268,13 @@ end
 
 Megophrys.setMode = function(mode)
   Megophrys.killStrat = string.lower(mode)
+  Megophrys.modeButton:echo(string.title(Megophrys.killStrat),
+                            Megophrys.fgColors[Megophrys.killStrat], 'c')
   if Megophrys.killStrat == 'denizen' then
     cecho('\n<cyan>Hunt mode activated as '.. Megophrys.class ..'!')
 
     wsys.unkeepup('mass', true)
     wsys.unkeepup('rebounding', true)
-  elseif Megophrys.killStrat == 'pummel' then
-    wsys.keepup('mass', true)
-    wsys.keepup('rebounding', true)
   elseif Megophrys.killStrat == 'raid' then
     cecho('\n<cyan>Raid mode activated as '.. Megophrys.class ..'!')
 
@@ -236,6 +282,9 @@ Megophrys.setMode = function(mode)
       cecho('\n<cyan>Raid leader set to: '.. Megophrys.raidLeader ..'\n')
     end
 
+    wsys.keepup('mass', true)
+    wsys.keepup('rebounding', true)
+  else  -- some pvp mode
     wsys.keepup('mass', true)
     wsys.keepup('rebounding', true)
   end
@@ -325,6 +374,40 @@ Megophrys.stopResist = function(reason)
   send('diag')
   Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
   Megophrys.updateMissionCtrlBar()
+end
+
+Megophrys.toggleDualPrep = function()
+  Megophrys.dualPrep = not Megophrys.dualPrep
+
+  if Megophrys.dualPrep then
+    cecho('\n<cyan>Toggled to dual-limb prep!\n')
+  else
+    cecho('\n<cyan>Toggled to single-limb prep!\n')
+  end
+
+  Megophrys.updatePrepGauges()
+end
+
+Megophrys.toggleSkipTorso = function()
+  Megophrys.skipTorso = not Megophrys.skipTorso
+
+  if Megophrys.skipTorso then
+    cecho('\n<cyan>Skipping torso! (Only prepping leg(s).)\n')
+  else
+    cecho('\n<cyan>Prepping torso as well as leg(s).\n')
+  end
+
+  Megophrys.updatePrepGauges()
+end
+
+Megophrys.toggleTargetLimb = function()
+  if Megophrys.targetLimb == 'right' then
+    Megophrys.targetLimb = 'left'
+  else
+    Megophrys.targetLimb = 'right'
+  end
+  cecho('\n<cyan>Targetting '.. Megophrys.targetLimb ..' leg.\n')
+  Megophrys.updatePrepGauges()
 end
 
 Megophrys.updateBars = function()
@@ -546,4 +629,59 @@ Megophrys.updateMissionCtrlBar = function()
     ]])
   end
   Megophrys.stopBtn:setClickCallback("Megophrys.eStopAuto")
+end
+
+Megophrys.updatePrepGauges = function()
+  if not Megophrys.limbGauge then
+    Megophrys.limbGauge = Geyser.Gauge:new({
+      name='limbGauge',
+      x='-915px', y=0,
+      width='150px', height='2%'
+    })
+  end
+  if not Megophrys.otherLimbGauge then
+    Megophrys.otherLimbGauge = Geyser.Gauge:new({
+      name='otherLimbGauge',
+      x='-915px', y='2%',
+      width='150px', height='2%'
+    })
+  end
+  if not Megophrys.torsoGauge then
+    Megophrys.torsoGauge = Geyser.Gauge:new({
+      name='torsoGauge',
+      x='-915px', y='4%',
+      width='150px', height='2%'
+    })
+  end
+  local targetLimb = Megophrys.targetLimb
+  local otherLimb = ''
+
+  if targetLimb == 'right' then
+    otherLimb = 'left'
+  else
+    otherLimb = 'right'
+  end
+
+  local targetLimbWounds = 0
+  local otherLimbWounds = 0
+  local targetTorsoWounds = 0
+  if lb[target] then
+    targetLimbWounds = lb[target].hits[targetLimb ..' leg']
+    otherLimbWounds = lb[target].hits[otherLimb ..' leg']
+    targetTorsoWounds = lb[target].hits.torso
+  end
+  local limbLabel = '<center>'.. string.upper(targetLimb) ..' LEG</center>'
+  local otherLimbLabel = '<center>NONE</center>'
+  local torsoLabel = ''
+  if Megophrys.skipTorso then
+    torsoLabel = '<center>TORSO</center>'
+  else
+    torsoLabel = '<center>TORSO*</center>'
+  end
+  if Megophrys.dualPrep then
+    otherLimbLabel = '<center>'.. string.upper(otherLimb) ..' LEG</center>'
+  end
+  Megophrys.limbGauge:setValue(targetLimbWounds, 100, limbLabel)
+  Megophrys.otherLimbGauge:setValue(otherLimbWounds, 100, otherLimbLabel)
+  Megophrys.torsoGauge:setValue(targetTorsoWounds, 100, torsoLabel)
 end

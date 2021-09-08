@@ -1,7 +1,11 @@
 Megophrys.onConnect = function()
   sendAll('health', 'mana')  -- reset power bars
-  if Megophrys.class == 'Magi' then
-    sendAll('simultaneity', 'bind all', 'fortify all')
+  Megophrys.class = gmcp.Char.Status.class
+  Megophrys.makeClassToolbars()
+  supportedClass = Megophrys[Megophrys.class]
+  if supportedClass then
+    supportedClass.onConnect()
+    supportedClass.makeClassToolbars()
   end
   Megophrys.setMode('denizen')
   Megophrys.resetCuringPrios()
