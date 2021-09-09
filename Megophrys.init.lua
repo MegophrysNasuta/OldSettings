@@ -248,7 +248,7 @@ Megophrys.resetTargetWounds = function()
   Megophrys.targetHits = 0
   lb.resetAll(target)
   Megophrys.limbHasBroken = false
-  Megophrys.Magi.updatePrepGauges()
+  Megophrys.updatePrepGauges()
 end
 
 Megophrys.setEnemies = function(enemyList)

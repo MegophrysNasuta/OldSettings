@@ -453,24 +453,33 @@ Magi.setGolemStrat = function()
     if Megophrys.killStrat == 'fiyah' then
       if Magi.infernoDown then
         Magi.followUp = 'golem inferno'
-        Magi.nextGolemMoveButton:echo('Inferno', Megophrys.fgColors[killStrat], 'c')
       else
         Magi.followUp = 'golem scorch '.. target
-        Magi.nextGolemMoveButton:echo('Scorch', Megophrys.fgColors[killStrat], 'c')
       end
+      Magi.nextGolemMoveButton:echo('Scorch', Megophrys.fgColors[killStrat], 'c')
     else
-      Magi.followUp = 'golem smash '.. target .. ' '.. Magi.golemSmashTarget
       Magi.nextGolemMoveButton:echo('Smash', Megophrys.fgColors[killStrat], 'c')
+      Magi.followUp = 'golem smash '.. target .. ' '.. Magi.golemSmashTarget
     end
   else
-    Magi.followUp = 'golem timeflux '.. target
     Magi.nextGolemMoveButton:echo('Timeflux', Megophrys.fgColors[killStrat], 'c')
+    Magi.followUp = 'golem timeflux '.. target
   end
+end
+
+Magi.lostInferno = function()
+  Magi.infernoDown = true
+  Magi.nextGolemMoveButton:echo('Inferno', Megophrys.fgColors[Megophrys.killStrat], 'c')
 end
 
 Magi.targetIsTransfixed = function()
   Magi.targetTransfixed = true
   Magi.nextMoveButton:echo('Staffcast', Megophrys.fgColors[Megophrys.killStrat], 'c')
+end
+
+Magi.targetLostTimeflux = function()
+  Magi.timefluxUp = false
+  Magi.nextGolemMoveButton:echo('Timeflux', Megophrys.fgColors[Megophrys.killStrat], 'c')
 end
 
 Magi.toggleGolemSmashTarget = function()
