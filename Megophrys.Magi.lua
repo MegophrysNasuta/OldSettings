@@ -213,10 +213,10 @@ Megophrys.Magi.nextAttack = function()
 
       if killStrat == 'pummel' then
         if Megophrys.killPreConditionsMet and not Magi.targetMaybeFrozen then
-          Megophrys.nextMoveButton:echo('Deepfreeze', Megophrys.fgColors[killStrat], 'c')
           sendAll('clearqueue all', 'cast deepfreeze')
           Magi.targetMaybeFrozen = true
           Megophrys.killPreConditionsMet = false
+          Megophrys.nextMoveButton:echo('Hypothermia', Megophrys.fgColors[killStrat], 'c')
           return
         elseif Magi.targetMaybeFrozen then
           -- kill condition met: pummel to death
@@ -224,13 +224,12 @@ Megophrys.Magi.nextAttack = function()
           Magi.setElement('water', 'freezing')
           cmd = 'staffstrike &tar with '.. Magi.element
           if not Magi.targetFrozen then
-            Megophrys.nextMoveButton:echo('Hypothermia', Megophrys.fgColors[killStrat], 'c')
             Magi.followUp = 'golem hypothermia &tar'
             Magi.targetFrozen = true
           else
-            Megophrys.nextMoveButton:echo('Pummel', Megophrys.fgColors[killStrat], 'c')
             Magi.followUp = 'golem pummel &tar'
           end
+          Megophrys.nextMoveButton:echo('Pummel', Megophrys.fgColors[killStrat], 'c')
           targetTorso = true
         end
       elseif killStrat == 'fiyah' then
@@ -239,13 +238,13 @@ Megophrys.Magi.nextAttack = function()
           Magi.setElement('fire', 'burning')
           cmd = 'staffstrike &tar with '.. Magi.element
           if (Megophrys.targetHits or 0) % 3 == 0 then
-            Megophrys.nextMoveButton:echo('Try Destroy', Megophrys.fgColors[killStrat], 'c')
+            Megophrys.nextMoveButton:echo('Conflagrate', Megophrys.fgColors[killStrat], 'c')
             Magi.followUp = 'golem destroy &tar'
           elseif (Megophrys.targetHits or 0) % 3 == 1 then
-            Megophrys.nextMoveButton:echo('Conflagrate', Megophrys.fgColors[killStrat], 'c')
+            Megophrys.nextMoveButton:echo('Heat / Scorch', Megophrys.fgColors[killStrat], 'c')
             Magi.followUp = 'golem conflagrate &tar'
           else
-            Megophrys.nextMoveButton:echo('Heat / Scorch', Megophrys.fgColors[killStrat], 'c')
+            Megophrys.nextMoveButton:echo('Try Destroy', Megophrys.fgColors[killStrat], 'c')
             Magi.followUp = 'golem destabilise heat / golem scorch &tar'
           end
           targetTorso = true
@@ -357,6 +356,7 @@ Magi.nextLimbPrepAttack = function()
       -- otherwise go back to limb with air to prone them
       Megophrys.priorityLabel:echo('<center>Priority: L2 BREAKS</center>')
       if killStrat == 'fiyah' then
+        Megophrys.nextMoveButton:echo('Dehydrate', Megophrys.fgColors[killStrat], 'c')
         Magi.followUp = 'golem dehydrate '.. target
         Megophrys.targetHits = 0
       end
@@ -383,6 +383,10 @@ Magi.nextLimbPrepAttack = function()
     elseif not skipTorso and not torsoIsBroken then
       targetTorso = true
       Megophrys.killPreConditionsMet = false
+    end
+
+    if Megophrys.killPreConditionsMet then
+      Megophrys.nextMoveButton:echo('Deepfreeze', Megophrys.fgColors[killStrat], 'c')
     end
   else
     Megophrys.priorityLabel:echo('<center>Priority: LIMB PREP</center>')
@@ -462,6 +466,11 @@ Magi.setGolemStrat = function()
     Magi.followUp = 'golem timeflux '.. target
     Magi.nextGolemMoveButton:echo('Timeflux', Megophrys.fgColors[killStrat], 'c')
   end
+end
+
+Magi.targetIsTransfixed = function()
+  Magi.targetTransfixed = true
+  Magi.nextMoveButton:echo('Staffcast', Megophrys.fgColors[Megophrys.killStrat], 'c')
 end
 
 Magi.toggleGolemSmashTarget = function()
