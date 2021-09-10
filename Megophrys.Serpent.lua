@@ -17,7 +17,7 @@ end
 Megophrys.Serpent.nextAttack = function()
   local Serpent = Megophrys.Serpent
   local killStrat = Megophrys.killStrat
-  local setNextAttack = 'setalias nextAttack stand / wield whip / thrash &tar / '
+  local setNextAttack = 'setalias nextAttack stand | wield whip | thrash &tar | '
 
   if killStrat == 'denizen' then
     Megophrys.nextMoveButton:echo('Garrote', Megophrys.fgColors[killStrat], 'c')

@@ -260,7 +260,7 @@ Megophrys.setEnemies = function(enemyList)
       Megophrys.enemies[#Megophrys.enemies + 1] = string.lower(enemy)
     end
   end
-  send('enemy '.. table.concat(Megophrys.enemies, ' / enemy '))
+  send('enemy '.. table.concat(Megophrys.enemies, ' | enemy '))
   tempTimer(0.25, function()
     enableTrigger('reject_forced_unenemy_all')
   end)
