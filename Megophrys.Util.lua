@@ -1,6 +1,6 @@
 Megophrys.doWhileSelfish = function(func)
   cmd = func()
-  send('generosity / '.. cmd ..' / selfishness')
+  send('generosity | '.. cmd ..' | selfishness')
 end
 
 Megophrys.dropWhileSelfish = function(item)

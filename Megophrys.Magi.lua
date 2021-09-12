@@ -84,7 +84,7 @@ Megophrys.Magi.setMode = function()
     'c'
   )
 
-  Megophrys.timeUntilNextAttack = 1.93
+  Megophrys.timeUntilNextAttack = 3.03
   if killStrat == 'denizen' then
     Megophrys.nextMoveButton:echo('Staffcast', Megophrys.fgColors[killStrat], 'c')
     Magi.nextGolemMoveButton:echo('Squeeze', Megophrys.fgColors[killStrat], 'c')
@@ -178,12 +178,13 @@ Megophrys.Magi.nextAttack = function()
   local Magi = Megophrys.Magi
   local killStrat = Megophrys.killStrat
   local staffCasts = Magi.staffCasts
-  local setNextAttack = 'setalias nextAttack stand | wield staff217211 | '
+  local setNextAttack = 'setalias nextAttack stand / wield staff217211 / '
 
   local staffSpell = staffCasts[Magi.element]
   if killStrat == 'denizen' then
     Megophrys.nextMoveButton:echo('Staffcast', Megophrys.fgColors[killStrat], 'c')
-    sendAll(setNextAttack ..'staffcast '.. staffSpell ..' at &tar | golem squeeze &tar',
+    sendAll((setNextAttack ..'cast dilation at &tar / staffcast '.. staffSpell 
+             ..' at &tar / golem squeeze &tar'),
             'queue addclear eqbal nextAttack')
   else
     Magi.setGolemStrat()
@@ -245,7 +246,7 @@ Megophrys.Magi.nextAttack = function()
             Magi.followUp = 'golem conflagrate &tar'
           else
             Megophrys.nextMoveButton:echo('Try Destroy', Megophrys.fgColors[killStrat], 'c')
-            Magi.followUp = 'golem destabilise heat | golem scorch &tar'
+            Magi.followUp = 'golem destabilise heat / golem scorch &tar'
           end
           targetTorso = true
         end
@@ -258,7 +259,7 @@ Megophrys.Magi.nextAttack = function()
           cmd = cmd .. ' torso'
         end
         sendAll(
-          setNextAttack .. cmd .. '|' .. Magi.followUp,
+          setNextAttack .. cmd .. '/' .. Magi.followUp,
           'queue addclear eqbal nextAttack'
         )
         Megophrys.targetHits = Megophrys.targetHits + 1

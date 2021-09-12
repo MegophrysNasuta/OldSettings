@@ -1,5 +1,5 @@
 Megophrys = (Megophrys or {})
-Megophrys.class = nil
+Megophrys.class = gmcp.Char.Status.class
 Megophrys.shieldIsUp = (Megophrys.shieldIsUp or false)
 Megophrys.targetLimb = (Megophrys.targetLimb or 'left')
 Megophrys.targetRebounding = (Megophrys.targetRebounding or false)
@@ -11,6 +11,118 @@ Megophrys.fgColors = {
   pummel = 'yellow',
   fiyah = 'yellow',
 }
+
+Megophrys.targetPriority = {
+  anaconda = 1,
+  aphid = 1,
+  bass = 1,
+  crocodile = 1,
+  drunk = 1,
+  eel = 1,
+  flies = 1,
+  lion = 1,
+  man = 1,
+  moccasin = 1,
+  muskrat = 1,
+  owl = 1,
+  scorpion = 1,
+  squid = 1,
+  stingray = 1,
+  vulture = 1,
+  weasel = 1,
+  zombie = 1,
+  blacksmith = 2,
+  buckawn = 2,
+  cook = 2,
+  firetender = 2,
+  ghaser = 2,
+  gour = 2,
+  guard = 2,
+  hydra = 2,
+  lynx = 2,
+  orc = 2,
+  rakrr = 2,
+  shark = 2,
+  slugbeast = 2,
+  snake = 2,
+  trag = 2,
+  weaponsmith = 2,
+  xabat = 2,
+  aldroga = 3,
+  ghoul = 3,
+  huntress = 3,
+  mage = 3,
+  noble = 3,
+  ogre = 3,
+  rurnog = 3,
+  soldier = 4,
+  warrior = 3,
+  witchdoctor = 3,
+  captain = 4,
+  dynas = 4,
+  knight = 4,
+  lord = 4,
+  sentry = 4,
+  ulvna = 4,
+  vewig = 4
+}
+
+Megophrys.targetPriority["tap'choa"] = 4
+Megophrys.targetPriority["log'obi"] = 4
+Megophrys.targetPriority["ver'osi"] = 4
+
+Megophrys.autoSelectHuntingTarget = function()
+  if Megophrys.killStrat == 'denizen' then
+    enableTrigger('Megophrys_autotarget_IH')
+    Megophrys.potentialTargets = {}
+    send('info here')
+
+    tempTimer(0.5, function()
+      disableTrigger('Megophrys_autotarget_IH')
+      local highestPrioSeen = 0
+      local finalTarget = nil
+      local potentialTargets = Megophrys.potentialTargets
+      local targetPriority = Megophrys.targetPriority
+      for _, tgt in pairs(potentialTargets) do
+        local simpleTgt = tgt:gsub('%d', '')
+        if (targetPriority[simpleTgt] or 0) > highestPrioSeen then
+          highestPrioSeen = targetPriority[simpleTgt]
+          finalTarget = simpleTgt
+        end
+      end
+      if finalTarget then
+        Megophrys.setTarget(finalTarget)
+        Megophrys.autoAttack()
+      end
+    end)
+  end
+end
+
+Megophrys.autoSelectHuntingTargetLine = function(matches)
+  if matches[2] == 'hippogriff' and matches[3] == '552688' then
+    -- mount, pass
+  elseif matches[2] == 'golem' then
+    -- golem, pass
+  else
+    if (gmcp.Room.Info.area == 'the village of Qurnok' or
+        gmcp.Room.Info.area == 'Forest Watch' or
+        gmcp.Room.Info.area == 'the Creville Asylum' or
+        gmcp.Room.Info.area == 'the Barony of Dun Valley' or
+        gmcp.Room.Info.area == 'Quartz Peak' or
+        gmcp.Room.Info.area == 'the ruins of Phereklos' or
+        gmcp.Room.Info.area == 'the Mhojave Desert' or
+        gmcp.Room.Info.area == 'Tir Murann') then
+      if (matches[2] ~= 'toad' and
+          matches[4] ~= 'a buckawn youth' and
+          matches[4] ~= 'a juvenile orc' and
+          matches[4] ~= 'an adolescent ogre' and
+          matches[4] ~= 'a phantom grizzly bear' and
+          matches[4] ~= 'a miniature snowy owl') then
+        Megophrys.potentialTargets[#Megophrys.potentialTargets + 1] = matches[2]..matches[3]
+      end
+    end
+  end
+end
 
 -- adapted from Romaen's original list
 Megophrys.prioDefault = {
@@ -116,10 +228,7 @@ Megophrys.makeClassToolbars = function()
 end
 
 Megophrys.setGuidance = function(mode)
-  Megophrys.autoAttacking = false
-  Megophrys.autoEscaping = false
-  Megophrys.autoResisting = false
-  Megophrys.inPursuit = false
+  Megophrys.eStopAuto('Mode switch')
 
   mode = string.lower(mode or '')
   if mode == 'fight' then
@@ -171,23 +280,25 @@ Megophrys.autoEscape = function()
 end
 
 Megophrys.autoResist = function()
-  Megophrys.setGuidance('DieWithHonor')
-  Megophrys.priorityLabel:echo('<center>Priority: HEAL</center>')
-  
-  wsys.keepup('shield', true)
-  wsys.keepup('reflections', true)
+  if not Megophrys.autoResisting then
+    Megophrys.autoResisting = true
+    Megophrys.setGuidance('DieWithHonor')
+    Megophrys.priorityLabel:echo('<center>Priority: HEAL</center>')
+    wsys.keepup('shield', true)
+    wsys.keepup('reflections', true)
+  end
 end
 
-Megophrys.eStopAuto = function()
+Megophrys.eStopAuto = function(message)
   if Megophrys.autoAttacking then
     cecho('\n<red>Emergency stop: No more auto-attacks.\n')
-    Megophrys.stopAttack('Emergency stop lever')
+    Megophrys.stopAttack(message or 'Emergency stop lever')
   end
   if Megophrys.autoEscaping then
-    Megophrys.stopEscape('Emergency stop lever')
+    Megophrys.stopEscape(message or 'Emergency stop lever')
   end
   if Megophrys.autoResisting then
-    Megophrys.stopResist('Emergency stop lever')
+    Megophrys.stopResist(message or 'Emergency stop lever')
   end
   send('clearqueue all')
   mmp.stop()
@@ -320,25 +431,24 @@ Megophrys.setTarget = function(t)
 
   -- set temp trigger to highlight the target string
   if hilite_trigger_id then killTrigger(hilite_trigger_id) end
-  hilite_trigger_id = tempTrigger(target, function() 
+  if hilite_trigger_id2 then killTrigger(hilite_trigger_id2) end
+
+  hilite_target_func = function(needle)
     idx = 1
     done = false
     while not done do
       done = true
-      lpos = selectString(string.lower(t), idx)
+      lpos = selectString(needle, idx)
       if lpos ~= -1 then 
-        Megophrys.Util.hiliteSelection('red')
-        done = false
-      end
-      lpos = selectString(target, idx)
-      if lpos ~= -1 then
-        Megophrys.Util.hiliteSelection('red')
+        Megophrys.Util.hiliteSelection('OrangeRed')
         done = false
       end
       idx = idx + 1
     end
-  end)
-  
+  end
+  hilite_trigger_id = tempTrigger(target:lower(), function() hilite_target_func(target:lower()) end)
+  hilite_trigger_id2 = tempTrigger(target, function() hilite_target_func(target) end)
+
   Megophrys.targetLabel = nil
   Megophrys.targetLabel = Geyser.Label:new({
     name='targetLabel',
