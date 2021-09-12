@@ -56,28 +56,6 @@ Megophrys.flyingSuccess = function()
   end
 end
 
-Megophrys.getCharInfo = function(charName)
-  local url = 'http://api.achaea.com/characters/'.. string.lower(charName) ..'.json'
-  
-  local onAPIReturn = function(_, rurl, body)
-    local charData = yajl.to_value(body)
-    local ans = string.format('%s is a level %s %s in %s.' ..
-                              '\n\tDenizens killed: %s\t\tAdventurers killed: %s\n\n',
-                              charData.fullname,
-                              charData.level,
-                              string.title(string.lower(charData.class)),
-                              string.title(string.lower(charData.city)),
-                              charData.mob_kills,
-                              charData.player_kills)
-    cecho('\n<cyan>'.. ans ..'\n')
-  end
-  
-  registerAnonymousEventHandler('sysGetHttpDone',
-                                onAPIReturn,
-                                true)  -- true here means delete after firing once
-  getHTTP(url)
-end
-
 Megophrys.hitIcewall = function()
   if Megophrys.autoEscaping then
     if #gmcp.Room.Info.exits < 3 and Megophrys.class == 'Magi' then
@@ -100,7 +78,7 @@ Megophrys.hitRebounding = function()
   if Megophrys.class == 'Magi' then
     if (Megophrys.autoAttacking and 
           Megophrys.killStrat == 'denizen') then
-      send('cast erode at '.. target)
+      send('cast disintegrate on '.. target)
     else
       Megophrys.Magi.element = 'air'
       cecho('\n<cyan>Switching to air for rebounding\n')
