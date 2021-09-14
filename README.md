@@ -13,14 +13,7 @@ on your system or with your settings.
 
  - [limb 1.2](https://github.com/27theo/limb/releases/tag/v1.2)
  - [WunderSys 1.3](https://github.com/tynil/WunderSys/releases/tag/v1.3)
-
-## Packages
-
- - Megophrys: more refined, fully namespaced systems
- - Achaea [Unconverted]: all other settings used by Nasuta
-
-It should go without saying the latter is "unstable" and of varying
-quality.
+ - [AK 7.8](https://www.dropbox.com/sh/m6dnd61o8ncc5oe/AAAmY0FPLzuIDaYKDH0WVHsEa?dl=0)
 
 ## Lua Files
 
