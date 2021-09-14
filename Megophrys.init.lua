@@ -188,6 +188,17 @@ Megophrys.prioDefault = {
 }
 
 Megophrys.makeClassToolbars = function()
+  setBorderRight(480)
+  Megophrys.PartyChatConsole = Geyser.MiniConsole:new({
+    name='PartyChatConsole',
+    x='-470px', y='50%',
+    autoWrap=true,
+    color='black',
+    scrollBar=false,
+    fontSize=10,
+    width=475, height='50%',
+  })
+
   Megophrys.modeToolbar = Geyser.Container:new({
     name='mode_switches',
     x=0, y=0, width=200, height=16
