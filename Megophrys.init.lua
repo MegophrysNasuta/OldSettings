@@ -1,6 +1,5 @@
 Megophrys = (Megophrys or {})
 Megophrys.class = gmcp.Char.Status.class
-Megophrys.shieldIsUp = (Megophrys.shieldIsUp or false)
 Megophrys.targetLimb = (Megophrys.targetLimb or 'left')
 Megophrys.targetRebounding = (Megophrys.targetRebounding or false)
 Megophrys.targetProne = (Megophrys.targetProne or false)
@@ -124,6 +123,14 @@ Megophrys.autoSelectHuntingTargetLine = function(matches)
   end
 end
 
+Megophrys.assess = function(person)
+  if person then
+    send('assess '.. person ..' | contemplate '.. person)
+  else
+    send('assess '.. target ..' | contemplate '.. target)
+  end
+end
+
 -- adapted from Romaen's original list
 Megophrys.prioDefault = {
   -- 1
@@ -190,6 +197,10 @@ Megophrys.makeClassToolbars = function()
     Megophrys.magiToolbar:hide()
   end
 
+  if Megophrys.psionToolbar then
+    Megophrys.psionToolbar:hide()
+  end
+
   Megophrys.modeLabel = Geyser.Label:new({
     name='mode_label',
     x=0, y=0, width=70, height=20,
@@ -225,6 +236,9 @@ Megophrys.makeClassToolbars = function()
     x=70, y=40, width=130, height=20,
     bgColor='black'
   }, Megophrys.modeToolbar)
+
+  if Megophrys.targetHpGauge then Megophrys.targetHpGauge:hide() end
+  if Megophrys.targetMpGauge then Megophrys.targetMpGauge:hide() end
 end
 
 Megophrys.setGuidance = function(mode)
@@ -260,23 +274,27 @@ end
 Megophrys.autoEscape = function()
   Megophrys.setGuidance('flight')
 
-  if not gmcp.Room or not gmcp.Room.Info or not gmcp.Room.Info.exits then
-    Megophrys.stopEscape('No exits detected')
-    return
+  if Megophrys.class == 'Psion' then
+    send('queue prepend eqbal enact wavesurge')
+  else
+    if not gmcp.Room or not gmcp.Room.Info or not gmcp.Room.Info.exits then
+      Megophrys.stopEscape('No exits detected')
+      return
+    end
+
+    cecho('\nCommencing auto-flight...\n')
+    Megophrys.fleeingToRoom = Megophrys.Util.randomChoice(getAreaRooms(
+                                getRoomArea(gmcp.Room.Info.num)
+                              ))
+    Megophrys.escapeBlocked = false
+    Megophrys.escapeDelayed = false
+
+    Megophrys.priorityLabel:echo('<center>Priority: FLEE</center>')
+    Megophrys.updateMissionCtrlBar()
+    Megophrys.highlightPanicRoom()
+    send('lose '.. target)
+    gotoRoom(Megophrys.fleeingToRoom)
   end
-
-  cecho('\nCommencing auto-flight...\n')
-  Megophrys.fleeingToRoom = Megophrys.Util.randomChoice(getAreaRooms(
-                              getRoomArea(gmcp.Room.Info.num)
-                            ))
-  Megophrys.escapeBlocked = false
-  Megophrys.escapeDelayed = false
-
-  Megophrys.priorityLabel:echo('<center>Priority: FLEE</center>')
-  Megophrys.updateMissionCtrlBar()
-  Megophrys.highlightPanicRoom()
-  send('lose '.. target)
-  gotoRoom(Megophrys.fleeingToRoom)
 end
 
 Megophrys.autoResist = function()
@@ -426,6 +444,7 @@ Megophrys.setTarget = function(t)
   end
 
   if Megophrys.killStrat ~= 'denizen' and target ~= 'none' then
+    ak.oresetparse()
     sendAll('unally '.. target, 'enemy '.. target)
   end
 
@@ -457,6 +476,66 @@ Megophrys.setTarget = function(t)
     fgColor=Megophrys.fgColors[Megophrys.killStrat], color='black',
     message='<center>Target: '.. target ..'</center>'
   })
+end
+
+Megophrys.setTargetHealth = function(hp, maxHp)
+  if not Megophrys.targetHpGauge then
+    Megophrys.targetHpGauge = Geyser.Gauge:new({
+      name='targetHpGauge',
+      x='-25%', y='43%',
+      width='25%', height='3.5%'
+    })
+  end
+
+  -- literally from https://wiki.mudlet.org/w/manual:geyser#Styling_a_gauge
+  Megophrys.targetHpGauge.front:setStyleSheet([[background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f04141, stop: 0.1 #ef2929, stop: 0.49 #cc0000, stop: 0.5 #a40000, stop: 1 #cc0000);
+    border-top: 1px black solid;
+    border-left: 1px black solid;
+    border-bottom: 1px black solid;
+    border-radius: 7;
+    padding: 3px;]])
+  Megophrys.targetHpGauge.back:setStyleSheet([[background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #bd3333, stop: 0.1 #bd2020, stop: 0.49 #990000, stop: 0.5 #700000, stop: 1 #990000);
+    border-width: 1px;
+    border-color: black;
+    border-style: solid;
+    border-radius: 7;
+    padding: 3px;]])
+
+  hp = tonumber(hp)
+  maxHp = tonumber(maxHp)
+  Megophrys.targetHealthPct = math.floor((hp / maxHp) * 100)
+
+  Megophrys.targetHpGauge:setValue(hp, maxHp, '<center>'.. Megophrys.targetHealthPct ..'%')
+end
+
+Megophrys.setTargetMana = function(mp, maxMp)
+  if not Megophrys.targetMpGauge then
+    Megophrys.targetMpGauge = Geyser.Gauge:new({
+      name='targetMpGauge',
+      x='-25%', y='46.5%',
+      width='25%', height='3.5%'
+    })
+  end
+
+  -- literally from https://wiki.mudlet.org/w/manual:geyser#Styling_a_gauge
+  Megophrys.targetMpGauge.front:setStyleSheet([[background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #98f041, stop: 0.1 #8cf029, stop: 0.49 #66cc00, stop: 0.5 #52a300, stop: 1 #66cc00);
+    border-top: 1px black solid;
+    border-left: 1px black solid;
+    border-bottom: 1px black solid;
+    border-radius: 7;
+    padding: 3px;]])
+  Megophrys.targetMpGauge.back:setStyleSheet([[background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #78bd33, stop: 0.1 #6ebd20, stop: 0.49 #4c9900, stop: 0.5 #387000, stop: 1 #4c9900);
+    border-width: 1px;
+    border-color: black;
+    border-style: solid;
+    border-radius: 7;
+    padding: 3px;]])
+
+  mp = tonumber(mp)
+  maxMp = tonumber(maxMp)
+  Megophrys.targetManaPct = math.floor((mp / maxMp) * 100)
+
+  Megophrys.targetMpGauge:setValue(mp, maxMp, '<center>'.. Megophrys.targetManaPct ..'%')
 end
 
 Megophrys.stopAttack = function(reason)
@@ -498,13 +577,36 @@ Megophrys.toggleDualPrep = function()
   Megophrys.updatePrepGauges()
 end
 
+Megophrys.toggleLimbsPrepped = function()
+  local targetLimbSet = (Megophrys.targetLimbSet or 'leg')
+
+  if targetLimbSet == 'leg' then
+    targetLimbSet = 'arm'
+    cecho('\n<cyan>Toggled to prepping arms!\n')
+  else
+    targetLimbSet = 'leg'
+    cecho('\n<cyan>Toggled to prepping legs!\n')
+  end
+
+  Megophrys.targetLimbSet = targetLimbSet
+  Megophrys.updatePrepGauges()
+end
+
 Megophrys.toggleSkipTorso = function()
   Megophrys.skipTorso = not Megophrys.skipTorso
 
-  if Megophrys.skipTorso then
-    cecho('\n<cyan>Skipping torso! (Only prepping leg(s).)\n')
+  if Megophrys.class == 'Magi' then
+    if Megophrys.skipTorso then
+      cecho('\n<cyan>Skipping torso! (Only prepping leg(s).)\n')
+    else
+      cecho('\n<cyan>Prepping torso as well as leg(s).\n')
+    end
   else
-    cecho('\n<cyan>Prepping torso as well as leg(s).\n')
+    if Megophrys.skipTorso then
+      cecho('\n<cyan>Swapping gauge TORSO to HEAD.\n')
+    else
+      cecho('\n<cyan>Swapping gauge HEAD to TORSO.\n')
+    end
   end
 
   Megophrys.updatePrepGauges()
@@ -516,7 +618,7 @@ Megophrys.toggleTargetLimb = function()
   else
     Megophrys.targetLimb = 'right'
   end
-  cecho('\n<cyan>Targetting '.. Megophrys.targetLimb ..' leg.\n')
+  cecho('\n<cyan>Targetting '.. Megophrys.targetLimb ..' '.. Megophrys.targetLimbSet ..'.\n')
   Megophrys.updatePrepGauges()
 end
 
@@ -742,28 +844,29 @@ Megophrys.updateMissionCtrlBar = function()
 end
 
 Megophrys.updatePrepGauges = function()
-  if not Megophrys.limbGauge then
-    Megophrys.limbGauge = Geyser.Gauge:new({
-      name='limbGauge',
+  if not Megophrys.topGauge then
+    Megophrys.topGauge = Geyser.Gauge:new({
+      name='topGauge',
       x='-915px', y=0,
       width='150px', height='2%'
     })
   end
-  if not Megophrys.otherLimbGauge then
-    Megophrys.otherLimbGauge = Geyser.Gauge:new({
-      name='otherLimbGauge',
+  if not Megophrys.middleGauge then
+    Megophrys.middleGauge = Geyser.Gauge:new({
+      name='middleGauge',
       x='-915px', y='2%',
       width='150px', height='2%'
     })
   end
-  if not Megophrys.torsoGauge then
-    Megophrys.torsoGauge = Geyser.Gauge:new({
-      name='torsoGauge',
+  if not Megophrys.bottomGauge then
+    Megophrys.bottomGauge = Geyser.Gauge:new({
+      name='bottomGauge',
       x='-915px', y='4%',
       width='150px', height='2%'
     })
   end
-  local targetLimb = Megophrys.targetLimb
+  local targetLimb = (Megophrys.targetLimb or 'left')
+  local targetLimbSet = (Megophrys.targetLimbSet or 'leg')
   local otherLimb = ''
 
   if targetLimb == 'right' then
@@ -772,26 +875,42 @@ Megophrys.updatePrepGauges = function()
     otherLimb = 'right'
   end
 
+  local topLabel = targetLimb:upper() ..' '.. targetLimbSet:upper()
+  local middleLabel = 'NONE'
+  local bottomLabel = ''
   local targetLimbWounds = 0
   local otherLimbWounds = 0
-  local targetTorsoWounds = 0
-  if lb[target] then
-    targetLimbWounds = lb[target].hits[targetLimb ..' leg']
-    otherLimbWounds = lb[target].hits[otherLimb ..' leg']
-    targetTorsoWounds = lb[target].hits.torso
-  end
-  local limbLabel = '<center>'.. string.upper(targetLimb) ..' LEG</center>'
-  local otherLimbLabel = '<center>NONE</center>'
-  local torsoLabel = ''
+  local targetOtherWounds = 0
+
   if Megophrys.skipTorso then
-    torsoLabel = '<center>TORSO</center>'
+    if Megophrys.class == 'Magi' then
+      bottomLabel = 'TORSO*'
+    else
+      bottomLabel = 'HEAD'
+    end
   else
-    torsoLabel = '<center>TORSO*</center>'
+    bottomLabel = 'TORSO'
+  end
+
+  if lb[target] then
+    targetLimbWounds = lb[target].hits[targetLimb ..' '.. targetLimbSet]
+    otherLimbWounds = lb[target].hits[otherLimb ..' '.. targetLimbSet]
+    if Megophrys.class == 'Psion' then
+      targetOtherWounds = lb[target].hits.head
+    else
+      targetOtherWounds = lb[target].hits.torso
+    end
   end
   if Megophrys.dualPrep then
-    otherLimbLabel = '<center>'.. string.upper(otherLimb) ..' LEG</center>'
+    middleLabel = otherLimb:upper() ..' '.. targetLimbSet:upper()
   end
-  Megophrys.limbGauge:setValue(targetLimbWounds, 100, limbLabel)
-  Megophrys.otherLimbGauge:setValue(otherLimbWounds, 100, otherLimbLabel)
-  Megophrys.torsoGauge:setValue(targetTorsoWounds, 100, torsoLabel)
+  Megophrys.topGauge:setValue(targetLimbWounds, 100, '<center>'.. topLabel ..'</center>')
+  Megophrys.middleGauge:setValue(otherLimbWounds, 100, '<center>'.. middleLabel ..'</center>')
+  Megophrys.bottomGauge:setValue(targetOtherWounds, 100, '<center>'.. bottomLabel ..'</center>')
 end
+
+Megophrys.toggleOne = nil
+Megophrys.toggleTwo = Megophrys.toggleDualPrep
+Megophrys.toggleThree = Megophrys.toggleTargetLimb
+Megophrys.toggleFour = Megophrys.toggleSkipTorso
+Megophrys.toggleFive = Megophrys.toggleLimbsPrepped

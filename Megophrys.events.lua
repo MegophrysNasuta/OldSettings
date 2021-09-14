@@ -21,10 +21,10 @@ Megophrys.endSpeedwalk = function()
   end
   if Megophrys.killStrat == 'raid' and Megophrys.raidLeader then
     send('fol '.. Megophrys.raidLeader)
+  elseif Megophrys.killStrat == 'bonk' then
+    if endingPursuit then send('psi transcend') end
   elseif Megophrys.killStrat == 'pummel' then
-    if endingPursuit then
-      send('embed focus')
-    end
+    if endingPursuit then send('embed focus') end
     if Megophrys.autoEscaping then
       if Megophrys.opponentClass and Megophrys.opponentClass == 'airlord' then
         Megophrys.autoResist()
@@ -85,22 +85,6 @@ Megophrys.hitRebounding = function()
     end
   end
   cecho('\n<cyan>STOP HITTING YOURSELF STOP HITTING YOURSELF\n')
-end
-
-Megophrys.shieldOnTarget = function()
-  if Megophrys.killStrat == 'denizen' then
-    if Megophrys.class == 'Magi' then
-      send('cast disintegrate at '.. target)
-    end
-  end
-end
-
-Megophrys.shieldsUp = function()
-  Megophrys.shieldIsUp = true
-end
-
-Megophrys.shieldsDown = function()
-  Megophrys.shieldIsUp = false
 end
 
 Megophrys.underPressure = function()

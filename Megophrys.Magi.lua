@@ -169,9 +169,6 @@ end
 Megophrys.Magi.doSpecial = function() send('embed focus') end
 
 Megophrys.Magi.toggleOne = Magi.toggleSkipTransfix
-Megophrys.Magi.toggleTwo = Megophrys.toggleDualPrep
-Megophrys.Magi.toggleThree = Megophrys.toggleTargetLimb
-Megophrys.Magi.toggleFour = Megophrys.toggleSkipTorso
 Megophrys.Magi.toggleFive = Magi.toggleGolemSmashTarget
 
 Megophrys.Magi.nextAttack = function()
