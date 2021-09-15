@@ -9,20 +9,23 @@ Megophrys.Psion.setMode = function()
   local Psion = Megophrys.Psion
   local killStrat = Megophrys.killStrat
 
-  Megophrys.timeUntilNextAttack = 2.23
-  Megophrys.Psion.setWeavePrep('paralysis')
   if killStrat == 'denizen' then
+    Megophrys.timeUntilNextAttack = 1.88
+    Megophrys.Psion.setWeavePrep('clumsiness')
     Megophrys.nextMoveButton:echo('Overhand', Megophrys.fgColors[killStrat], 'c')
+  else
+    Megophrys.timeUntilNextAttack = 2.03
+    Megophrys.Psion.setWeavePrep('paralysis')
   end
 
   Megophrys.specialMoveButton:echo(
-    'Psi Transcend',
+    'Wavesurge (ESC)',
     Megophrys.fgColors[killStrat],
     'c'
   )
 end
 
-Megophrys.Psion.doSpecial = function() send('psi transcend') end
+Megophrys.Psion.doSpecial = function() send('enact wavesurge') end
 
 Megophrys.Psion.makeClassToolbars = function()
   Megophrys.psionToolbar = Geyser.Container:new({
@@ -81,52 +84,84 @@ Megophrys.Psion.nextAttack = function()
   local Psion = Megophrys.Psion
   local imSoClever = ''
   local killStrat = Megophrys.killStrat
-  local setNextAttack = 'setalias nextAttack stand / stand / '
+  local nextWeave = ''
+  local nextPsi = ''
+  local preAlias = 'setalias nextAttack stand / stand'
   local targetAffs = affstrack.score
   local targetHits = Megophrys.targetHits or 0
   local uiColor = Megophrys.fgColors[killStrat]
 
   if killStrat == 'denizen' then
     if ak.defs.shield then
-      send('weave pulverise '.. target)
+      send('queue prepend eqbal weave pulverise &tar')
     end
-    setNextAttack = setNextAttack ..'weave overhand &tar'
+    nextWeave = 'overhand'
   else
     if ak.defs.shield then
       Megophrys.nextMoveButton:echo('Cleave Shield', Megophrys.fgColors[killStrat], 'c')
-      setNextAttack = setNextAttack ..'weave cleave &tar'
+      nextWeave = 'cleave'
     else
       if targetAffs.paralysis < 100 then
         Megophrys.Psion.setWeavePrep('paralysis')
+      elseif targetAffs.clumsiness < 60 then
+        Megophrys.Psion.setWeavePrep('clumsiness')
       elseif targetAffs.asthma < 60 then
         Megophrys.Psion.setWeavePrep('asthma')
       else
         Megophrys.Psion.setWeavePrep('haemophilia')
       end
-      setNextAttack = 'weave prepare '.. Psion.weavePrep ..' / '.. setNextAttack
 
+      local targetManaPct = (Megophrys.targetManaPct or 0)
       if targetManaPct <= 30 then
-        setNextAttack = setNextAttack ..'psi excise &tar'
-        imSoClever = 'say You cannot resist my power!'
+        nextPsi = 'excise'
+        nextWeave = 'deathblow'
+        imSoClever = 'say You cannot resist!'
+      elseif ((ak.psion.unweaving.body > 3 and ak.psion.unweaving.mind > 3) or
+              (ak.psion.unweaving.body > 3 and ak.psion.unweaving.spirit > 3) or
+              (ak.psion.unweaving.mind > 3 and ak.psion.unweaving.spirit > 3)) then
+        nextPsi = 'deconstruct'
+        nextWeave = 'deathblow'
+        imSoClever = 'say Another enemy unmade. Hah!'
       elseif targetHits == 0 then
-        setNextAttack = setNextAttack ..'weave backhand &tar'
+        nextWeave = 'backhand'
         imSoClever = 'say SLAP!!'
+      elseif targetAffs.clumsiness < 60 then
+        nextWeave = 'sever'
+        imSoClever = 'warcry'
       elseif targetAffs.asthma < 60 then
-        setNextAttack = setNextAttack ..'weave deathblow &tar'
+        nextWeave = 'deathblow'
         imSoClever = 'say *forcefully Die, heretic!'
-      elseif targetAffs.unweavingmind <=50 then
-        setNextAttack = setNextAttack .. 'weave unweave &tar mind'
       elseif targetAffs.unweavingBody <= 50 then
-        setNextAttack = setNextAttack .. 'weave unweave &tar body'
+        nextWeave = 'unweave body'
+      elseif targetAffs.unweavingmind <=50 then
+        nextWeave = 'unweave mind'
       elseif targetHits % 2 == 1 then
-        setNextAttack = setNextAttack ..'weave overhand &tar'
+        nextWeave = 'overhand'
         imSoClever = 'say BONK!!'
       else
-        setNextAttack = setNextAttack ..'weave exsanguinate &tar'
+        nextWeave = 'exsanguinate'
         imSoClever = 'warcry'
       end
     end
   end
+
+  if tonumber(ak.psion.transcend) > 99 then
+    if killStrat == 'denizen' then
+      nextPsi = 'shatter'
+    else
+      nextPsi = 'blast'
+    end
+  end
+
+  local setNextAttack = preAlias
+  if nextPsi ~= '' then
+    setNextAttack = setNextAttack ..'/ psi '.. nextPsi ..' &tar'
+  end
+  if Psion.weavePrep ~= '' then
+    setNextAttack = setNextAttack ..' / weave prepare '.. Psion.weavePrep
+  end
+
+  setNextAttack = setNextAttack ..'/ weave '.. nextWeave ..' &tar'
 
   if killStrat ~= 'denizen' then
     setNextAttack = setNextAttack ..' / contemplate &tar'
@@ -135,21 +170,11 @@ Megophrys.Psion.nextAttack = function()
     end
   end
 
-  if ak.psion.transcend == 100 then
-    if killStrat == 'denizen' then
-      Psion.nextPsiMoveButton:echo('Shatter', uiColor, 'c')
-      setNextAttack = setNextAttack ..' / psi shatter & tar'
-    else
-      Psion.nextPsiMoveButton:echo('Combustion', uiColor, 'c')
-      setNextAttack = setNextAttack ..' / psi combustion & tar'
-    end
-  else
-    Psion.nextPsiMoveButton:echo('')
-  end
+  Psion.nextPsiMoveButton:echo(nextPsi or '')
 
-  if imSoClever ~= '' then
-    setNextAttack = setNextAttack ..' / '.. imSoClever
-  end
+  --if imSoClever ~= '' then
+  --  setNextAttack = setNextAttack ..' / '.. imSoClever
+  --end
 
   sendAll(setNextAttack, 'queue addclear eqbal nextAttack')
   if not ak.defs.shield then

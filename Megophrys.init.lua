@@ -285,27 +285,23 @@ end
 Megophrys.autoEscape = function()
   Megophrys.setGuidance('flight')
 
-  if Megophrys.class == 'Psion' then
-    send('queue prepend eqbal enact wavesurge')
-  else
-    if not gmcp.Room or not gmcp.Room.Info or not gmcp.Room.Info.exits then
-      Megophrys.stopEscape('No exits detected')
-      return
-    end
-
-    cecho('\nCommencing auto-flight...\n')
-    Megophrys.fleeingToRoom = Megophrys.Util.randomChoice(getAreaRooms(
-                                getRoomArea(gmcp.Room.Info.num)
-                              ))
-    Megophrys.escapeBlocked = false
-    Megophrys.escapeDelayed = false
-
-    Megophrys.priorityLabel:echo('<center>Priority: FLEE</center>')
-    Megophrys.updateMissionCtrlBar()
-    Megophrys.highlightPanicRoom()
-    send('lose '.. target)
-    gotoRoom(Megophrys.fleeingToRoom)
+  if not gmcp.Room or not gmcp.Room.Info or not gmcp.Room.Info.exits then
+    Megophrys.stopEscape('No exits detected')
+    return
   end
+
+  cecho('\nCommencing auto-flight...\n')
+  Megophrys.fleeingToRoom = Megophrys.Util.randomChoice(getAreaRooms(
+                              getRoomArea(gmcp.Room.Info.num)
+                            ))
+  Megophrys.escapeBlocked = false
+  Megophrys.escapeDelayed = false
+
+  Megophrys.priorityLabel:echo('<center>Priority: FLEE</center>')
+  Megophrys.updateMissionCtrlBar()
+  Megophrys.highlightPanicRoom()
+  send('lose '.. target)
+  gotoRoom(Megophrys.fleeingToRoom)
 end
 
 Megophrys.autoResist = function()
@@ -343,14 +339,20 @@ Megophrys.pursue = function()
     gotoRoom(Megophrys.targetRoom)
     Megophrys.targetRoom = nil
   else
+    local findCmd = ''
+    if Megophrys.class == 'Magi' then
+      findCmd = 'cast scry at '
+    else
+      findCmd = 'farsee '
+    end
     if Megophrys.killStrat == 'raid' and Megophrys.raidLeader then
-      send('cast scry at '.. Megophrys.raidLeader)
+      send(findCmd .. Megophrys.raidLeader)
       Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
     elseif Megophrys.killStrat == 'denizen' and Megophrys.huntingGround then
       Megophrys.setGuidance('rushdown')
       send('walk to '.. Megophrys.huntingGround)
     else
-      send('cast scry at '.. target)
+      send(findCmd .. target)
       Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
     end
   end
@@ -456,7 +458,10 @@ Megophrys.setTarget = function(t)
 
   if Megophrys.killStrat ~= 'denizen' and target ~= 'none' then
     ak.oresetparse()
-    sendAll('unally '.. target, 'enemy '.. target)
+    hideWindow('aff_display')
+    if Megophrys.class == 'Magi' then
+      sendAll('unally '.. target, 'enemy '.. target)
+    end
   end
 
   -- set temp trigger to highlight the target string
