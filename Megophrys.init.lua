@@ -556,7 +556,9 @@ end
 
 Megophrys.stopAttack = function(reason)
   cecho('\n<cyan>'.. reason ..'. Disabling auto-attack.\n')
-  killTimer(Megophrys.autoAttackTimerId)
+  if Megophrys.autoAttackTimerId then
+    killTimer(Megophrys.autoAttackTimerId)
+  end
   Megophrys.autoAttacking = false
   send('diag')
   Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
@@ -657,7 +659,15 @@ Megophrys.updateBars = function()
     Megophrys.affTable = Geyser.Label:new({
       name='affTable',
       x='-450px', y='7%',
-      width='25%', height='7.5%',
+      width='12.5%', height='45%',
+      fgColor='white', color='black'
+    })
+  end
+  if not Megophrys.tgtAffTable then
+    Megophrys.tgtAffTable = Geyser.Label:new({
+      name='tgtAffTable',
+      x='-12.5%', y='7%',
+      width='12.5%', height='45%',
       fgColor='white', color='black'
     })
   end
@@ -704,12 +714,12 @@ Megophrys.updateBars = function()
   Megophrys.hpGauge:setValue(currHealth, maxhp, healthPct)
   Megophrys.mpGauge:setValue(currMana, maxmp, manaPct)
 
-  local affTable = '<center><b>Afflictions:</b><ul>'
+  local affTable = '<center><b>My Affs:</b><ul>'
   if Megophrys.opponentClass then
-    affTable = '<center><b>Afflictions: ('.. Megophrys.opponentClass ..'):</b><ul>'
+    affTable = '<center><b>My Affs: \n('.. Megophrys.opponentClass ..'):</b><ul>'
   end
   local anyAffs = false
-  for aff, _ in pairs(wsysf.affs) do
+  for aff, _ in spairs(wsysf.affs) do
     if (aff ~= 'blindness' and aff ~= 'deafness' and
         aff ~= 'insomnia') then
       anyAffs = true
@@ -719,6 +729,41 @@ Megophrys.updateBars = function()
   if not anyAffs then affTable = affTable ..'<li>N/A</li>' end
   affTable = affTable ..'</ul></center>'
   Megophrys.affTable:echo(affTable)
+
+  local tgtAffTable = '<center><b>Tgt Affs:</b><ul>'
+  local targetAffs = affstrack.score
+  anyAffs = false
+  trackedAffs = {
+    paralysis   = targetAffs.paralysis,
+    anorexia    = targetAffs.anorexia,
+    asthma      = targetAffs.athma,
+    impatience  = targetAffs.impatience,
+    unweavemind = ak.psion.unweaving.mind,
+    unweavebody = ak.psion.unweaving.body,
+    unweavesoul = ak.psion.unweaving.spirit,
+    haemophilia = targetAffs.haemophilia,
+    epilepsy    = targetAffs.epilepsy,
+    dizziness   = targetAffs.dizziness,
+    nausea      = targetAffs.nausea,
+    stupidity   = targetAffs.stupidity,
+    clumsiness  = targetAffs.clumsiness,
+    weariness   = targetAffs.weariness
+  }
+  local extraFmt = ''
+  local strLen = 4
+  for aff, pct in spairs(trackedAffs) do
+    if aff:find('^unweave') == nil then
+      extraFmt = '%'
+      strLen = 4
+    else
+      extraFmt = ''
+      strLen = 5
+    end
+    tgtAffTable = (tgtAffTable ..'<li>'.. aff:gsub('nweave', ''):sub(1, strLen)
+                   ..' ('.. (pct or '0') .. extraFmt ..')</li>')
+  end
+  tgtAffTable = tgtAffTable ..'</ul></center>'
+  Megophrys.tgtAffTable:echo(tgtAffTable)
 end
 
 Megophrys.updateMissionCtrlBar = function()

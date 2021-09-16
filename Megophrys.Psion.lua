@@ -145,7 +145,7 @@ Megophrys.Psion.nextAttack = function()
     end
   end
 
-  if tonumber(ak.psion.transcend) > 99 then
+  if tonumber(ak.psion.transcend or 0) > 99 then
     if killStrat == 'denizen' then
       nextPsi = 'shatter'
     else
