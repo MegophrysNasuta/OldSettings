@@ -82,6 +82,7 @@ end
 
 Megophrys.Psion.nextAttack = function()
   local Psion = Megophrys.Psion
+  local chanceToMouthOff = 0
   local imSoClever = ''
   local killStrat = Megophrys.killStrat
   local nextWeave = ''
@@ -90,6 +91,10 @@ Megophrys.Psion.nextAttack = function()
   local targetAffs = affstrack.score
   local targetHits = Megophrys.targetHits or 0
   local uiColor = Megophrys.fgColors[killStrat]
+
+  local unweavingBody = (ak.psion.unweaving.body or 0)
+  local unweavingMind = (ak.psion.unweaving.mind or 0)
+  local unweavingSpirit = (ak.psion.unweaving.spirit or 0)
 
   if killStrat == 'denizen' then
     if ak.defs.shield then
@@ -116,31 +121,51 @@ Megophrys.Psion.nextAttack = function()
         nextPsi = 'excise'
         nextWeave = 'deathblow'
         imSoClever = 'say You cannot resist!'
-      elseif ((ak.psion.unweaving.body > 3 and ak.psion.unweaving.mind > 3) or
-              (ak.psion.unweaving.body > 3 and ak.psion.unweaving.spirit > 3) or
-              (ak.psion.unweaving.mind > 3 and ak.psion.unweaving.spirit > 3)) then
+        chanceToMouthOff = 1
+      elseif ((unweavingBody > 3 and unweavingMind > 3) or
+              (unweavingBody > 3 and unweavingSpirit > 3) or
+              (unweavingMind > 3 and unweavingSpirit > 3)) then
         nextPsi = 'deconstruct'
         nextWeave = 'deathblow'
         imSoClever = 'say Another enemy unmade. Hah!'
+        chanceToMouthOff = 1
       elseif targetHits == 0 then
         nextWeave = 'backhand'
         imSoClever = 'say SLAP!!'
+        chanceToMouthOff = 0.8
       elseif targetAffs.clumsiness < 60 then
         nextWeave = 'sever'
         imSoClever = 'warcry'
+        chanceToMouthOff = 0.1
       elseif targetAffs.asthma < 60 then
         nextWeave = 'deathblow'
+        imSoClever = 'warcry'
+        chanceToMouthOff = 0.1
+      elseif (targetAffs.impatience > 90 and
+              targetAffs.bloodfire > 90) then
+        nextWeave = 'exsanguinate'
         imSoClever = 'say *forcefully Die, heretic!'
-      elseif targetAffs.unweavingBody <= 50 then
-        nextWeave = 'unweave body'
-      elseif targetAffs.unweavingmind <=50 then
-        nextWeave = 'unweave mind'
+        chanceToMouthOff = 0.2
+      elseif (targetAffs.impatience > 90 and
+              targetAffs.bloodfire > 90 and
+              targetAffs.anorexia > 90) then
+        if unweavingBody < 50 then
+          nextWeave = 'unweave body'
+        elseif unweavingMind < 50 then
+          nextWeave = 'unweave mind'
+        else
+          nextWeave = 'deathblow'
+        end
+        imSoClever = ''
+        chanceToMouthOff = 0
       elseif targetHits % 2 == 1 then
         nextWeave = 'overhand'
         imSoClever = 'say BONK!!'
+        chanceToMouthOff = 0.4
       else
-        nextWeave = 'exsanguinate'
+        nextWeave = 'deathblow'
         imSoClever = 'warcry'
+        chanceToMouthOff = 0.1
       end
     end
   end
@@ -149,7 +174,17 @@ Megophrys.Psion.nextAttack = function()
     if killStrat == 'denizen' then
       nextPsi = 'shatter'
     else
-      nextPsi = 'blast'
+      if (ak.bleeding or 0) > 150 then
+        nextPsi = 'combustion'
+      elseif (targetAffs.mindravaged or 0) < 50 then
+        nextPsi = 'blast'
+      else
+        if targetHits % 2 == 1 then
+          nextPsi = 'muddle'
+        else
+          nextPsi = 'shatter'
+        end
+      end
     end
   end
 
@@ -170,11 +205,11 @@ Megophrys.Psion.nextAttack = function()
     end
   end
 
-  Psion.nextPsiMoveButton:echo(nextPsi or '')
+  Psion.nextPsiMoveButton:echo(nextPsi or '', uiColor, 'c')
 
-  --if imSoClever ~= '' then
-  --  setNextAttack = setNextAttack ..' / '.. imSoClever
-  --end
+  if imSoClever ~= '' and math.random() < chanceToMouthOff then
+    setNextAttack = setNextAttack ..' / '.. imSoClever
+  end
 
   sendAll(setNextAttack, 'queue addclear eqbal nextAttack')
   if not ak.defs.shield then

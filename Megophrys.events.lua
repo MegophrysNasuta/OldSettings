@@ -76,12 +76,19 @@ end
 
 Megophrys.hitRebounding = function()
   if Megophrys.class == 'Magi' then
-    if (Megophrys.autoAttacking and 
-          Megophrys.killStrat == 'denizen') then
+    Megophrys.Magi.element = 'air'
+    cecho('\n<cyan>Switching to air for rebounding\n')
+  end
+  cecho('\n<cyan>STOP HITTING YOURSELF STOP HITTING YOURSELF\n')
+end
+
+Megophrys.hitShield = function()
+  if (Megophrys.autoAttacking and 
+      Megophrys.killStrat == 'denizen') then
+    if Megophrys.class == 'Magi' then
       send('cast disintegrate on '.. target)
-    else
-      Megophrys.Magi.element = 'air'
-      cecho('\n<cyan>Switching to air for rebounding\n')
+    elseif Megophrys.class == 'Psion' then
+      send('weave pulverise '.. target)
     end
   end
   cecho('\n<cyan>STOP HITTING YOURSELF STOP HITTING YOURSELF\n')

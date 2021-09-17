@@ -23,6 +23,7 @@ Megophrys.targetPriority = {
   man = 1,
   moccasin = 1,
   muskrat = 1,
+  ohmut = 1,
   owl = 1,
   scorpion = 1,
   squid = 1,
@@ -310,7 +311,9 @@ Megophrys.autoResist = function()
     Megophrys.setGuidance('DieWithHonor')
     Megophrys.priorityLabel:echo('<center>Priority: HEAL</center>')
     wsys.keepup('shield', true)
-    wsys.keepup('reflections', true)
+    if Megophrys.class == 'Magi' then
+      wsys.keepup('reflections', true)
+    end
   end
 end
 
@@ -577,7 +580,9 @@ Megophrys.stopResist = function(reason)
   cecho('\n<red>'.. reason ..'. Disabling auto-resist.\n')
   Megophrys.autoResisting = false
   wsys.unkeepup('shield', true)
-  wsys.unkeepup('reflections', true)
+  if Megophrys.class == 'Magi' then
+    wsys.unkeepup('reflections', true)
+  end
   send('diag')
   Megophrys.priorityLabel:echo('<center>Priority: IDLE</center>')
   Megophrys.updateMissionCtrlBar()
@@ -655,19 +660,11 @@ Megophrys.updateBars = function()
       width='25%', height='3.5%'
     })
   end
-  if not Megophrys.affTable then
-    Megophrys.affTable = Geyser.Label:new({
-      name='affTable',
-      x='-450px', y='7%',
-      width='12.5%', height='45%',
-      fgColor='white', color='black'
-    })
-  end
   if not Megophrys.tgtAffTable then
     Megophrys.tgtAffTable = Geyser.Label:new({
       name='tgtAffTable',
-      x='-12.5%', y='7%',
-      width='12.5%', height='45%',
+      x='-1150px', y='120px',
+      width='150px', height='250px',
       fgColor='white', color='black'
     })
   end
@@ -714,26 +711,11 @@ Megophrys.updateBars = function()
   Megophrys.hpGauge:setValue(currHealth, maxhp, healthPct)
   Megophrys.mpGauge:setValue(currMana, maxmp, manaPct)
 
-  local affTable = '<center><b>My Affs:</b><ul>'
-  if Megophrys.opponentClass then
-    affTable = '<center><b>My Affs: \n('.. Megophrys.opponentClass ..'):</b><ul>'
-  end
-  local anyAffs = false
-  for aff, _ in spairs(wsysf.affs) do
-    if (aff ~= 'blindness' and aff ~= 'deafness' and
-        aff ~= 'insomnia') then
-      anyAffs = true
-      affTable = affTable ..'<li>'.. aff ..'</li>'
-    end
-  end
-  if not anyAffs then affTable = affTable ..'<li>N/A</li>' end
-  affTable = affTable ..'</ul></center>'
-  Megophrys.affTable:echo(affTable)
-
-  local tgtAffTable = '<center><b>Tgt Affs:</b><ul>'
+  local tgtAffTable = '<b>Tgt Affs:</b><ul>'
   local targetAffs = affstrack.score
   anyAffs = false
   trackedAffs = {
+    bled        = ak.bleeding,
     paralysis   = targetAffs.paralysis,
     anorexia    = targetAffs.anorexia,
     asthma      = targetAffs.athma,
@@ -752,7 +734,7 @@ Megophrys.updateBars = function()
   local extraFmt = ''
   local strLen = 4
   for aff, pct in spairs(trackedAffs) do
-    if aff:find('^unweave') == nil then
+    if aff:find('^unweave') == nil and aff ~= 'bled' then
       extraFmt = '%'
       strLen = 4
     else
