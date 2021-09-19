@@ -696,7 +696,7 @@ Megophrys.updateBars = function()
     Megophrys.tgtAffTable = Geyser.Label:new({
       name='tgtAffTable',
       x='-1150px', y='120px',
-      width='150px', height='250px',
+      width='150px', height='350px',
       fgColor='white', color='black'
     })
   end
@@ -745,16 +745,44 @@ Megophrys.updateBars = function()
 
   local tgtAffTable = '<b>Tgt Affs:</b><ul>'
   local targetAffs = affstrack.score
-  anyAffs = false
-  trackedAffs = {
-    bled        = ak.bleeding,
+
+  local addToTgtAffTable = function(tgtAffTable, affList)
+    local extraFmt = ''
+    local strLen = 4
+    for aff, pct in spairs(affList) do
+      if aff:find('^unweave') == nil and aff ~= 'bled' then
+        extraFmt = '%'
+        strLen = 4
+      else
+        extraFmt = ''
+        strLen = 5
+      end
+      tgtAffTable = (tgtAffTable ..'<li>'.. aff:gsub('nweave', ''):sub(1, strLen)
+                     ..' ('.. (pct or '0') .. extraFmt ..')</li>')
+    end
+    tgtAffTable = (tgtAffTable ..'<li>&nbsp;</li>')
+    return tgtAffTable
+  end
+
+  local trueLockAffs = {
     paralysis   = targetAffs.paralysis,
     anorexia    = targetAffs.anorexia,
-    asthma      = targetAffs.athma,
+    asthma      = targetAffs.asthma,
     impatience  = targetAffs.impatience,
+    slickness   = targetAffs.slickness,
+    bfire       = targetAffs.bloodfire,
+  }
+  tgtAffTable = addToTgtAffTable(tgtAffTable, trueLockAffs)
+
+  local psionAffs = {
+    bled        = ak.bleeding,
     unweavemind = ak.psion.unweaving.mind,
     unweavebody = ak.psion.unweaving.body,
     unweavesoul = ak.psion.unweaving.spirit,
+  }
+  tgtAffTable = addToTgtAffTable(tgtAffTable, psionAffs)
+
+  local otherAffs = {
     haemophilia = targetAffs.haemophilia,
     epilepsy    = targetAffs.epilepsy,
     dizziness   = targetAffs.dizziness,
@@ -763,19 +791,8 @@ Megophrys.updateBars = function()
     clumsiness  = targetAffs.clumsiness,
     weariness   = targetAffs.weariness
   }
-  local extraFmt = ''
-  local strLen = 4
-  for aff, pct in spairs(trackedAffs) do
-    if aff:find('^unweave') == nil and aff ~= 'bled' then
-      extraFmt = '%'
-      strLen = 4
-    else
-      extraFmt = ''
-      strLen = 5
-    end
-    tgtAffTable = (tgtAffTable ..'<li>'.. aff:gsub('nweave', ''):sub(1, strLen)
-                   ..' ('.. (pct or '0') .. extraFmt ..')</li>')
-  end
+  tgtAffTable = addToTgtAffTable(tgtAffTable, otherAffs)
+
   tgtAffTable = tgtAffTable ..'</ul></center>'
   Megophrys.tgtAffTable:echo(tgtAffTable)
 end
