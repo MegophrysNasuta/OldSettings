@@ -84,7 +84,6 @@ Megophrys.Magi.setMode = function()
     'c'
   )
 
-  Megophrys.timeUntilNextAttack = 3.03
   if killStrat == 'denizen' then
     Megophrys.nextMoveButton:echo('Staffcast', Megophrys.fgColors[killStrat], 'c')
     Magi.nextGolemMoveButton:echo('Squeeze', Megophrys.fgColors[killStrat], 'c')
@@ -111,7 +110,6 @@ Megophrys.Magi.setMode = function()
   elseif killStrat == 'pummel' then
     Megophrys.nextMoveButton:echo('Staffstrike', Megophrys.fgColors[killStrat], 'c')
     Magi.nextGolemMoveButton:echo('Timeflux', Megophrys.fgColors[killStrat], 'c')
-    Megophrys.timeUntilNextAttack = 2.33
     cecho('\n<cyan>Magi PvP (Ice) mode activated!')
 
     Magi.timefluxUp = false
@@ -131,7 +129,6 @@ Megophrys.Magi.setMode = function()
   elseif killStrat == 'fiyah' then
     Megophrys.nextMoveButton:echo('Staffstrike', Megophrys.fgColors[killStrat], 'c')
     Magi.nextGolemMoveButton:echo('Timeflux', Megophrys.fgColors[killStrat], 'c')
-    Megophrys.timeUntilNextAttack = 2.33
     cecho('\n<cyan>Magi PvP (Fire) mode activated!')
 
     Magi.timefluxUp = false
@@ -263,9 +260,6 @@ Megophrys.Magi.nextAttack = function()
       end
     end
   end
-
-  Megophrys.autoAttackTimerId = tempTimer(Megophrys.timeUntilNextAttack,
-                                          Magi.nextAttack)
 end
 
 Magi.nextLimbPrepAttack = function()

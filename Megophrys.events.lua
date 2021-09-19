@@ -56,6 +56,20 @@ Megophrys.flyingSuccess = function()
   end
 end
 
+Megophrys.gainedBalance = function()
+  if gmcp.Char.Vitals.bal ~= "1" then return end
+  if Megophrys.autoAttacking then
+    Megophrys.nextAttack()
+  end
+end
+
+Megophrys.gainedEQ = function()
+  if gmcp.Char.Vitals.eq ~= "1" then return end
+  if Megophrys.autoAttacking then
+    Megophrys.nextAttack()
+  end
+end
+
 Megophrys.hitIcewall = function()
   if Megophrys.autoEscaping then
     if #gmcp.Room.Info.exits < 3 and Megophrys.class == 'Magi' then

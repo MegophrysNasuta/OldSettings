@@ -10,12 +10,11 @@ Megophrys.Psion.setMode = function()
   local killStrat = Megophrys.killStrat
 
   if killStrat == 'denizen' then
-    Megophrys.timeUntilNextAttack = 1.88
     Megophrys.Psion.setWeavePrep('clumsiness')
-    Megophrys.nextMoveButton:echo('Overhand', Megophrys.fgColors[killStrat], 'c')
+    Megophrys.nextMoveButton:echo('BONK!', Megophrys.fgColors[killStrat], 'c')
   else
-    Megophrys.timeUntilNextAttack = 2.03
     Megophrys.Psion.setWeavePrep('paralysis')
+    Megophrys.nextMoveButton:echo('<i>*SLAP*</i>', Megophrys.fgColors[killStrat], 'c')
   end
 
   Megophrys.specialMoveButton:echo(
@@ -101,6 +100,8 @@ Megophrys.Psion.nextAttack = function()
       send('queue prepend eqbal weave pulverise &tar')
     end
     nextWeave = 'overhand'
+    imSoClever = ''
+    chanceToMouthOff = 0
   else
     if ak.defs.shield then
       Megophrys.nextMoveButton:echo('Cleave Shield', Megophrys.fgColors[killStrat], 'c')
@@ -215,7 +216,4 @@ Megophrys.Psion.nextAttack = function()
   if not ak.defs.shield then
     Megophrys.targetHits = targetHits + 1
   end
-
-  Megophrys.autoAttackTimerId = tempTimer(Megophrys.timeUntilNextAttack,
-                                          Psion.nextAttack)
 end

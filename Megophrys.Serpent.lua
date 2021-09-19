@@ -8,7 +8,6 @@ Megophrys.Serpent.setMode = function()
   local Serpent = Megophrys.Serpent
   local killStrat = Megophrys.killStrat
 
-  Megophrys.timeUntilNextAttack = 4.33
   if killStrat == 'denizen' then
     Megophrys.nextMoveButton:echo('Garrote', Megophrys.fgColors[killStrat], 'c')
   end
@@ -24,7 +23,4 @@ Megophrys.Serpent.nextAttack = function()
     sendAll(setNextAttack ..'thrash &tar / garrote &tar',
             'queue addclear eqbal nextAttack')
   end
-
-  Megophrys.autoAttackTimerId = tempTimer(Megophrys.timeUntilNextAttack,
-                                          Serpent.nextAttack)
 end

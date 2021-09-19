@@ -9,6 +9,7 @@ Megophrys.fgColors = {
   raid = 'orange',
   pummel = 'yellow',
   fiyah = 'yellow',
+  bonk = 'yellow',
 }
 
 Megophrys.targetPriority = {
@@ -22,10 +23,12 @@ Megophrys.targetPriority = {
   lion = 1,
   man = 1,
   moccasin = 1,
+  mistress = 1,
   muskrat = 1,
   ohmut = 1,
   owl = 1,
   scorpion = 1,
+  selkie = 1,
   squid = 1,
   stingray = 1,
   vulture = 1,
@@ -34,11 +37,13 @@ Megophrys.targetPriority = {
   blacksmith = 2,
   buckawn = 2,
   cook = 2,
+  fairy = 2,
   firetender = 2,
   ghaser = 2,
   gour = 2,
   guard = 2,
   hydra = 2,
+  kelpie = 2,
   lynx = 2,
   orc = 2,
   rakrr = 2,
@@ -61,6 +66,7 @@ Megophrys.targetPriority = {
   captain = 4,
   dynas = 4,
   knight = 4,
+  lady = 4,
   lord = 4,
   sentry = 4,
   ulvna = 4,
@@ -111,7 +117,8 @@ Megophrys.autoSelectHuntingTargetLine = function(matches)
         gmcp.Room.Info.area == 'Quartz Peak' or
         gmcp.Room.Info.area == 'the ruins of Phereklos' or
         gmcp.Room.Info.area == 'the Mhojave Desert' or
-        gmcp.Room.Info.area == 'Tir Murann') then
+        gmcp.Room.Info.area == 'Tir Murann' or
+        gmcp.Room.Info.area == 'Annwyn') then
       if (matches[2] ~= 'toad' and
           matches[4] ~= 'a buckawn youth' and
           matches[4] ~= 'a juvenile orc' and
@@ -121,6 +128,30 @@ Megophrys.autoSelectHuntingTargetLine = function(matches)
         Megophrys.potentialTargets[#Megophrys.potentialTargets + 1] = matches[2]..matches[3]
       end
     end
+  end
+end
+
+Megophrys.findTargetsInLine = function(match)
+  if Megophrys.killStrat ~= 'raid' then return end
+  local firstMatch = true
+  if match then
+    local line = getCurrentLine()
+      for name, _ in pairs(cdb.db) do
+        if name ~= target and line:match(name) then
+          if firstMatch then
+            cecho('\n<cyan>Click2Target: ')
+            firstMatch = false
+          end
+          cechoPopup('<cyan>'.. name ..'  ',
+            {
+                function() Megophrys.setTarget(name) end,
+                function() send('enemy '.. name) end
+            }, {
+                'Target '.. name,
+                'Enemy '.. name
+            })
+        end
+      end
   end
 end
 
@@ -641,6 +672,7 @@ Megophrys.toggleTargetLimb = function()
   else
     Megophrys.targetLimb = 'right'
   end
+  Megophrys.targetLimbSet = Megophrys.targetLimbSet or 'leg'
   cecho('\n<cyan>Targetting '.. Megophrys.targetLimb ..' '.. Megophrys.targetLimbSet ..'.\n')
   Megophrys.updatePrepGauges()
 end
