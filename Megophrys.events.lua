@@ -1,3 +1,7 @@
+Megophrys.onDisconnect = function()
+  disableTrigger('Update Power Bars')
+end
+
 Megophrys.onConnect = function()
   sendAll('health', 'mana')  -- reset power bars
   Megophrys.class = gmcp.Char.Status.class
@@ -9,6 +13,7 @@ Megophrys.onConnect = function()
   end
   Megophrys.setMode('denizen')
   Megophrys.resetCuringPrios()
+  enableTrigger('Update Power Bars')
   cecho('\n<cyan>Megophrys v1.1 initialised. Enjoy :)\n')
 end
 
@@ -59,14 +64,14 @@ end
 Megophrys.gainedBalance = function()
   if gmcp.Char.Vitals.bal ~= "1" then return end
   if Megophrys.autoAttacking then
-    Megophrys.nextAttack()
+    Megophrys[Megophrys.class].nextAttack()
   end
 end
 
 Megophrys.gainedEQ = function()
   if gmcp.Char.Vitals.eq ~= "1" then return end
   if Megophrys.autoAttacking then
-    Megophrys.nextAttack()
+    Megophrys[Megophrys.class].nextAttack()
   end
 end
 
