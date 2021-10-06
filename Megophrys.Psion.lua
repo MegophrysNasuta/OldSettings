@@ -12,6 +12,8 @@ Megophrys.Psion.setMode = function()
   if killStrat == 'denizen' then
     Megophrys.Psion.setWeavePrep('clumsiness')
     Megophrys.nextMoveButton:echo('BONK!', Megophrys.fgColors[killStrat], 'c')
+  elseif killStrat == 'los' then
+    Megophrys.nextMoveButton:echo('Destruction', Megophrys.fgColors[killStrat], 'c')
   else
     Megophrys.Psion.setWeavePrep('paralysis')
     Megophrys.nextMoveButton:echo('<i>*SLAP*</i>', Megophrys.fgColors[killStrat], 'c')
@@ -73,6 +75,7 @@ Megophrys.Psion.setWeavePrep = function(prep)
   if Megophrys.Psion.weavePrep then
     cecho(('\n<cyan>Set weave prep to '.. Megophrys.Psion.weavePrep
            ..' ('.. prep ..')\n'))
+    Megophrys.givingAffs:insert(prep)
     Megophrys.Psion.weavePrepButton:echo(prep:lower():title(),
                                    Megophrys.fgColors[Megophrys.killStrat],
                                    'c')
@@ -84,7 +87,7 @@ Megophrys.Psion.nextAttack = function()
   local chanceToMouthOff = 0
   local imSoClever = ''
   local killStrat = Megophrys.killStrat
-  local nextWeave = ''
+  local nextWeave = 'overhand'
   local nextPsi = ''
   local preAlias = 'setalias nextAttack stand / stand'
   local targetAffs = affstrack.score
@@ -99,19 +102,22 @@ Megophrys.Psion.nextAttack = function()
     if ak.defs.shield then
       send('queue prepend eqbal weave pulverise &tar')
     end
-    nextWeave = 'overhand'
-    imSoClever = ''
-    chanceToMouthOff = 0
+  elseif killStrat == 'los' then
+    if Psion.clarityUp then
+      send('enact clarity')
+    else
+      send('enact destruction '.. target ..' '.. Megophrys.LOSDirection)
+    end
   else
     if ak.defs.shield then
       Megophrys.nextMoveButton:echo('Cleave Shield', Megophrys.fgColors[killStrat], 'c')
       nextWeave = 'cleave'
     else
-      if targetAffs.paralysis < 100 then
+      if not tarAff("paralysis") then
         Megophrys.Psion.setWeavePrep('paralysis')
-      elseif targetAffs.clumsiness < 60 then
+      elseif not tarAff("clumsiness") then
         Megophrys.Psion.setWeavePrep('clumsiness')
-      elseif targetAffs.asthma < 60 then
+      elseif not tarAff("asthma") then
         Megophrys.Psion.setWeavePrep('asthma')
       else
         Megophrys.Psion.setWeavePrep('haemophilia')
@@ -134,28 +140,40 @@ Megophrys.Psion.nextAttack = function()
         nextWeave = 'backhand'
         imSoClever = 'say SLAP!!'
         chanceToMouthOff = 0.8
-      elseif targetAffs.clumsiness < 60 then
+        Megophrys.givingAffs:insert('stupidity')
+        Megophrys.givingAffs:insert('dizziness')
+      elseif not tarAff("clumsiness") then
         nextWeave = 'sever'
         imSoClever = 'warcry'
         chanceToMouthOff = 0.1
-      elseif targetAffs.asthma < 60 then
+        Megophrys.givingAffs:insert('clumsiness')
+      elseif not tarAff("asthma") then
         nextWeave = 'deathblow'
         imSoClever = 'warcry'
         chanceToMouthOff = 0.1
-      elseif (targetAffs.impatience > 90 and
-              targetAffs.bloodfire > 90) then
+        if not Megophrys.givingAffs:contains('asthma') then
+          Megophrys.givingAffs:insert('asthma')
+        end
+      elseif tarAff("impatience") and tarAff("bloodfire") then
         nextWeave = 'exsanguinate'
         imSoClever = 'say *forcefully Die, heretic!'
         chanceToMouthOff = 0.2
-      elseif (targetAffs.impatience > 90 and
-              targetAffs.bloodfire > 90 and
-              targetAffs.anorexia > 90) then
-        if unweavingBody < 50 then
+        Megophrys.givingAffs:insert('nausea')
+        if (ak.bleeding or 0) > 150 then
+          Megophrys.givingAffs:insert('anorexia')
+        end
+      elseif tarAff("impatience") and tarAff("bloodfire") and tarAff("anorexia") then
+        if not tarAff("unweavingbody") then
           nextWeave = 'unweave body'
-        elseif unweavingMind < 50 then
+          Megophrys.givingAffs:insert('unweavingbody')
+        elseif not tarAff("unweavingmind") then
           nextWeave = 'unweave mind'
+          Megophrys.givingAffs:insert('unweavingmind')
         else
           nextWeave = 'deathblow'
+          if not Megophrys.givingAffs:contains('asthma') then
+            Megophrys.givingAffs:insert('asthma')
+          end
         end
         imSoClever = ''
         chanceToMouthOff = 0
@@ -163,10 +181,18 @@ Megophrys.Psion.nextAttack = function()
         nextWeave = 'overhand'
         imSoClever = 'say BONK!!'
         chanceToMouthOff = 0.4
+        if Megophrys.targetProne or lb[target].hits.head > 100 then
+          Megophrys.givingAffs:insert('impatience')
+        else
+          Megophrys.givingAffs:insert('stupidity')
+        end
       else
         nextWeave = 'deathblow'
         imSoClever = 'warcry'
         chanceToMouthOff = 0.1
+        if not Megophrys.givingAffs:contains('asthma') then
+          Megophrys.givingAffs:insert('asthma')
+        end
       end
     end
   end
@@ -177,8 +203,13 @@ Megophrys.Psion.nextAttack = function()
     else
       if (ak.bleeding or 0) > 150 then
         nextPsi = 'combustion'
-      elseif (targetAffs.mindravaged or 0) < 50 then
+        Megophrys.givingAffs:insert('bloodfire')
+      elseif not tarAff("mindravaged") and (
+            tarAff("impatience") and tarAff("stupidity") and (
+                tarAff("dizziness") or tarAff("unweavingmind")
+            )) then
         nextPsi = 'blast'
+        Megophrys.givingAffs:insert('mindravaged')
       else
         if targetHits % 2 == 1 then
           nextPsi = 'muddle'
@@ -215,5 +246,17 @@ Megophrys.Psion.nextAttack = function()
   sendAll(setNextAttack, 'queue addclear eqbal nextAttack')
   if not ak.defs.shield then
     Megophrys.targetHits = targetHits + 1
+  end
+
+  if killStrat ~= 'denizen' then
+    if #Megophrys.givingAffs == 1 then
+      send('pt '.. Megophrys.givingAffs[1] ..' on '.. target)
+    elseif #Megophrys.givingAffs == 2 then
+      send('pt '.. Megophrys.givingAffs[1] ..' and '.. Megophrys.givingAffs[2] ..
+           ' on '.. target)
+    elseif #Megophrys.givingAffs == 3 then
+      send('pt '.. Megophrys.givingAffs[1] ..', '.. Megophrys.givingAffs[2] ..
+           ' and '.. Megophrys.givingAffs[3] ..' on '.. target)
+    end
   end
 end

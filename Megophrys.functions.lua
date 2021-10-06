@@ -64,7 +64,8 @@ Megophrys.findTargetsInLine = function(match)
   if match then
     local line = getCurrentLine()
       for name, _ in pairs(cdb.db) do
-        if name ~= target and line:match(name) then
+        if (name ~= target and line:match(name) and
+                _.city ~= gmcp.Char.Status.city:lower():split(' ')[1]) then
           if firstMatch then
             cecho('\n<cyan>Click2Target: ')
             firstMatch = false
@@ -172,6 +173,15 @@ Megophrys.setMode = function(mode)
 
     if Megophrys.raidLeader then
       cecho('\n<cyan>Raid leader set to: '.. Megophrys.raidLeader ..'\n')
+    end
+
+    wsys.keepup('mass', true)
+    wsys.keepup('rebounding', true)
+  elseif Megophrys.killStrat == 'los' then
+    cecho('\n<cyan>LoS mode activated as '.. Megophrys.class ..'!')
+
+    if Megophrys.LOSDirection then
+      cecho('\n<cyan>LoS direction set to: '.. Megophrys.LOSDirection ..'\n')
     end
 
     wsys.keepup('mass', true)

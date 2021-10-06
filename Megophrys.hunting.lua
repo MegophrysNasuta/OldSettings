@@ -2,6 +2,7 @@ Megophrys.targetPriority = {
   anaconda = 1,
   aphid = 1,
   bass = 1,
+  bat = 1,
   crocodile = 1,
   drunk = 1,
   eel = 1,
@@ -13,6 +14,7 @@ Megophrys.targetPriority = {
   muskrat = 1,
   ohmut = 1,
   owl = 1,
+  oyster = 1,
   scorpion = 1,
   selkie = 1,
   squid = 1,
@@ -41,12 +43,13 @@ Megophrys.targetPriority = {
   xabat = 2,
   aldroga = 3,
   ghoul = 3,
+  hobgoblin = 3,
   huntress = 3,
   mage = 3,
   noble = 3,
   ogre = 3,
   rurnog = 3,
-  soldier = 4,
+  soldier = 3,
   warrior = 3,
   witchdoctor = 3,
   captain = 4,
@@ -55,7 +58,9 @@ Megophrys.targetPriority = {
   lady = 4,
   lord = 4,
   sentry = 4,
+  sergeant = 4,
   ulvna = 4,
+  vampire = 4,
   vewig = 4
 }
 
@@ -98,12 +103,16 @@ Megophrys.autoSelectHuntingTargetLine = function(matches)
   else
     if (gmcp.Room.Info.area == 'the village of Qurnok' or
         gmcp.Room.Info.area == 'Forest Watch' or
+        gmcp.Room.Info.area == 'the Azdun Dungeon' or
         gmcp.Room.Info.area == 'the Creville Asylum' or
         gmcp.Room.Info.area == 'the Barony of Dun Valley' or
         gmcp.Room.Info.area == 'Quartz Peak' or
         gmcp.Room.Info.area == 'the ruins of Phereklos' or
         gmcp.Room.Info.area == 'the Mhojave Desert' or
         gmcp.Room.Info.area == 'Tir Murann' or
+        gmcp.Room.Info.area == 'the Peshwar Delta' or
+        gmcp.Room.Info.area == 'the village of Tasur\'ke' or
+        gmcp.Room.Info.area == 'the Isle of New Hope' or
         gmcp.Room.Info.area == 'Annwyn') then
       if (matches[2] ~= 'toad' and
           matches[4] ~= 'a buckawn youth' and

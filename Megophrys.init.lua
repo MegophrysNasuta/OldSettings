@@ -1,9 +1,11 @@
 Megophrys = (Megophrys or {})
+Megophrys.givingAffs = (Megophrys.givingAffs or {})
 Megophrys.targetLimb = (Megophrys.targetLimb or 'left')
 
 Megophrys.fgColors = {
   denizen = 'cyan',
   raid = 'orange',
+  los = 'orange',
   pummel = 'yellow',
   fiyah = 'yellow',
   bonk = 'yellow',
