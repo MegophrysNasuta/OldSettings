@@ -199,6 +199,7 @@ Megophrys.setMode = function(mode)
     fgColor=Megophrys.fgColors[Megophrys.killStrat], color='black',
     message='<center>Priority: IDLE</center>'
   })
+  Megophrys.priorityLabel:setFontSize(11)
   Megophrys.setTarget('none')
   Megophrys.highlightTargetRoom()
   Megophrys[Megophrys.class].setMode()
@@ -274,6 +275,7 @@ Megophrys.setTarget = function(t)
     fgColor=Megophrys.fgColors[Megophrys.killStrat], color='black',
     message='<center>Target: '.. target ..'</center>'
   })
+  Megophrys.targetLabel:setFontSize(11)
 end
 
 Megophrys.setTargetHealth = function(hp, maxHp)

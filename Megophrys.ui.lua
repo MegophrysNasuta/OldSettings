@@ -1,14 +1,6 @@
 Megophrys.makeClassToolbars = function()
-  setBorderRight(480)
-  Megophrys.PartyChatConsole = Geyser.MiniConsole:new({
-    name='PartyChatConsole',
-    x='-470px', y='50%',
-    autoWrap=true,
-    color='black',
-    scrollBar=false,
-    fontSize=10,
-    width=475, height='50%',
-  })
+  setBorderRight(544)
+  setBorderTop(120)
 
   Megophrys.modeToolbar = Geyser.Container:new({
     name='mode_switches',
@@ -25,39 +17,45 @@ Megophrys.makeClassToolbars = function()
 
   Megophrys.modeLabel = Geyser.Label:new({
     name='mode_label',
-    x=0, y=0, width=70, height=20,
+    x=0, y=0, width=100, height=20,
     bgColor='black',
     message='AI Mode:'
   }, Megophrys.modeToolbar)
+  Megophrys.modeLabel:setFontSize(11)
   Megophrys.modeButton = Geyser.Label:new({
     name='current_mode',
-    x=70, y=0, width=130, height=20,
+    x=100, y=0, width=150, height=20,
     bgColor='black'
   }, Megophrys.modeToolbar)
+  Megophrys.modeButton:setFontSize(11)
 
   Megophrys.nextMoveLabel = Geyser.Label:new({
     name='next_move_label',
-    x=0, y=20, width=70, height=20,
+    x=0, y=20, width=100, height=20,
     bgColor='black',
     message='Next move:'
   }, Megophrys.modeToolbar)
+  Megophrys.nextMoveLabel:setFontSize(11)
   Megophrys.nextMoveButton = Geyser.Label:new({
     name='next_move',
-    x=70, y=20, width=130, height=20,
+    x=100, y=20, width=150, height=20,
     bgColor='black'
   }, Megophrys.modeToolbar)
+  Megophrys.nextMoveButton:setFontSize(11)
 
   Megophrys.specialMoveLabel = Geyser.Label:new({
     name='special_label',
-    x=0, y=40, width=70, height=20,
+    x=0, y=40, width=100, height=20,
     bgColor='black',
     message='Special:'
   }, Megophrys.modeToolbar)
+  Megophrys.specialMoveLabel:setFontSize(11)
   Megophrys.specialMoveButton = Geyser.Label:new({
     name='special_move',
-    x=70, y=40, width=130, height=20,
+    x=100, y=40, width=150, height=20,
     bgColor='black'
   }, Megophrys.modeToolbar)
+  Megophrys.specialMoveButton:setFontSize(11)
 
   if Megophrys.targetHpGauge then Megophrys.targetHpGauge:hide() end
   if Megophrys.targetMpGauge then Megophrys.targetMpGauge:hide() end
@@ -67,24 +65,27 @@ Megophrys.updateBars = function()
   if not Megophrys.hpGauge then
     Megophrys.hpGauge = Geyser.Gauge:new({
       name='hpGauge',
-      x='-25%', y=0,
-      width='25%', height='3.5%'
+      x='-520px', y=0,
+      width='520px', height='3.25%'
     })
   end
+  Megophrys.hpGauge:setFontSize(12)
   if not Megophrys.mpGauge then
     Megophrys.mpGauge = Geyser.Gauge:new({
       name='mpGauge',
-      x='-25%', y='3.5%',
-      width='25%', height='3.5%'
+      x='-520px', y='3.25%',
+      width='520px', height='3.25%'
     })
   end
+  Megophrys.mpGauge:setFontSize(12)
   if not Megophrys.tgtAffTable then
     Megophrys.tgtAffTable = Geyser.Label:new({
       name='tgtAffTable',
-      x='-1150px', y='120px',
-      width='150px', height='350px',
+      x='-475px', y='7.5%',
+      width='150px', height='420px',
       fgColor='white', color='black'
     })
+    Megophrys.tgtAffTable:setFontSize(12)
   end
 
   -- literally from https://wiki.mudlet.org/w/manual:geyser#Styling_a_gauge
@@ -130,60 +131,53 @@ Megophrys.updateBars = function()
   Megophrys.mpGauge:setValue(currMana, maxmp, manaPct)
 
   local tgtAffTable = '<b>Tgt Affs:</b><ul>'
-  local targetAffs = affstrack.score
-
   local addToTgtAffTable = function(tgtAffTable, affList)
-    local extraFmt = ''
-    local strLen = 4
-    for aff, pct in spairs(affList) do
-      if aff:find('^unweave') == nil and aff ~= 'bled' then
-        extraFmt = '%'
-        strLen = 4
+    for _, aff in pairs(affList) do
+      local entry = ''
+      if tarAff(aff) then
+        entry = '<b>'.. aff ..'</b>'
       else
-        extraFmt = ''
-        strLen = 5
+        entry = '<i><s>'.. aff ..'</s></i>'
       end
-      tgtAffTable = (tgtAffTable ..'<li>'.. aff:gsub('nweave', ''):sub(1, strLen)
-                     ..' ('.. (pct or '0') .. extraFmt ..')</li>')
+      tgtAffTable = (tgtAffTable ..'<li>'.. entry ..'</li>')
     end
     tgtAffTable = (tgtAffTable ..'<li>&nbsp;</li>')
     return tgtAffTable
   end
 
   local trueLockAffs = {
-    paralysis   = targetAffs.paralysis,
-    anorexia    = targetAffs.anorexia,
-    asthma      = targetAffs.asthma,
-    impatience  = targetAffs.impatience,
-    slickness   = targetAffs.slickness,
+    "paralysis",
+    "anorexia",
+    "asthma",
+    "impatience",
+    "slickness",
   }
   if Megophrys.class == 'Psion' then
-    trueLockAffs.bfire = targetAffs.bloodfire
+    trueLockAffs[#trueLockAffs + 1] = "bloodfire"
   end
   tgtAffTable = addToTgtAffTable(tgtAffTable, trueLockAffs)
 
   if Megophrys.class == 'Psion' then
     local psionAffs = {
-      unweavemind = ak.psion.unweaving.mind,
-      unweavebody = ak.psion.unweaving.body,
-      unweavesoul = ak.psion.unweaving.spirit,
+      "unweavingmind",
+      "unweavingbody",
+      "unweavingspirit",
     }
     tgtAffTable = addToTgtAffTable(tgtAffTable, psionAffs)
   end
 
   local otherAffs = {
-    bled        = ak.bleeding,
-    haemophilia = targetAffs.haemophilia,
-    epilepsy    = targetAffs.epilepsy,
-    dizziness   = targetAffs.dizziness,
-    nausea      = targetAffs.nausea,
-    stupidity   = targetAffs.stupidity,
-    clumsiness  = targetAffs.clumsiness,
-    weariness   = targetAffs.weariness
+    "haemophilia",
+    "epilepsy",
+    "dizziness",
+    "nausea",
+    "stupidity",
+    "clumsiness",
+    "weariness",
   }
   tgtAffTable = addToTgtAffTable(tgtAffTable, otherAffs)
 
-  tgtAffTable = tgtAffTable ..'</ul></center>'
+  tgtAffTable = tgtAffTable ..'<li>bleed: '.. (ak.bleeding or 0) ..'</li></ul></center>'
   Megophrys.tgtAffTable:echo(tgtAffTable)
 end
 
@@ -333,6 +327,7 @@ Megophrys.updatePrepGauges = function()
       width='150px', height='2%'
     })
   end
+  Megophrys.topGauge:setFontSize(11)
   if not Megophrys.middleGauge then
     Megophrys.middleGauge = Geyser.Gauge:new({
       name='middleGauge',
@@ -340,6 +335,7 @@ Megophrys.updatePrepGauges = function()
       width='150px', height='2%'
     })
   end
+  Megophrys.middleGauge:setFontSize(11)
   if not Megophrys.bottomGauge then
     Megophrys.bottomGauge = Geyser.Gauge:new({
       name='bottomGauge',
@@ -347,6 +343,7 @@ Megophrys.updatePrepGauges = function()
       width='150px', height='2%'
     })
   end
+  Megophrys.bottomGauge:setFontSize(11)
   local targetLimb = (Megophrys.targetLimb or 'left')
   local targetLimbSet = (Megophrys.targetLimbSet or 'leg')
   local otherLimb = ''

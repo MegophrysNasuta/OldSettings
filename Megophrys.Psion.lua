@@ -31,32 +31,36 @@ Megophrys.Psion.doSpecial = function() send('enact wavesurge') end
 Megophrys.Psion.makeClassToolbars = function()
   Megophrys.psionToolbar = Geyser.Container:new({
     name='psion_toolbar',
-    x=200, y=0, width=210, height=16
+    x=250, y=0, width=250, height=16
   })
 
   Psion.wpLabel = Geyser.Label:new({
     name='wp_label',
-    x=0, y=0, width=80, height=20,
+    x=0, y=0, width=100, height=20,
     bgColor='black',
-    message='Preparation:'
+    message='Prepared:'
   }, Megophrys.psionToolbar)
+  Psion.wpLabel:setFontSize(11)
   Psion.weavePrepButton = Geyser.Label:new({
     name='weave_prep_button',
-    x=70, y=0, width=130, height=20,
+    x=100, y=0, width=150, height=20,
     bgColor='black'
   }, Megophrys.psionToolbar)
+  Psion.weavePrepButton:setFontSize(11)
 
   Psion.nextPsiMoveLabel = Geyser.Label:new({
     name='next_psi_move_label',
-    x=0, y=20, width=70, height=20,
+    x=0, y=20, width=100, height=20,
     bgColor='black',
     message='Bonus atk:'
   }, Megophrys.psionToolbar)
+  Psion.nextPsiMoveLabel:setFontSize(11)
   Psion.nextPsiMoveButton = Geyser.Label:new({
     name='next_psi_move',
-    x=70, y=20, width=130, height=20,
+    x=100, y=20, width=150, height=20,
     bgColor='black'
   }, Megophrys.psionToolbar)
+  Psion.nextPsiMoveButton:setFontSize(11)
 
   Psion.setMode('denizen')
   Megophrys.updatePrepGauges()
@@ -75,7 +79,7 @@ Megophrys.Psion.setWeavePrep = function(prep)
   if Megophrys.Psion.weavePrep then
     cecho(('\n<cyan>Set weave prep to '.. Megophrys.Psion.weavePrep
            ..' ('.. prep ..')\n'))
-    Megophrys.givingAffs:insert(prep)
+    Megophrys.givingAffs = {prep}
     Megophrys.Psion.weavePrepButton:echo(prep:lower():title(),
                                    Megophrys.fgColors[Megophrys.killStrat],
                                    'c')
@@ -140,39 +144,39 @@ Megophrys.Psion.nextAttack = function()
         nextWeave = 'backhand'
         imSoClever = 'say SLAP!!'
         chanceToMouthOff = 0.8
-        Megophrys.givingAffs:insert('stupidity')
-        Megophrys.givingAffs:insert('dizziness')
+        table.insert(Megophrys.givingAffs, 'stupidity')
+        table.insert(Megophrys.givingAffs, 'dizziness')
       elseif not tarAff("clumsiness") then
         nextWeave = 'sever'
         imSoClever = 'warcry'
         chanceToMouthOff = 0.1
-        Megophrys.givingAffs:insert('clumsiness')
+        table.insert(Megophrys.givingAffs, 'clumsiness')
       elseif not tarAff("asthma") then
         nextWeave = 'deathblow'
         imSoClever = 'warcry'
         chanceToMouthOff = 0.1
         if not Megophrys.givingAffs:contains('asthma') then
-          Megophrys.givingAffs:insert('asthma')
+          table.insert(Megophrys.givingAffs, 'asthma')
         end
       elseif tarAff("impatience") and tarAff("bloodfire") then
         nextWeave = 'exsanguinate'
         imSoClever = 'say *forcefully Die, heretic!'
         chanceToMouthOff = 0.2
-        Megophrys.givingAffs:insert('nausea')
+        table.insert(Megophrys.givingAffs, 'nausea')
         if (ak.bleeding or 0) > 150 then
-          Megophrys.givingAffs:insert('anorexia')
+          table.insert(Megophrys.givingAffs, 'anorexia')
         end
       elseif tarAff("impatience") and tarAff("bloodfire") and tarAff("anorexia") then
         if not tarAff("unweavingbody") then
           nextWeave = 'unweave body'
-          Megophrys.givingAffs:insert('unweavingbody')
+          table.insert(Megophrys.givingAffs, 'unweavingbody')
         elseif not tarAff("unweavingmind") then
           nextWeave = 'unweave mind'
-          Megophrys.givingAffs:insert('unweavingmind')
+          table.insert(Megophrys.givingAffs, 'unweavingmind')
         else
           nextWeave = 'deathblow'
           if not Megophrys.givingAffs:contains('asthma') then
-            Megophrys.givingAffs:insert('asthma')
+            table.insert(Megophrys.givingAffs, 'asthma')
           end
         end
         imSoClever = ''
@@ -182,16 +186,16 @@ Megophrys.Psion.nextAttack = function()
         imSoClever = 'say BONK!!'
         chanceToMouthOff = 0.4
         if Megophrys.targetProne or lb[target].hits.head > 100 then
-          Megophrys.givingAffs:insert('impatience')
+          table.insert(Megophrys.givingAffs, 'impatience')
         else
-          Megophrys.givingAffs:insert('stupidity')
+          table.insert(Megophrys.givingAffs, 'stupidity')
         end
       else
         nextWeave = 'deathblow'
         imSoClever = 'warcry'
         chanceToMouthOff = 0.1
         if not Megophrys.givingAffs:contains('asthma') then
-          Megophrys.givingAffs:insert('asthma')
+          table.insert(Megophrys.givingAffs, 'asthma')
         end
       end
     end
@@ -203,13 +207,13 @@ Megophrys.Psion.nextAttack = function()
     else
       if (ak.bleeding or 0) > 150 then
         nextPsi = 'combustion'
-        Megophrys.givingAffs:insert('bloodfire')
+        table.insert(Megophrys.givingAffs, 'bloodfire')
       elseif not tarAff("mindravaged") and (
             tarAff("impatience") and tarAff("stupidity") and (
                 tarAff("dizziness") or tarAff("unweavingmind")
             )) then
         nextPsi = 'blast'
-        Megophrys.givingAffs:insert('mindravaged')
+        table.insert(Megophrys.givingAffs, 'mindravaged')
       else
         if targetHits % 2 == 1 then
           nextPsi = 'muddle'
