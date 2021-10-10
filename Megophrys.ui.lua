@@ -1,5 +1,5 @@
 Megophrys.makeClassToolbars = function()
-  setBorderRight(544)
+  setBorderRight(768)
   setBorderTop(120)
 
   Megophrys.modeToolbar = Geyser.Container:new({
@@ -87,6 +87,15 @@ Megophrys.updateBars = function()
     })
     Megophrys.tgtAffTable:setFontSize(12)
   end
+  if not Megophrys.whoHereTable then
+    Megophrys.whoHereTable = Geyser.Label:new({
+      name='whoHereTable',
+      x='-760px', y='800px',
+      width='752px', height='16px',
+      fgColor='white', color='black'
+    })
+    Megophrys.whoHereTable:setFontSize(12)
+  end
 
   -- literally from https://wiki.mudlet.org/w/manual:geyser#Styling_a_gauge
   Megophrys.hpGauge.front:setStyleSheet([[background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f04141, stop: 0.1 #ef2929, stop: 0.49 #cc0000, stop: 0.5 #a40000, stop: 1 #cc0000);
@@ -114,6 +123,16 @@ Megophrys.updateBars = function()
     border-style: solid;
     border-radius: 7;
     padding: 3px;]])
+
+  local whoHereTable = '<b>Players Here:</b> '
+  for _, player in pairs(gmcp.Room.Players) do
+    whoHereTable = whoHereTable .. player.name
+    if _ ~= #gmcp.Room.Players then
+      whoHereTable = whoHereTable ..', '
+    end
+  end
+  whoHereTable = whoHereTable ..'</ul>'
+  Megophrys.whoHereTable:echo(whoHereTable)
 
   local fmtPctLabel = function(portion, maxAmt)
     return ('<center>'..

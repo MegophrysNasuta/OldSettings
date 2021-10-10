@@ -127,8 +127,8 @@ Megophrys.Psion.nextAttack = function()
         Megophrys.Psion.setWeavePrep('haemophilia')
       end
 
-      local targetManaPct = (Megophrys.targetManaPct or 0)
-      if targetManaPct <= 30 then
+      local targetManaPct = (ak.currentmana or 0) / (ak.maxmana or 1)
+      if targetManaPct <= 0.3 then
         nextPsi = 'excise'
         nextWeave = 'deathblow'
         imSoClever = 'say You cannot resist!'

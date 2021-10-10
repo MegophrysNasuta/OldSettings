@@ -278,66 +278,6 @@ Megophrys.setTarget = function(t)
   Megophrys.targetLabel:setFontSize(11)
 end
 
-Megophrys.setTargetHealth = function(hp, maxHp)
-  if not Megophrys.targetHpGauge then
-    Megophrys.targetHpGauge = Geyser.Gauge:new({
-      name='targetHpGauge',
-      x='-25%', y='43%',
-      width='25%', height='3.5%'
-    })
-  end
-
-  -- literally from https://wiki.mudlet.org/w/manual:geyser#Styling_a_gauge
-  Megophrys.targetHpGauge.front:setStyleSheet([[background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f04141, stop: 0.1 #ef2929, stop: 0.49 #cc0000, stop: 0.5 #a40000, stop: 1 #cc0000);
-    border-top: 1px black solid;
-    border-left: 1px black solid;
-    border-bottom: 1px black solid;
-    border-radius: 7;
-    padding: 3px;]])
-  Megophrys.targetHpGauge.back:setStyleSheet([[background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #bd3333, stop: 0.1 #bd2020, stop: 0.49 #990000, stop: 0.5 #700000, stop: 1 #990000);
-    border-width: 1px;
-    border-color: black;
-    border-style: solid;
-    border-radius: 7;
-    padding: 3px;]])
-
-  hp = tonumber(hp)
-  maxHp = tonumber(maxHp)
-  Megophrys.targetHealthPct = math.floor((hp / maxHp) * 100)
-
-  Megophrys.targetHpGauge:setValue(hp, maxHp, '<center>'.. Megophrys.targetHealthPct ..'%')
-end
-
-Megophrys.setTargetMana = function(mp, maxMp)
-  if not Megophrys.targetMpGauge then
-    Megophrys.targetMpGauge = Geyser.Gauge:new({
-      name='targetMpGauge',
-      x='-25%', y='46.5%',
-      width='25%', height='3.5%'
-    })
-  end
-
-  -- literally from https://wiki.mudlet.org/w/manual:geyser#Styling_a_gauge
-  Megophrys.targetMpGauge.front:setStyleSheet([[background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #98f041, stop: 0.1 #8cf029, stop: 0.49 #66cc00, stop: 0.5 #52a300, stop: 1 #66cc00);
-    border-top: 1px black solid;
-    border-left: 1px black solid;
-    border-bottom: 1px black solid;
-    border-radius: 7;
-    padding: 3px;]])
-  Megophrys.targetMpGauge.back:setStyleSheet([[background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #78bd33, stop: 0.1 #6ebd20, stop: 0.49 #4c9900, stop: 0.5 #387000, stop: 1 #4c9900);
-    border-width: 1px;
-    border-color: black;
-    border-style: solid;
-    border-radius: 7;
-    padding: 3px;]])
-
-  mp = tonumber(mp)
-  maxMp = tonumber(maxMp)
-  Megophrys.targetManaPct = math.floor((mp / maxMp) * 100)
-
-  Megophrys.targetMpGauge:setValue(mp, maxMp, '<center>'.. Megophrys.targetManaPct ..'%')
-end
-
 Megophrys.stopAttack = function(reason)
   cecho('\n<cyan>'.. reason ..'. Disabling auto-attack.\n')
   if Megophrys.autoAttackTimerId then
