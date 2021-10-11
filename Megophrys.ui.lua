@@ -57,8 +57,58 @@ Megophrys.makeClassToolbars = function()
   }, Megophrys.modeToolbar)
   Megophrys.specialMoveButton:setFontSize(11)
 
+  Megophrys.calendarLabel = Geyser.Label:new({
+    name='calendar_label',
+    x=0, y=60, width=540, height=40,
+    bgColor='black', fgColor='CornflowerBlue',
+    message='Loading...'
+  })
+  Megophrys.calendarLabel:setFontSize(11)
+
   if Megophrys.targetHpGauge then Megophrys.targetHpGauge:hide() end
   if Megophrys.targetMpGauge then Megophrys.targetMpGauge:hide() end
+end
+
+Megophrys.showTime = function()
+  if not Megophrys.calendarLabel then return end
+  local tl = gmcp.IRE.Time.List
+  if not tl then return end
+
+  for key, _ in pairs(tl) do
+    local updated = gmcp.IRE.Time.Update[key]
+    if updated then tl[key] = updated end
+  end
+
+  local d = ''
+  if tl.day == "0" then
+    d = "1st"
+  elseif tl.day == "1" then
+    d = "2nd"
+  elseif tl.day == "2" then
+    d = "3rd"
+  else
+    d = tostring(tonumber(tl.day) + 1) .."th"
+  end
+
+  local seasons = {
+    "mid-winter",
+    "late winter",
+    "early spring",
+    "mid-spring",
+    "late spring",
+    "early summer",
+    "mid-summer",
+    "late summer",
+    "early autumn",
+    "mid-autumn",
+    "late autumn",
+    "early winter",
+  }
+
+  local timeStr = (d ..' '.. tl.month ..', '.. tl.year ..
+                   ' ('.. seasons[tonumber(tl.mon)] ..', '.. tl.moonphase ..
+                   ')<br>'.. tl.time)
+  Megophrys.calendarLabel:echo(timeStr)
 end
 
 Megophrys.updateBars = function()
@@ -406,4 +456,3 @@ Megophrys.updatePrepGauges = function()
   Megophrys.middleGauge:setValue(otherLimbWounds, 100, '<center>'.. middleLabel ..'</center>')
   Megophrys.bottomGauge:setValue(targetOtherWounds, 100, '<center>'.. bottomLabel ..'</center>')
 end
-
