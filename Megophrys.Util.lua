@@ -30,11 +30,11 @@ end
 
 Megophrys.highlightPanicRoom = function()
   Megophrys.panicRoomLabel = nil
-  local message = 'Panic Room: None'
+  local message = '<center>Panic Room: None'
   Megophrys.panicRoomLabel = Geyser.Label:new({
     name='panicRoomLabel',
-    x='-750px', y='15px',
-    height='14px', width='250px',
+    x='57.5%', y='2%',
+    height='2%', width='15%',
     fgColor=Megophrys.fgColors[Megophrys.killStrat], color='black',
     message=message
   })
@@ -46,21 +46,21 @@ Megophrys.highlightPanicRoom = function()
   unHighlightRoom((Megophrys.highlightedPanicRoom or 0))
   Megophrys.highlightedPanicRoom = tonumber(roomID)
   local foundRoomName = getRoomName(Megophrys.highlightedPanicRoom)
-  Megophrys.panicRoomLabel:echo('Panic Room: '.. foundRoomName)
+  Megophrys.panicRoomLabel:echo('<center>Panic Room: '.. foundRoomName)
   cecho('\n<cyan>Highlighting '.. foundRoomName .. ' ('.. roomID ..')\n')
   highlightRoom(Megophrys.highlightedPanicRoom, 225, 0, 125, 225, 0, 225, 1, 125, 125)
 end
 
 Megophrys.highlightTargetRoom = function(roomName, foundPlayer)
   Megophrys.targetRoomLabel = nil
-  local message = 'Target Room: None'
+  local message = '<center>Target Room: None'
   if Megophrys.killStrat == 'denizen' and Megophrys.huntingGround then
-    message = 'Target Room: '.. Megophrys.huntingGround
+    message = '<center>Target Room: '.. Megophrys.huntingGround
   end
   Megophrys.targetRoomLabel = Geyser.Label:new({
     name='targetRoomLabel',
-    x='-750px', y=0,
-    height='14px', width='250px',
+    x='57.5%', y=0,
+    height='2%', width='15%',
     fgColor=Megophrys.fgColors[Megophrys.killStrat], color='black',
     message=message
   })
@@ -74,7 +74,7 @@ Megophrys.highlightTargetRoom = function(roomName, foundPlayer)
     local foundTarget = (string.lower(foundPlayer or '') == string.lower(target))
     if foundTarget then
       Megophrys.targetRoom = Megophrys.highlightedTargetRoom
-      Megophrys.targetRoomLabel:echo('Target Room: '.. foundRoomName)
+      Megophrys.targetRoomLabel:echo('<center>Target Room: '.. foundRoomName)
     end
     cecho('\n<cyan>Highlighting '.. foundRoomName .. ' ('.. roomID ..')\n')
     highlightRoom(Megophrys.highlightedTargetRoom, 225, 125, 0, 225, 225, 0, 1, 125, 125)
@@ -84,6 +84,9 @@ end
 Megophrys.Util = {}
 Megophrys.Util.gagLine = function()
   moveCursor(0, getLineCount()) deleteLine()
+  tempLineTrigger(1,1,[[if isPrompt() then
+    deleteLine()
+  end]])
 end
 
 Megophrys.hoard = function()

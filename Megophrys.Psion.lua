@@ -19,6 +19,12 @@ Megophrys.Psion.setMode = function()
     Megophrys.nextMoveButton:echo('<i>*SLAP*</i>', Megophrys.fgColors[killStrat], 'c')
   end
 
+  if killStrat == 'los' then
+    Megophrys.psionToolbar:hide()
+  else
+    Megophrys.psionToolbar:show()
+  end
+
   Megophrys.specialMoveButton:echo(
     'Wavesurge (ESC)',
     Megophrys.fgColors[killStrat],
@@ -31,34 +37,30 @@ Megophrys.Psion.doSpecial = function() send('enact wavesurge') end
 Megophrys.Psion.makeClassToolbars = function()
   Megophrys.psionToolbar = Geyser.Container:new({
     name='psion_toolbar',
-    x=250, y=0, width=250, height=16
+    x=270, y=0, width=270, height=60
   })
 
   Psion.wpLabel = Geyser.Label:new({
     name='wp_label',
     x=0, y=0, width=100, height=20,
-    bgColor='black',
     message='Prepared:'
   }, Megophrys.psionToolbar)
   Psion.wpLabel:setFontSize(11)
   Psion.weavePrepButton = Geyser.Label:new({
     name='weave_prep_button',
-    x=100, y=0, width=150, height=20,
-    bgColor='black'
+    x=100, y=0, width=170, height=20,
   }, Megophrys.psionToolbar)
   Psion.weavePrepButton:setFontSize(11)
 
   Psion.nextPsiMoveLabel = Geyser.Label:new({
     name='next_psi_move_label',
     x=0, y=20, width=100, height=20,
-    bgColor='black',
     message='Bonus atk:'
   }, Megophrys.psionToolbar)
   Psion.nextPsiMoveLabel:setFontSize(11)
   Psion.nextPsiMoveButton = Geyser.Label:new({
     name='next_psi_move',
-    x=100, y=20, width=150, height=20,
-    bgColor='black'
+    x=100, y=20, width=170, height=20,
   }, Megophrys.psionToolbar)
   Psion.nextPsiMoveButton:setFontSize(11)
 

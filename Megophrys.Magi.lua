@@ -19,66 +19,57 @@ end
 Megophrys.Magi.makeClassToolbars = function()
   Megophrys.magiToolbar = Geyser.Container:new({
     name='magi_toolbar',
-    x=250, y=0, width=250, height=16
+    x=270, y=0, width=270, height=60
   })
 
   Magi.elemLabel = Geyser.Label:new({
     name='elem_label',
     x=0, y=0, width=100, height=20,
-    bgColor='black',
     message='Element:'
   }, Megophrys.magiToolbar)
   Magi.elemLabel:setFontSize(11)
   Magi.earthButton = Geyser.Label:new({
     name='earth_button',
-    x=100, y=0, width=35, height=20,
-    bgColor='black'
+    x=100, y=0, width=42, height=20,
   }, Megophrys.magiToolbar)
   Magi.earthButton:setFontSize(11)
   Magi.fireButton = Geyser.Label:new({
     name='fire_button',
-    x=135, y=0, width=35, height=20,
-    bgColor='black'
+    x=142, y=0, width=42, height=20,
   }, Megophrys.magiToolbar)
   Magi.fireButton:setFontSize(11)
   Magi.airButton = Geyser.Label:new({
     name='air_button',
-    x=170, y=0, width=35, height=20,
-    bgColor='black'
+    x=184, y=0, width=42, height=20,
   }, Megophrys.magiToolbar)
   Magi.airButton:setFontSize(11)
   Magi.waterButton = Geyser.Label:new({
     name='water_button',
-    x=205, y=0, width=35, height=20,
-    bgColor='black'
+    x=226, y=0, width=42, height=20,
   }, Megophrys.magiToolbar)
   Magi.waterButton:setFontSize(11)
 
   Magi.nextGolemMoveLabel = Geyser.Label:new({
     name='next_golem_move_label',
     x=0, y=20, width=100, height=20,
-    bgColor='black',
     message='Golem will:'
   }, Megophrys.magiToolbar)
   Magi.nextGolemMoveLabel:setFontSize(11)
   Magi.nextGolemMoveButton = Geyser.Label:new({
     name='next_golem_move',
-    x=100, y=20, width=130, height=20,
-    bgColor='black'
+    x=100, y=20, width=170, height=20,
   }, Megophrys.magiToolbar)
   Magi.nextGolemMoveButton:setFontSize(11)
 
   Magi.golemSmashLabel = Geyser.Label:new({
     name='golem_smash_label',
     x=0, y=40, width=100, height=20,
-    bgColor='black',
     message='Smashing:'
   }, Megophrys.magiToolbar)
   Magi.golemSmashLabel:setFontSize(11)
   Magi.golemSmashButton = Geyser.Label:new({
     name='golem_smash_move',
-    x=100, y=40, width=130, height=20,
-    bgColor='black'
+    x=100, y=40, width=170, height=20,
   }, Megophrys.magiToolbar)
   Magi.golemSmashButton:setFontSize(11)
 end

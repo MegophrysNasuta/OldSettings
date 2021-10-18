@@ -64,7 +64,7 @@ Megophrys.findTargetsInLine = function(match)
   if match then
     local line = getCurrentLine()
       for name, _ in pairs(cdb.db) do
-        if (name ~= target and line:match(name) and
+        if (name ~= target and line:match('\b'.. name ..'\b') and
                 _.city ~= gmcp.Char.Status.city:lower():split(' ')[1]) then
           if firstMatch then
             cecho('\n<cyan>Click2Target: ')
@@ -194,8 +194,8 @@ Megophrys.setMode = function(mode)
   Megophrys.priorityLabel = nil
   Megophrys.priorityLabel = Geyser.Label:new({
     name='priorityLabel',
-    x='-1070px', y=0,
-    width='150px', height='2%',
+    x='35%', y=0,
+    width='15%', height='2%',
     fgColor=Megophrys.fgColors[Megophrys.killStrat], color='black',
     message='<center>Priority: IDLE</center>'
   })
@@ -270,8 +270,8 @@ Megophrys.setTarget = function(t)
   Megophrys.targetLabel = nil
   Megophrys.targetLabel = Geyser.Label:new({
     name='targetLabel',
-    x='-1070px', y='2%',
-    width='150px', height='2%',
+    x='35%', y='2%',
+    width='15%', height='2%',
     fgColor=Megophrys.fgColors[Megophrys.killStrat], color='black',
     message='<center>Target: '.. target ..'</center>'
   })

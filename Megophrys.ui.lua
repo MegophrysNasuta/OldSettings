@@ -4,7 +4,7 @@ Megophrys.makeClassToolbars = function()
 
   Megophrys.modeToolbar = Geyser.Container:new({
     name='mode_switches',
-    x=0, y=0, width=200, height=16
+    x=0, y=0, width=270, height=60
   })
 
   if Megophrys.magiToolbar then
@@ -18,49 +18,43 @@ Megophrys.makeClassToolbars = function()
   Megophrys.modeLabel = Geyser.Label:new({
     name='mode_label',
     x=0, y=0, width=100, height=20,
-    bgColor='black',
     message='AI Mode:'
   }, Megophrys.modeToolbar)
   Megophrys.modeLabel:setFontSize(11)
   Megophrys.modeButton = Geyser.Label:new({
     name='current_mode',
-    x=100, y=0, width=150, height=20,
-    bgColor='black'
+    x=100, y=0, width=170, height=20,
   }, Megophrys.modeToolbar)
   Megophrys.modeButton:setFontSize(11)
 
   Megophrys.nextMoveLabel = Geyser.Label:new({
     name='next_move_label',
     x=0, y=20, width=100, height=20,
-    bgColor='black',
     message='Next move:'
   }, Megophrys.modeToolbar)
   Megophrys.nextMoveLabel:setFontSize(11)
   Megophrys.nextMoveButton = Geyser.Label:new({
     name='next_move',
-    x=100, y=20, width=150, height=20,
-    bgColor='black'
+    x=100, y=20, width=170, height=20,
   }, Megophrys.modeToolbar)
   Megophrys.nextMoveButton:setFontSize(11)
 
   Megophrys.specialMoveLabel = Geyser.Label:new({
     name='special_label',
     x=0, y=40, width=100, height=20,
-    bgColor='black',
     message='Special:'
   }, Megophrys.modeToolbar)
   Megophrys.specialMoveLabel:setFontSize(11)
   Megophrys.specialMoveButton = Geyser.Label:new({
     name='special_move',
-    x=100, y=40, width=150, height=20,
-    bgColor='black'
+    x=100, y=40, width=170, height=20,
   }, Megophrys.modeToolbar)
   Megophrys.specialMoveButton:setFontSize(11)
 
   Megophrys.calendarLabel = Geyser.Label:new({
     name='calendar_label',
     x=0, y=60, width=540, height=40,
-    bgColor='black', fgColor='CornflowerBlue',
+    fgColor='CornflowerBlue',
     message='Loading...'
   })
   Megophrys.calendarLabel:setFontSize(11)
@@ -80,14 +74,14 @@ Megophrys.showTime = function()
   end
 
   local d = ''
-  if tl.day == "0" then
+  if tl.day == "1" then
     d = "1st"
-  elseif tl.day == "1" then
-    d = "2nd"
   elseif tl.day == "2" then
+    d = "2nd"
+  elseif tl.day == "3" then
     d = "3rd"
   else
-    d = tostring(tonumber(tl.day) + 1) .."th"
+    d = tl.day .."th"
   end
 
   local seasons = {
@@ -141,7 +135,7 @@ Megophrys.updateBars = function()
     Megophrys.whoHereTable = Geyser.Label:new({
       name='whoHereTable',
       x='-760px', y='800px',
-      width='752px', height='16px',
+      width='752px', height='72px',
       fgColor='white', color='black'
     })
     Megophrys.whoHereTable:setFontSize(12)
@@ -175,10 +169,13 @@ Megophrys.updateBars = function()
     padding: 3px;]])
 
   local whoHereTable = '<b>Players Here:</b> '
-  for _, player in pairs(gmcp.Room.Players) do
+  for _, player in spairs(gmcp.Room.Players) do
     whoHereTable = whoHereTable .. player.name
     if _ ~= #gmcp.Room.Players then
       whoHereTable = whoHereTable ..', '
+    end
+    if _ % 7 == 0 then
+      whoHereTable = whoHereTable ..'<br>'
     end
   end
   whoHereTable = whoHereTable ..'</ul>'
@@ -392,24 +389,24 @@ Megophrys.updatePrepGauges = function()
   if not Megophrys.topGauge then
     Megophrys.topGauge = Geyser.Gauge:new({
       name='topGauge',
-      x='-915px', y=0,
-      width='150px', height='2%'
+      x='50%', y=0,
+      width='7.5%', height='2%'
     })
   end
   Megophrys.topGauge:setFontSize(11)
   if not Megophrys.middleGauge then
     Megophrys.middleGauge = Geyser.Gauge:new({
       name='middleGauge',
-      x='-915px', y='2%',
-      width='150px', height='2%'
+      x='50%', y='2%',
+      width='7.5%', height='2%'
     })
   end
   Megophrys.middleGauge:setFontSize(11)
   if not Megophrys.bottomGauge then
     Megophrys.bottomGauge = Geyser.Gauge:new({
       name='bottomGauge',
-      x='-915px', y='4%',
-      width='150px', height='2%'
+      x='50%', y='4%',
+      width='7.5%', height='2%'
     })
   end
   Megophrys.bottomGauge:setFontSize(11)
