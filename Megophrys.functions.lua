@@ -23,20 +23,17 @@ Megophrys.autoEscape = function()
 
   Megophrys.priorityLabel:echo('<center>Priority: FLEE</center>')
   Megophrys.updateMissionCtrlBar()
-  Megophrys.highlightPanicRoom()
   send('lose '.. target)
   gotoRoom(Megophrys.fleeingToRoom)
 end
 
 Megophrys.autoResist = function()
-  if not Megophrys.autoResisting then
-    Megophrys.autoResisting = true
-    Megophrys.setGuidance('DieWithHonor')
-    Megophrys.priorityLabel:echo('<center>Priority: HEAL</center>')
-    wsys.keepup('shield', true)
-    if Megophrys.class == 'Magi' then
-      wsys.keepup('reflections', true)
-    end
+  Megophrys.autoResisting = true
+  Megophrys.setGuidance('DieWithHonor')
+  Megophrys.priorityLabel:echo('<center>Priority: HEAL</center>')
+  wsys.keepup('shield', true)
+  if Megophrys.class == 'Magi' then
+    wsys.keepup('reflections', true)
   end
 end
 
@@ -279,6 +276,7 @@ Megophrys.setTarget = function(t)
 end
 
 Megophrys.stopAttack = function(reason)
+  if type(reason) == 'table' then reason = 'Clicked STOP' end
   cecho('\n<cyan>'.. reason ..'. Disabling auto-attack.\n')
   if Megophrys.autoAttackTimerId then
     killTimer(Megophrys.autoAttackTimerId)
@@ -290,6 +288,7 @@ Megophrys.stopAttack = function(reason)
 end
 
 Megophrys.stopEscape = function(reason)
+  if type(reason) == 'table' then reason = 'Clicked STOP' end
   cecho('\n<red>'.. reason ..'. Disabling auto-flight.\n')
   Megophrys.autoEscaping = false
   send('diag')
@@ -298,7 +297,8 @@ Megophrys.stopEscape = function(reason)
 end
 
 Megophrys.stopResist = function(reason)
-  cecho('\n<red>'.. reason ..'. Disabling auto-resist.\n')
+  if type(reason) == 'table' then reason = 'Clicked STOP' end
+  cecho('\n<red>'.. tostring(reason) ..'. Disabling auto-resist.\n')
   Megophrys.autoResisting = false
   wsys.unkeepup('shield', true)
   if Megophrys.class == 'Magi' then

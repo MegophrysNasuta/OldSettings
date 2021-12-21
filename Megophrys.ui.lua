@@ -383,6 +383,8 @@ Megophrys.updateMissionCtrlBar = function()
     ]])
   end
   Megophrys.stopBtn:setClickCallback("Megophrys.eStopAuto")
+
+  Megophrys.highlightPanicRoom()
 end
 
 Megophrys.updatePrepGauges = function()

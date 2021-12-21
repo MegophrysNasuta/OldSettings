@@ -38,7 +38,7 @@ Megophrys.highlightPanicRoom = function()
     fgColor=Megophrys.fgColors[Megophrys.killStrat], color='black',
     message=message
   })
-  Megophrys.PanicRoomLabel:setFontSize(11)
+  Megophrys.panicRoomLabel:setFontSize(11)
 
   if not Megophrys.fleeingToRoom then return end
   local roomID = Megophrys.fleeingToRoom
