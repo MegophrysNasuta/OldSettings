@@ -47,7 +47,6 @@ Megophrys.highlightPanicRoom = function()
   Megophrys.highlightedPanicRoom = tonumber(roomID)
   local foundRoomName = getRoomName(Megophrys.highlightedPanicRoom)
   Megophrys.panicRoomLabel:echo('<center>Panic Room: '.. foundRoomName)
-  cecho('\n<cyan>Highlighting '.. foundRoomName .. ' ('.. roomID ..')\n')
   highlightRoom(Megophrys.highlightedPanicRoom, 225, 0, 125, 225, 0, 225, 1, 125, 125)
 end
 
