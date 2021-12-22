@@ -1,6 +1,7 @@
 Megophrys.makeClassToolbars = function()
   setBorderRight(768)
   setBorderTop(120)
+  setBorderBottom(520)
 
   Megophrys.modeToolbar = Geyser.Container:new({
     name='mode_switches',
@@ -125,7 +126,7 @@ Megophrys.updateBars = function()
   if not Megophrys.tgtAffTable then
     Megophrys.tgtAffTable = Geyser.Label:new({
       name='tgtAffTable',
-      x='-475px', y='7.5%',
+      x='-765px', y='13.5%',
       width='150px', height='420px',
       fgColor='white', color='black'
     })

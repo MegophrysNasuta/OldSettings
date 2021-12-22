@@ -142,12 +142,22 @@ Megophrys.Psion.nextAttack = function()
         nextWeave = 'deathblow'
         imSoClever = 'say Another enemy unmade. Hah!'
         chanceToMouthOff = 1
-      elseif targetHits == 0 then
-        nextWeave = 'backhand'
-        imSoClever = 'say SLAP!!'
-        chanceToMouthOff = 0.8
-        table.insert(Megophrys.givingAffs, 'stupidity')
-        table.insert(Megophrys.givingAffs, 'dizziness')
+      elseif targetHits % 2 == 0 then
+        if not tarAff("stupidity") then
+          nextWeave = 'backhand'
+          imSoClever = 'say SLAP!!'
+          chanceToMouthOff = 0.8
+          table.insert(Megophrys.givingAffs, 'stupidity')
+          table.insert(Megophrys.givingAffs, 'dizziness')
+        else
+          if not tarAff("unweavingbody") then
+            nextWeave = 'unweave body'
+            table.insert(Megophrys.givingAffs, 'unweavingbody')
+          elseif not tarAff("unweavingmind") then
+            nextWeave = 'unweave mind'
+            table.insert(Megophrys.givingAffs, 'unweavingmind')
+          end
+        end
       elseif not tarAff("clumsiness") then
         nextWeave = 'sever'
         imSoClever = 'warcry'
