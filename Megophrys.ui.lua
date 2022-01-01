@@ -122,6 +122,13 @@ Megophrys.updateBars = function()
       width='520px', height='3.25%'
     })
   end
+  if not Megophrys.affPrGauge then
+    Megophrys.affPrGauge = Geyser.Gauge:new({
+      name='affPrGauge',
+      x='-520px', y='6.5%',
+      width='520px', height='3.25%'
+    })
+  end
   Megophrys.mpGauge:setFontSize(12)
   if not Megophrys.tgtAffTable then
     Megophrys.tgtAffTable = Geyser.Label:new({
@@ -169,8 +176,21 @@ Megophrys.updateBars = function()
     border-radius: 7;
     padding: 3px;]])
 
+  Megophrys.affPrGauge.front:setStyleSheet([[background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #4141f0, stop: 0.1 #2929ef, stop: 0.49 #0000cc, stop: 0.5 #0000a4, stop: 1 #0000cc);
+    border-top: 1px black solid;
+    border-left: 1px black solid;
+    border-bottom: 1px black solid;
+    border-radius: 7;
+    padding: 3px;]])
+  Megophrys.affPrGauge.back:setStyleSheet([[background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3333bd, stop: 0.1 #2020bd, stop: 0.49 #000099, stop: 0.5 #000070, stop: 1 #000099);
+    border-width: 1px;
+    border-color: black;
+    border-style: solid;
+    border-radius: 7;
+    padding: 3px;]])
+
   local whoHereTable = '<b>Players Here:</b> '
-  for _, player in spairs(gmcp.Room.Players) do
+  for _, player in table.sort(gmcp.Room.Players) do
     whoHereTable = whoHereTable .. player.name
     if _ ~= #gmcp.Room.Players then
       whoHereTable = whoHereTable ..', '
@@ -196,6 +216,19 @@ Megophrys.updateBars = function()
   local manaPct = fmtPctLabel(currMana, maxmp)
   Megophrys.hpGauge:setValue(currHealth, maxhp, healthPct)
   Megophrys.mpGauge:setValue(currMana, maxmp, manaPct)
+
+  local affPressure = tonumber(#wsys.aff or 0)
+  if affPressure > 5 then affPressure = 5 end
+
+  local affPressureDesc = {
+    [0] = '',
+    [1] = '*',
+    [2] = '* *',
+    [3] = 'X X X',
+    [4] = '!! !! !! !!',
+    [5] = '*** DANGER ***',
+  }
+  Megophrys.affPrGauge:setValue(affPressure, 5, affPressureDesc[affPressure])
 
   local tgtAffTable = '<b>Tgt Affs:</b><ul>'
   local addToTgtAffTable = function(tgtAffTable, affList)

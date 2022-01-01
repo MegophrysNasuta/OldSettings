@@ -9,6 +9,7 @@ Megophrys.fgColors = {
   pummel = 'yellow',
   fiyah = 'yellow',
   bonk = 'yellow',
+  bstar = 'yellow',
 }
 
 -- adapted from Romaen's original list

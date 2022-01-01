@@ -110,6 +110,8 @@ Megophrys.hitShield = function()
       send('cast disintegrate on '.. target)
     elseif Megophrys.class == 'Psion' then
       send('weave pulverise '.. target)
+    elseif Megophrys.class == 'Blademaster' then
+      send('shin shatter '.. target)
     end
   end
   cecho('\n<cyan>STOP HITTING YOURSELF STOP HITTING YOURSELF\n')
