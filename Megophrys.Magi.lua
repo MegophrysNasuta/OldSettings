@@ -3,7 +3,6 @@ local Magi = Megophrys.Magi
 Magi.element = (Magi.element or 'air')
 Magi.skipTransfix = (Magi.skipTransfix or false)
 Magi.targetTransfixed = (Magi.targetTransfixed or false)
-Magi.timefluxUp = (Magi.timefluxUp or false)
 
 Magi.staffCasts = {
   earth = 'dissolution',
@@ -112,7 +111,6 @@ Megophrys.Magi.setMode = function()
     Magi.nextGolemMoveButton:echo('Timeflux', Megophrys.fgColors[killStrat], 'c')
     cecho('\n<cyan>Magi PvP (Ice) mode activated!')
 
-    Magi.timefluxUp = false
     Megophrys.targetTorso = false
     Megophrys.targetRebounding = false
     Megophrys.resetTargetWounds()
@@ -129,7 +127,6 @@ Megophrys.Magi.setMode = function()
     Magi.nextGolemMoveButton:echo('Timeflux', Megophrys.fgColors[killStrat], 'c')
     cecho('\n<cyan>Magi PvP (Fire) mode activated!')
 
-    Magi.timefluxUp = false
     Megophrys.targetTorso = false
     Megophrys.targetRebounding = false
     Megophrys.resetTargetWounds()
@@ -355,7 +352,7 @@ Magi.nextLimbPrepAttack = function()
     Megophrys.limbHasBroken = true
     Megophrys.killPreConditionsMet = true
 
-    if Megophrys.targetProne then
+    if tarAff('prone') then
       if killStrat == 'pummel' then
         Magi.setElement('water', 'freezing')
       elseif killStrat == 'fiyah' then
@@ -437,7 +434,7 @@ end
 Magi.setGolemStrat = function()
   Magi.golemSmashTarget = 'arms'
   Magi.golemSmashButton:echo('Arms', Megophrys.fgColors[Megophrys.killStrat], 'c')
-  if Magi.timefluxUp then
+  if tarAff('timeflux') then
     if Megophrys.killStrat == 'fiyah' then
       if Magi.infernoDown then
         Magi.followUp = 'golem inferno'
@@ -466,7 +463,6 @@ Magi.targetIsTransfixed = function()
 end
 
 Magi.targetLostTimeflux = function()
-  Magi.timefluxUp = false
   Magi.nextGolemMoveButton:echo('Timeflux', Megophrys.fgColors[Megophrys.killStrat], 'c')
 end
 

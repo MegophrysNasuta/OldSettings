@@ -197,7 +197,7 @@ Megophrys.Psion.nextAttack = function()
         nextWeave = 'overhand'
         imSoClever = 'say BONK!!'
         chanceToMouthOff = 0.4
-        if Megophrys.targetProne or lb[target].hits.head > 100 then
+        if tarAff('prone') or lb[target].hits.head > 100 then
           table.insert(Megophrys.givingAffs, 'impatience')
         else
           table.insert(Megophrys.givingAffs, 'stupidity')
