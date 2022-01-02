@@ -112,7 +112,6 @@ Megophrys.Magi.setMode = function()
     cecho('\n<cyan>Magi PvP (Ice) mode activated!')
 
     Megophrys.targetTorso = false
-    Megophrys.targetRebounding = false
     Megophrys.resetTargetWounds()
     Magi.setElement('air', 'first strike')
     Magi.followUp = 'golem timeflux &tar'
@@ -128,7 +127,6 @@ Megophrys.Magi.setMode = function()
     cecho('\n<cyan>Magi PvP (Fire) mode activated!')
 
     Megophrys.targetTorso = false
-    Megophrys.targetRebounding = false
     Megophrys.resetTargetWounds()
     Magi.setElement('air', 'first strike')
     Magi.followUp = 'golem timeflux '.. target
@@ -195,11 +193,53 @@ Megophrys.Magi.nextAttack = function()
       end
       Megophrys.targetHits = Megophrys.targetHits + 1
     else
-      local prepStatus = Magi.nextLimbPrepAttack()
+      local prepStatus = Megophrys.nextLimbPrepAttack('deepfreeze')
       local targetLimb = prepStatus.targetLimb
       local targetTorso = prepStatus.targetTorso
       local cmd = 'staffstrike &tar with '.. Magi.element
       Megophrys.nextMoveButton:echo('Staffstrike', Megophrys.fgColors[killStrat], 'c')
+
+      local airBendForRebound = (
+          ak.defs.rebounding or
+          (Megophrys.targetHits == 0)  -- first hit in case of rebounding
+      )
+      local airBendForUnderPrep = (
+          (targetTorso and prepStatus.torsoIsUnderPrepped) or
+          (not targetTorso and (prepStatus.limbIsUnderPrepped or
+                                prepStatus.otherLimbIsUnderPrepped))
+      )
+      if airBendForRebound then
+        Magi.setElement('air', 'rebounding')
+      elseif airBendForUnderPrep then
+        Magi.setElement('air', 'underprep')
+      else
+        Magi.setElement('earth', 'limb prep')
+      end
+
+      if prepStatus.limbIsPrepped then
+        if ak.defs.rebounding then
+          Magi.setElement('air', 'rebounding')
+        else
+          Magi.setElement('earth', 'limb prep')
+        end
+      elseif prepStatus.prepConditionsMet then
+        if killStrat == 'fiyah' then
+          Megophrys.nextMoveButton:echo('Dehydrate', Megophrys.fgColors[killStrat], 'c')
+          Magi.followUp = 'golem dehydrate '.. target
+          Megophrys.targetHits = 0
+        end
+        Magi.setElement('air', 'proning')
+      elseif Megophrys.killPreConditionsMet then
+        if tarAff('prone') then
+          if killStrat == 'pummel' then
+            Magi.setElement('water', 'freezing')
+          elseif killStrat == 'fiyah' then
+            Magi.setElement('fire', 'burning')
+          end
+        else
+          Magi.setElement('air', 'proning')
+        end
+      end
 
       if killStrat == 'pummel' then
         if Megophrys.killPreConditionsMet and not tarAff('shivering') then
@@ -221,7 +261,7 @@ Megophrys.Magi.nextAttack = function()
           targetTorso = true
         end
       elseif killStrat == 'fiyah' then
-        if Magi.targetDehydrated then
+        if tarAff('dehydrated') then
           Megophrys.priorityLabel:echo('<center>Priority: DESTROY</center>')
           Magi.setElement('fire', 'burning')
           cmd = 'staffstrike &tar with '.. Magi.element
@@ -253,149 +293,6 @@ Megophrys.Magi.nextAttack = function()
       end
     end
   end
-end
-
-Magi.nextLimbPrepAttack = function()
-  if Megophrys.killPreConditionsMet then
-    return {
-      targetLimb = Megophrys.targetLimb,
-      targetTorso = true
-    }
-  end
-
-  local otherLimb = ''
-  local targetTorso = false
-  local limbIsBroken = false
-  local limbIsPrepped = false
-  local limbIsUnderPrepped = false          -- 84-91%
-  local otherLimbIsBroken = false
-  local otherLimbIsPrepped = false
-  local otherLlimbIsUnderPrepped = false    -- 84-91%
-  local torsoIsBroken = false
-  local torsoIsPrepped = false
-  local torsoIsUnderPrepped = false         -- 84-91%
-  local targetWounds = lb[target].hits
-  local targetLimb = Megophrys.targetLimb
-  local skipTorso = Megophrys.skipTorso
-  local dualPrep = Megophrys.dualPrep
-
-  if targetLimb then
-    local targetLimbDmg = (targetWounds[targetLimb ..' leg'] or 0)
-    if targetLimbDmg >= 100 then
-      limbIsBroken = true
-      cecho('\n<gold>LIMB IS BROKEN!\n')
-    elseif targetLimbDmg >= 91 then
-      limbIsPrepped = true
-      cecho('\n<gold>LIMB IS PREPPED!\n')
-    elseif targetLimbDmg >= 84 then
-      limbIsUnderPrepped = true
-    end
-
-    if targetLimb == 'right' then
-      otherLimb = 'left'
-    else
-      otherLimb = 'right'
-    end
-
-    local otherLimbDmg = (targetWounds[otherLimb ..' leg'] or 0)
-    if otherLimbDmg >= 100 then
-      otherLimbIsBroken = true
-      cecho('\n<gold>OTHER LIMB IS BROKEN!\n')
-    elseif otherLimbDmg >= 91 then
-      otherLimbIsPrepped = true
-      cecho('\n<gold>OTHER LIMB IS PREPPED!\n')
-    elseif otherLimbDmg >= 84 then
-      otherLimbIsUnderPrepped = true
-    end
-  end
-
-  if not skipTorso then
-    local targetTorsoDmg = (targetWounds.torso or 0)
-    if targetTorsoDmg >= 100 then
-      torsoIsBroken = true
-      cecho('\n<gold>TORSO IS BROKEN!\n')
-    elseif targetTorsoDmg >= 91 then
-      torsoIsPrepped = true
-      cecho('\n<gold>TORSO IS PREPPED!\n')
-    elseif targetTorsoDmg >= 84 then
-      torsoIsUnderPrepped = true
-    end
-  end
-
-  if limbIsPrepped then
-    if Megophrys.targetRebounding then
-      Magi.setElement('air', 'rebounding')
-    else
-      Magi.setElement('earth', 'limb prep')
-    end
-
-    if dualPrep and not otherLimbIsPrepped then
-      -- switch legs
-      Megophrys.priorityLabel:echo('<center>Priority: LIMB 2 PREP</center>')
-      targetLimb = otherLimb
-    elseif not skipTorso and not torsoIsPrepped then
-      -- work on prepping torso once limb is done
-      Megophrys.priorityLabel:echo('<center>Priority: TORSO PREP</center>')
-      targetTorso = true
-    else
-      -- otherwise go back to limb with air to prone them
-      Megophrys.priorityLabel:echo('<center>Priority: L2 BREAKS</center>')
-      if killStrat == 'fiyah' then
-        Megophrys.nextMoveButton:echo('Dehydrate', Megophrys.fgColors[killStrat], 'c')
-        Magi.followUp = 'golem dehydrate '.. target
-        Megophrys.targetHits = 0
-      end
-      Magi.setElement('air', 'proning')
-      targetTorso = false
-    end
-  elseif limbIsBroken or Megophrys.limbHasBroken then
-    Megophrys.limbHasBroken = true
-    Megophrys.killPreConditionsMet = true
-
-    if tarAff('prone') then
-      if killStrat == 'pummel' then
-        Magi.setElement('water', 'freezing')
-      elseif killStrat == 'fiyah' then
-        Magi.setElement('fire', 'burning')
-      end
-    else
-      Magi.setElement('air', 'proning')
-    end
-
-    if dualPrep and not otherLimbIsBroken then
-      targetLimb = otherLimb
-      Megophrys.killPreConditionsMet = false
-    elseif not skipTorso and not torsoIsBroken then
-      targetTorso = true
-      Megophrys.killPreConditionsMet = false
-    end
-
-    if Megophrys.killPreConditionsMet then
-      Megophrys.nextMoveButton:echo('Deepfreeze', Megophrys.fgColors[killStrat], 'c')
-    end
-  else
-    Megophrys.priorityLabel:echo('<center>Priority: LIMB PREP</center>')
-    local airBendForRebound = (
-        Megophrys.targetRebounding or
-        (Megophrys.targetHits == 0)  -- first hit in case of rebounding
-    )
-    local airBendForUnderPrep = (
-        (targetTorso and torsoIsUnderPrepped) or
-        (not targetTorso and (limbIsUnderPrepped or otherLimbIsUnderPrepped))
-    )
-    if airBendForRebound then
-      Magi.setElement('air', 'rebounding')
-    elseif airBendForUnderPrep then
-      Magi.setElement('air', 'underprep')
-    else
-      Magi.setElement('earth', 'limb prep')
-    end
-  end
-
-  return {
-    targetLimb = targetLimb,
-    targetTorso = targetTorso
-  }
 end
 
 Magi.resetElementButtonStyles = function()

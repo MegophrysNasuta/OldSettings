@@ -80,6 +80,122 @@ Megophrys.findTargetsInLine = function(match)
   end
 end
 
+Megophrys.nextLimbPrepAttack = function(onKillConditionAttack)
+  if Megophrys.killPreConditionsMet then
+    return {
+      targetLimb = Megophrys.targetLimb,
+      targetTorso = true
+    }
+  end
+
+  local otherLimb = ''
+  local targetTorso = false
+  local limbIsBroken = false
+  local limbIsPrepped = false
+  local limbIsUnderPrepped = false          -- 84-91%
+  local otherLimbIsBroken = false
+  local otherLimbIsPrepped = false
+  local otherLlimbIsUnderPrepped = false    -- 84-91%
+  local torsoIsBroken = false
+  local torsoIsPrepped = false
+  local torsoIsUnderPrepped = false         -- 84-91%
+  local targetWounds = lb[target].hits
+  local targetLimb = Megophrys.targetLimb
+  local skipTorso = Megophrys.skipTorso
+  local dualPrep = Megophrys.dualPrep
+  local prepConditionsMet = false
+
+  if targetLimb then
+    local targetLimbDmg = (targetWounds[targetLimb ..' leg'] or 0)
+    if targetLimbDmg >= 100 then
+      limbIsBroken = true
+      cecho('\n<gold>LIMB IS BROKEN!\n')
+    elseif targetLimbDmg >= 91 then
+      limbIsPrepped = true
+      cecho('\n<gold>LIMB IS PREPPED!\n')
+    elseif targetLimbDmg >= 84 then
+      limbIsUnderPrepped = true
+    end
+
+    if targetLimb == 'right' then
+      otherLimb = 'left'
+    else
+      otherLimb = 'right'
+    end
+
+    local otherLimbDmg = (targetWounds[otherLimb ..' leg'] or 0)
+    if otherLimbDmg >= 100 then
+      otherLimbIsBroken = true
+      cecho('\n<gold>OTHER LIMB IS BROKEN!\n')
+    elseif otherLimbDmg >= 91 then
+      otherLimbIsPrepped = true
+      cecho('\n<gold>OTHER LIMB IS PREPPED!\n')
+    elseif otherLimbDmg >= 84 then
+      otherLimbIsUnderPrepped = true
+    end
+  end
+
+  if not skipTorso then
+    local targetTorsoDmg = (targetWounds.torso or 0)
+    if targetTorsoDmg >= 100 then
+      torsoIsBroken = true
+      cecho('\n<gold>TORSO IS BROKEN!\n')
+    elseif targetTorsoDmg >= 91 then
+      torsoIsPrepped = true
+      cecho('\n<gold>TORSO IS PREPPED!\n')
+    elseif targetTorsoDmg >= 84 then
+      torsoIsUnderPrepped = true
+    end
+  end
+
+  if limbIsPrepped then
+    if dualPrep and not otherLimbIsPrepped then
+      -- switch legs
+      Megophrys.priorityLabel:echo('<center>Priority: LIMB 2 PREP</center>')
+      targetLimb = otherLimb
+    elseif not skipTorso and not torsoIsPrepped then
+      -- work on prepping torso once limb is done
+      Megophrys.priorityLabel:echo('<center>Priority: TORSO PREP</center>')
+      targetTorso = true
+    else
+      -- otherwise start breaks / proning
+      Megophrys.priorityLabel:echo('<center>Priority: L2 BREAKS</center>')
+      prepConditionsMet = true
+      targetTorso = false
+    end
+  elseif limbIsBroken or Megophrys.limbHasBroken then
+    Megophrys.limbHasBroken = true
+    Megophrys.killPreConditionsMet = true
+
+    if dualPrep and not otherLimbIsBroken then
+      targetLimb = otherLimb
+      Megophrys.killPreConditionsMet = false
+    elseif not skipTorso and not torsoIsBroken then
+      targetTorso = true
+      Megophrys.killPreConditionsMet = false
+    end
+
+    if Megophrys.killPreConditionsMet and onKillConditionAttack then
+      Megophrys.nextMoveButton:echo(tostring(onKillConditionAttack):title(),
+                                    Megophrys.fgColors[killStrat], 'c')
+    end
+  else
+    Megophrys.priorityLabel:echo('<center>Priority: LIMB PREP</center>')
+  end
+
+  return {
+    targetLimb = targetLimb,
+    targetTorso = targetTorso,
+    limbIsPrepped = limbIsPrepped,
+    limbIsUnderPrepped = limbIsUnderPrepped,
+    otherLimbIsPrepped = otherLimbIsPrepped,
+    otherLimbIsUnderPrepped = otherLimbIsUnderPrepped,
+    torsoIsPrepped = torsoIsPrepped,
+    torsoIsUnderPrepped = torsoIsUnderPrepped,
+    prepConditionsMet = prepConditionsMet
+  }
+end
+
 Megophrys.pursue = function()
   Megophrys.priorityLabel:echo('<center>Priority: PURSUIT</center>')
   if Megophrys.targetRoom then
