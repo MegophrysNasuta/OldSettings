@@ -114,8 +114,6 @@ Megophrys.Magi.setMode = function()
 
     Magi.timefluxUp = false
     Megophrys.targetTorso = false
-    Magi.targetFrozen = false
-    Magi.targetMaybeFrozen = false
     Megophrys.targetRebounding = false
     Megophrys.resetTargetWounds()
     Magi.setElement('air', 'first strike')
@@ -207,20 +205,18 @@ Megophrys.Magi.nextAttack = function()
       Megophrys.nextMoveButton:echo('Staffstrike', Megophrys.fgColors[killStrat], 'c')
 
       if killStrat == 'pummel' then
-        if Megophrys.killPreConditionsMet and not Magi.targetMaybeFrozen then
+        if Megophrys.killPreConditionsMet and not tarAff('shivering') then
           sendAll('clearqueue all', 'cast deepfreeze')
-          Magi.targetMaybeFrozen = true
           Megophrys.killPreConditionsMet = false
           Megophrys.nextMoveButton:echo('Hypothermia', Megophrys.fgColors[killStrat], 'c')
           return
-        elseif Magi.targetMaybeFrozen then
+        elseif tarAff('shivering') then
           -- kill condition met: pummel to death
           Megophrys.priorityLabel:echo('<center>Priority: PUMMEL</center>')
           Magi.setElement('water', 'freezing')
           cmd = 'staffstrike &tar with '.. Magi.element
-          if not Magi.targetFrozen then
+          if not tarAff('frozen') then
             Magi.followUp = 'golem hypothermia &tar'
-            Magi.targetFrozen = true
           else
             Magi.followUp = 'golem pummel &tar'
           end

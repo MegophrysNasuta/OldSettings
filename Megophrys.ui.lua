@@ -190,7 +190,7 @@ Megophrys.updateBars = function()
     padding: 3px;]])
 
   local whoHereTable = '<b>Players Here:</b> '
-  for _, player in table.sort(gmcp.Room.Players) do
+  for _, player in spairs(gmcp.Room.Players) do
     whoHereTable = whoHereTable .. player.name
     if _ ~= #gmcp.Room.Players then
       whoHereTable = whoHereTable ..', '

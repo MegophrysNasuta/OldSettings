@@ -9,6 +9,8 @@ Blademaster.stances = {
   void = 'Sanya',
 }
 
+Blademaster.doSpecial = function() send('leap high') end
+
 Megophrys.Blademaster.makeClassToolbars = function()
   Megophrys.bmToolbar = Geyser.Container:new({
     name='bm_toolbar',
@@ -128,11 +130,10 @@ Megophrys.Blademaster.nextAttack = function()
     local targetSide = nil
     Megophrys.nextMoveButton:echo('Staffstrike', Megophrys.fgColors[killStrat], 'c')
 
-    if Megophrys.killPreConditionsMet and not Blademaster.targetImpaled then
+    if Megophrys.killPreConditionsMet and not tarAff('impaled') then
       sendAll('clearqueue all', 'impale '.. target)
       Megophrys.killPreConditionsMet = false
       Megophrys.nextMoveButton:echo('Impslash', Megophrys.fgColors[killStrat], 'c')
-      Megophrys.targetHits = 0
       return
     elseif Blademaster.targetImpaled then
       -- kill condition met: twist until brokenstar
@@ -140,7 +141,7 @@ Megophrys.Blademaster.nextAttack = function()
       Megophrys.nextMoveButton:echo('Bladetwist', Megophrys.fgColors[killStrat], 'c')
       if (ak.bleeding or 0) > 699 then
         sendAll('clearqueue all', 'brokenstar '.. target)
-      elseif Megophrys.targetHits == 0 then
+      elseif not tarAff('impaleslash') then
         sendAll('clearqueue all', 'impaleslash')
       else
         sendAll('clearqueue all', 'bladetwist')
@@ -150,7 +151,6 @@ Megophrys.Blademaster.nextAttack = function()
       targetSide = targetLimb
     end
 
-    Megophrys.targetHits = Megophrys.targetHits + 1
   end
 
   if killStrat ~= 'denizen' then
@@ -361,11 +361,11 @@ end
 Megophrys.Blademaster.setMode = function()
   local killStrat = Megophrys.killStrat
 
-  --Megophrys.specialMoveButton:echo(
-  --  'Embed Focus',
-  --  Megophrys.fgColors[killStrat],
-  --  'c'
-  --)
+  Megophrys.specialMoveButton:echo(
+    'Leap High',
+    Megophrys.fgColors[killStrat],
+    'c'
+  )
 
   if killStrat == 'denizen' then
     Megophrys.nextMoveButton:echo('Drawslash', Megophrys.fgColors[killStrat], 'c')
