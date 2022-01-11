@@ -6,6 +6,9 @@ Megophrys.onConnect = function()
   sendAll('health', 'mana')  -- reset power bars
   wsys.unkeepup('shield')
   wsys.unkeepup('reflections')
+  wsys.setSettings('automount', 'on')
+  mmp.settings:setOption('gallop', true)
+  mmp.settings:setOption('dash', false)
   Megophrys.class = gmcp.Char.Status.class
   Megophrys.makeClassToolbars()
   supportedClass = Megophrys[Megophrys.class]

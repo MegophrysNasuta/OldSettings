@@ -193,7 +193,7 @@ Megophrys.Magi.nextAttack = function()
       end
       Megophrys.targetHits = Megophrys.targetHits + 1
     else
-      local prepStatus = Megophrys.nextLimbPrepAttack('deepfreeze')
+      local prepStatus = Megophrys.nextLimbPrepAttack('deepfreeze', 91, 84)
       local targetLimb = prepStatus.targetLimb
       local targetTorso = prepStatus.targetTorso
       local cmd = 'staffstrike &tar with '.. Magi.element

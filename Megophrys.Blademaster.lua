@@ -95,7 +95,9 @@ Megophrys.Blademaster.makeClassToolbars = function()
 end
 
 Megophrys.Blademaster.onConnect = function()
-  -- pass
+  wsys.setSettings('automount', 'off')
+  mmp.settings:setOption('gallop', false)
+  mmp.settings:setOption('dash', true)
 end
 
 Megophrys.Blademaster.setNextStrike = function(strikeTarget)
@@ -108,6 +110,7 @@ Megophrys.Blademaster.nextAttack = function()
   local setNextAttack = 'setalias nextAttack stand / stand / '
   local infuseElem = Blademaster.infuseElem
   local nextSlash = nil
+  local targetAffs = affstrack.score
 
   if infuseElem == 'water' then
     infuseElem = 'ice'
@@ -124,7 +127,7 @@ Megophrys.Blademaster.nextAttack = function()
   elseif killStrat == 'raid' then
     nextSlash = 'balanceslash'
   else
-    local prepStatus = Megophrys.nextLimbPrepAttack('impale')
+    local prepStatus = Megophrys.nextLimbPrepAttack('impale', 65)
     local targetLimb = prepStatus.targetLimb
     local targetTorso = prepStatus.targetTorso
     local targetSide = nil
@@ -154,7 +157,15 @@ Megophrys.Blademaster.nextAttack = function()
   end
 
   if killStrat ~= 'denizen' then
-    Blademaster.setNextStrike('sternum')
+    if prepStatus.prepConditionsMet then
+      Blademaster.setNextStrike('knee')
+    elseif (targetAffs.hamstring or 0) < 90 then
+      Blademaster.setNextStrike('hamstring')
+    elseif (targetAffs.paralyzed or 0) < 90 then
+      Blademaster.setNextStrike('neck')
+    else
+      Blademaster.setNextStrike('sternum')
+    end
   end
 
   if nextSlash then
@@ -273,6 +284,7 @@ Megophrys.Blademaster.setMode = function()
     Megophrys.nextMoveButton:echo('Balanceslash', Megophrys.fgColors[killStrat], 'c')
     Blademaster.setElement('fire')
     Blademaster.setElement('water', nil, true)
+    Blademaster.setNextStrike('hamstring')
     cecho('\n<cyan>Auto-attacks will be balanceslashes'..
           '\nElement: '.. Blademaster.element ..
           '\nInfusing: '.. Blademaster.infuseElem ..
@@ -285,6 +297,7 @@ Megophrys.Blademaster.setMode = function()
     Megophrys.resetTargetWounds()
     Blademaster.setElement('fire')
     Blademaster.setElement('fire', nil, true)
+    Blademaster.setNextStrike('hamstring')
 
     cecho('\n<cyan>Auto-attacks will be limbslashes'..
           '\nElement: '.. Blademaster.element ..

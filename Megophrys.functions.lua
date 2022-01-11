@@ -80,7 +80,9 @@ Megophrys.findTargetsInLine = function(match)
   end
 end
 
-Megophrys.nextLimbPrepAttack = function(onKillConditionAttack)
+Megophrys.nextLimbPrepAttack = function(onKillConditionAttack,
+                                        limbPrepThreshold,
+                                        limbUnderPrepThreshold)
   if Megophrys.killPreConditionsMet then
     return {
       targetLimb = Megophrys.targetLimb,
@@ -92,28 +94,40 @@ Megophrys.nextLimbPrepAttack = function(onKillConditionAttack)
   local targetTorso = false
   local limbIsBroken = false
   local limbIsPrepped = false
-  local limbIsUnderPrepped = false          -- 84-91%
+  local limbIsUnderPrepped = false
   local otherLimbIsBroken = false
   local otherLimbIsPrepped = false
-  local otherLlimbIsUnderPrepped = false    -- 84-91%
+  local otherLlimbIsUnderPrepped = false
   local torsoIsBroken = false
   local torsoIsPrepped = false
-  local torsoIsUnderPrepped = false         -- 84-91%
+  local torsoIsUnderPrepped = false
   local targetWounds = lb[target].hits
   local targetLimb = Megophrys.targetLimb
   local skipTorso = Megophrys.skipTorso
   local dualPrep = Megophrys.dualPrep
   local prepConditionsMet = false
 
+  if limbPrepThreshold then
+    limbPrepThreshold = tonumber(limbPrepThreshold)
+  else
+    limbPrepThreshold = 91
+  end
+
+  if limbUnderPrepThreshold then
+    limbUnderPrepThreshold = tonumber(limbUnderPrepThreshold)
+  else
+    limbUnderPrepThreshold = 99   -- disable feature
+  end
+
   if targetLimb then
     local targetLimbDmg = (targetWounds[targetLimb ..' leg'] or 0)
     if targetLimbDmg >= 100 then
       limbIsBroken = true
       cecho('\n<gold>LIMB IS BROKEN!\n')
-    elseif targetLimbDmg >= 91 then
+    elseif targetLimbDmg >= limbPrepThreshold then
       limbIsPrepped = true
       cecho('\n<gold>LIMB IS PREPPED!\n')
-    elseif targetLimbDmg >= 84 then
+    elseif targetLimbDmg >= limbUnderPrepThreshold then
       limbIsUnderPrepped = true
     end
 
@@ -127,10 +141,10 @@ Megophrys.nextLimbPrepAttack = function(onKillConditionAttack)
     if otherLimbDmg >= 100 then
       otherLimbIsBroken = true
       cecho('\n<gold>OTHER LIMB IS BROKEN!\n')
-    elseif otherLimbDmg >= 91 then
+    elseif otherLimbDmg >= limbPrepThreshold then
       otherLimbIsPrepped = true
       cecho('\n<gold>OTHER LIMB IS PREPPED!\n')
-    elseif otherLimbDmg >= 84 then
+    elseif otherLimbDmg >= limbUnderPrepThreshold then
       otherLimbIsUnderPrepped = true
     end
   end
@@ -140,10 +154,10 @@ Megophrys.nextLimbPrepAttack = function(onKillConditionAttack)
     if targetTorsoDmg >= 100 then
       torsoIsBroken = true
       cecho('\n<gold>TORSO IS BROKEN!\n')
-    elseif targetTorsoDmg >= 91 then
+    elseif targetTorsoDmg >= limbPrepThreshold then
       torsoIsPrepped = true
       cecho('\n<gold>TORSO IS PREPPED!\n')
-    elseif targetTorsoDmg >= 84 then
+    elseif targetTorsoDmg >= limbUnderPrepThreshold then
       torsoIsUnderPrepped = true
     end
   end
@@ -389,6 +403,24 @@ Megophrys.setTarget = function(t)
     message='<center>Target: '.. target ..'</center>'
   })
   Megophrys.targetLabel:setFontSize(11)
+end
+
+Megophrys.shout = function(message, color)
+  if not color then color = 'red' end
+  local remaining_len = (78 - message:len()) / 2
+  local top_line = '╔'.. string.rep('═', 78) ..'╗'
+  local bottom_line = '╚'.. string.rep('═', 78) ..'╝'
+  local left_side = '║'.. string.rep(' ', remaining_len)
+  local right_side = string.rep(' ', remaining_len) ..'║'
+  if message:len() % 2 == 1 then
+    right_side = ' '.. right_side
+  end
+
+  cecho('\n<'.. color ..'>'.. top_line)
+  cecho('\n<'.. color ..'>'.. left_side .. message:upper() .. right_side)
+  cecho('\n<'.. color ..'>'.. left_side .. message:upper() .. right_side)
+  cecho('\n<'.. color ..'>'.. left_side .. message:upper() .. right_side)
+  cecho('\n<'.. color ..'>'.. bottom_line)
 end
 
 Megophrys.stopAttack = function(reason)
