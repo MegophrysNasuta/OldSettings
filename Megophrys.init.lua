@@ -12,58 +12,68 @@ Megophrys.fgColors = {
   bstar = 'yellow',
 }
 
--- adapted from Romaen's original list
+
+-- adapted from Eryl's original list
 Megophrys.prioDefault = {
-  -- 1
-  {"latched", "sleeping", "prone"},
-  -- 2
-  {"aeon", "anorexia", "crushedthroat", 
-   "calcifiedskull", "calcifiedtorso"},
-  -- 3
-  {"paralysis", "heartseed", "skullfractures", "retribution",
-   "grievouswounds"},
-  -- 4
-  {"impatience", "torntendons", "hypothermia", "unweavingbody",
-   "unweavingmind", "unweavingspirit", "mindravaged", "mycalium"},
-  -- 5
-  {"itching", "lovers", "pacified", "peace", "scytherus", "hypochondria",
-   "hellsight", "guilt"},
-  -- 6
-  {"entangled", "asthma", "weariness", "clumsiness", "sensitivity", 
-   "shadowmadness", "tension", "flushings", "rebbies", "timeloop"},
-  -- 7
-  {"damagedrightleg", "damagedleftleg", "mangledrightleg", 
-   "mangledleftleg", "concussion", "darkshade", "depression", 
-   "tonguetied"},
-  -- 8
-  {"brokenrightleg", "brokenleftleg", "confusion", "hallucinations", 
-   "hypersomnia", "pyramides"},
-  -- 9
-  {"mangledhead", "stupidity", "voyria", "slickness", "spiritburn", "tenderskin",
-   "disrupted", "parasite", "sandfever"},
-  -- 10
-  {"brokenrightarm", "brokenleftarm", "wristfractures"},
-  -- 11
-  {"nausea", "haemophilia", "addiction", "lethargy", "whisperingmadness", "crackedribs"},
-  -- 12
-  {"damagedhead", "recklessness", "pressure"}, 
-  -- 13
-  {"damagedrightarm", "damagedleftarm", "healthleech", "manaleech", "temperedmelancholic",
-   "temperedcholeric", "temperedsanguine", "temperedphlegmatic", "justice"},
-  -- 14
-  {"mangledrightarm", "mangledleftarm", "shyness", "dizziness", "disloyalty",
-   "dissonance"},
-  -- 15
-  {"generosity", "deadening", "agoraphobia", "loneliness", "claustrophobia",
-   "vertigo", "shivering", "frozen"},
-  -- 16
-  {"mildtrauma", "serioustrauma"},
-  -- 17
-  {"epilepsy"},
-  -- 18
-  {"slashedthroat", "laceratedthroat", "stuttering", "burning"},
-  -- 19
-  {"selarnia"},
-  -- 20
-  {"kkractlebrand", "bound", "daeggerimpale", "impaled", "transfixation", "webbed"},
+    -- 1
+    {"latched", "anorexia", "aeon", "voyria"}
+    -- 2
+    {"paralysis", "crushedthroat", "pressure", "daeggerimpale", "prone", "skullfractures"}
+    -- 3
+    {"pyramides", "grievouswounds", "deadening", "kkractlebrand", "torntendons"}
+    -- 4
+    {"guilt", "tonguetied", "disloyalty", "disrupted", "wristfractures"}
+    -- 5
+    {"hypochondria", "itching", "manaleech", "impaled", "crackedribs"}
+    -- 6
+    {"tenderskin", "brokenleftarm", "hellsight", "bound"}
+    -- 7
+    {"spiritburn", "mildtrauma", "unweavingspirit", "transfixation"}
+    -- 8
+    {"whisperingmadness", "heartseed", "tension", "entangled"}
+    -- 9
+    {"timeloop", "damagedleftleg", "slickness", "webbed"}
+    -- 10
+    {"peace", "damagedrightleg", "fear"}
+    -- 11
+    {"unweavingmind", "brokenleftleg", "sleeping"}
+    -- 12
+    {"unweavingbody", "brokenrightleg"}
+    -- 13
+    {"skullfractures", "brokenrightarm"}
+    -- 14
+    {"scytherus", "mangledrightleg"}
+    -- 15
+    {"asthma", "damagedhead"}
+    -- 16
+    {"pyre3", "hypothermia"}
+    -- 17
+    {"depression", "mangledleftleg"}
+    -- 18
+    {"shadowmadness", "mangledhead"}
+    -- 19
+    {"impatience", "calcifiedskull"}
+    -- 20
+    {"flushings", "concussion"}
+    -- 21
+    {"weariness", "calcifiedtorso"}
+    -- 22
+    {"sandfever", "pyre1", "horror", "serioustrauma"}
+    -- 23
+    {"confusion", "damagedleftarm"}
+    -- 24
+    {"retribution", "damagedrightarm"}
+    -- 25
+    {"horror4", "parasite", "lovers", "epilepsy", "pacified", "justice",
+    "shyness", "dizziness", "nausea", "lethargy", "haemophilia", "clumsiness",
+    "hallucinations", "healthleech", "dementia", "recklessness", "masochism",
+    "stupidity", "generosity", "addiction", "paranoia", "agoraphobia",
+    "loneliness", "claustrophobia", "vertigo", "hypersomnia", "sensitivity",
+    "darkshade", "dissonance", "temperedmelancholic", "temperedcholeric",
+    "temperedsanguine", "temperedphlegmatic", "rebbies", "mycalium", "horror5",
+    "frozen", "mangledrightarm", "mangledleftarm", "slashedthroat",
+    "laceratedthroat", "selarnia", "stuttering", "shivering", "burning",
+    "scalded", "dazed"}
+    -- 26
+    {"blindness", "deafness"}
 }
