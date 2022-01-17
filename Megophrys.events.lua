@@ -80,13 +80,11 @@ Megophrys.gainedEQ = function()
   end
 end
 
-Megophrys.hitIcewall = function()
-  if Megophrys.autoEscaping then
-    if #gmcp.Room.Info.exits < 3 and Megophrys.class == 'Magi' then
-      send('cast firelash '.. Megophrys.lastExitTried)
-    end
-    Megophrys.locationsFled = Megophrys.locationsFled - 1
-    Megophrys.escapeBlocked = true
+Megophrys.hitWall = function()
+  if speedWalkDir[1] then
+    sendAll('mj '.. speedWalkDir[1], 'leap '.. speedWalkDir[1])
+  elseif Megophrys.lastDirTried then
+    sendAll('mj '.. Megophrys.lastDirTried, 'leap '.. Megophrys.lastDirTried)
   end
 end
 
@@ -117,7 +115,6 @@ Megophrys.hitShield = function()
       send('shin shatter '.. target)
     end
   end
-  cecho('\n<cyan>STOP HITTING YOURSELF STOP HITTING YOURSELF\n')
 end
 
 Megophrys.underPressure = function()

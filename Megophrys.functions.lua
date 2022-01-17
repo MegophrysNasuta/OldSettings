@@ -80,6 +80,11 @@ Megophrys.findTargetsInLine = function(match)
   end
 end
 
+Megophrys.goDir = function(direction)
+  Megophrys.lastDirTried = direction
+  sendAll('clearqueue all', direction)
+end
+
 Megophrys.nextLimbPrepAttack = function(onKillConditionAttack,
                                         limbPrepThreshold,
                                         limbUnderPrepThreshold)
