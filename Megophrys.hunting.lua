@@ -96,7 +96,8 @@ Megophrys.autoSelectHuntingTarget = function()
 end
 
 Megophrys.autoSelectHuntingTargetLine = function(matches)
-  if matches[2] == 'hippogriff' and matches[3] == '552688' then
+  if matches[2] == 'hippogriff' and (matches[3] == '552688' or
+                                     matches[3] == '506577') then
     -- mount, pass
   elseif matches[2] == 'golem' then
     -- golem, pass
