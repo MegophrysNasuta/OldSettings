@@ -35,6 +35,9 @@ Megophrys.autoResist = function()
   if Megophrys.class == 'Magi' then
     wsys.keepup('reflections', true)
   end
+  if Megophrys.class == 'Alchemist' then
+    send('educe tin')
+  end
 end
 
 Megophrys.eStopAuto = function(message)
@@ -396,8 +399,18 @@ Megophrys.setTarget = function(t)
       idx = idx + 1
     end
   end
-  hilite_trigger_id = tempTrigger(target:lower(), function() hilite_target_func(target:lower()) end)
-  hilite_trigger_id2 = tempTrigger(target, function() hilite_target_func(target) end)
+
+  if target ~= 'none' then
+    hilite_trigger_id = tempTrigger(target:lower(), function()
+        hilite_target_func(target:lower())
+    end)
+    hilite_trigger_id2 = tempTrigger(target, function()
+        hilite_target_func(target)
+    end)
+    send('tunnelvision on '.. target)
+  else
+    send('tunnelvision off')
+  end
 
   Megophrys.targetLabel = nil
   Megophrys.targetLabel = Geyser.Label:new({

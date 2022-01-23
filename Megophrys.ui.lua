@@ -16,6 +16,14 @@ Megophrys.makeClassToolbars = function()
     Megophrys.psionToolbar:hide()
   end
 
+  if Megophrys.bmToolbar then
+    Megophrys.bmToolbar:hide()
+  end
+
+  if Megophrys.alchToolbar then
+    Megophrys.alchToolbar:hide()
+  end
+
   Megophrys.modeLabel = Geyser.Label:new({
     name='mode_label',
     x=0, y=0, width=100, height=20,

@@ -282,8 +282,8 @@ Megophrys.Blademaster.setMode = function()
           '\nTarget is: '.. target ..'\n')
   elseif killStrat == 'raid' then
     Megophrys.nextMoveButton:echo('Balanceslash', Megophrys.fgColors[killStrat], 'c')
-    Blademaster.setElement('fire')
-    Blademaster.setElement('water', nil, true)
+    Blademaster.setElement('void')
+    Blademaster.setElement('void', nil, true)
     Blademaster.setNextStrike('hamstring')
     cecho('\n<cyan>Auto-attacks will be balanceslashes'..
           '\nElement: '.. Blademaster.element ..
@@ -295,8 +295,8 @@ Megophrys.Blademaster.setMode = function()
 
     Megophrys.targetTorso = false
     Megophrys.resetTargetWounds()
-    Blademaster.setElement('fire')
-    Blademaster.setElement('fire', nil, true)
+    Blademaster.setElement('void')
+    Blademaster.setElement('void', nil, true)
     Blademaster.setNextStrike('hamstring')
 
     cecho('\n<cyan>Auto-attacks will be limbslashes'..

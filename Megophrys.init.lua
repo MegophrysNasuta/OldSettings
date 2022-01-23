@@ -6,10 +6,11 @@ Megophrys.fgColors = {
   denizen = 'cyan',
   raid = 'orange',
   los = 'orange',
-  pummel = 'yellow',
-  fiyah = 'yellow',
+  aurify = 'yellow',
   bonk = 'yellow',
   bstar = 'yellow',
+  fiyah = 'yellow',
+  pummel = 'yellow',
 }
 
 
