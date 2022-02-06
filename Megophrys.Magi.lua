@@ -13,6 +13,14 @@ Magi.staffCasts = {
 
 Megophrys.Magi.onConnect = function()
   sendAll('simultaneity', 'bind all', 'fortify all')
+  sendAll(
+    'unwield all',
+    'remove armour',
+    'put armour in pack370332',
+    'get staff217211 from pack370332',
+    'wield staff217221 left',
+    'wield shield268649 right'
+  )
 end
 
 Megophrys.Magi.makeClassToolbars = function()
@@ -165,7 +173,10 @@ Megophrys.Magi.nextAttack = function()
   local Magi = Megophrys.Magi
   local killStrat = Megophrys.killStrat
   local staffCasts = Magi.staffCasts
-  local setNextAttack = 'setalias nextAttack stand / stand / wield staff217211 left / wield shield268649 right / '
+  local setNextAttack = 'setalias nextAttack '
+  if not wsysf.affs.stupidity then
+    setNextAttack = setNextAttack .. 'stand / '
+  end
 
   local staffSpell = staffCasts[Magi.element]
   if killStrat == 'denizen' then

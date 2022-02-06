@@ -54,7 +54,14 @@ Megophrys.Alchemist.makeClassToolbars = function()
 end
 
 Megophrys.Alchemist.onConnect = function()
-  -- pass
+  sendAll(
+    'unwield all',
+    'remove armour',
+    'put armour in pack370332',
+    'get ringmail from pack370332',
+    'wear ringmail',
+    'wield shield268649 right'
+  )
 end
 
 Megophrys.Alchemist.nextAttack = function()
@@ -65,9 +72,6 @@ Megophrys.Alchemist.nextAttack = function()
   local nextEduce = ''
   local nextTemper = ''
   local nextWrack = ''
-  local preAlias = ('setalias nextAttack stand / stand / '..
-                    'unwield staff217211 left / wield shield268649 right / '..
-                    'homunculus attack &tar / ')
   local targetAffs = affstrack.score
   local targetHits = Megophrys.targetHits or 0
   local uiColor = Megophrys.fgColors[killStrat]
@@ -76,6 +80,11 @@ Megophrys.Alchemist.nextAttack = function()
   local melancholicHumour = (ak.alchemist.humour.melancholic or 0)
   local cholericHumour = (ak.alchemist.humour.choleric or 0)
   local phlegmaticHumour = (ak.alchemist.humour.phlegmatic or 0)
+
+  local preAlias = 'setalias nextAttack evaluate &tar / homunculus attack &tar / '
+  if not wsysf.affs.stupidity then
+    preAlias = preAlias .. 'stand / '
+  end
 
   if killStrat == 'denizen' then
     if ak.defs.shield then

@@ -2,7 +2,12 @@ Megophrys.Psion = (Megophrys.Psion or {})
 local Psion = Megophrys.Psion
 
 Megophrys.Psion.onConnect = function()
-  -- pass
+  sendAll(
+    'unwield all',
+    'remove armour',
+    'put armour in pack370332',
+    'wield shield268649 right'
+  )
 end
 
 Megophrys.Psion.setMode = function()
@@ -95,7 +100,7 @@ Megophrys.Psion.nextAttack = function()
   local killStrat = Megophrys.killStrat
   local nextWeave = 'overhand'
   local nextPsi = ''
-  local preAlias = 'setalias nextAttack stand / stand / unwield staff217211 left / wield shield268649 right / '
+  local preAlias = 'setalias nextAttack '
   local targetAffs = affstrack.score
   local targetHits = Megophrys.targetHits or 0
   local uiColor = Megophrys.fgColors[killStrat]
@@ -103,6 +108,10 @@ Megophrys.Psion.nextAttack = function()
   local unweavingBody = (ak.psion.unweaving.body or 0)
   local unweavingMind = (ak.psion.unweaving.mind or 0)
   local unweavingSpirit = (ak.psion.unweaving.spirit or 0)
+
+  if not wsysf.affs.stupidity then
+    setNextAttack = setNextAttack .. 'stand / '
+  end
 
   if killStrat == 'denizen' then
     if ak.defs.shield then
@@ -143,32 +152,33 @@ Megophrys.Psion.nextAttack = function()
         imSoClever = 'say Another enemy unmade. Hah!'
         chanceToMouthOff = 1
       elseif targetHits % 2 == 0 then
-        if not tarAff("stupidity") then
+        if not tarAff("unweavingbody") then
+          nextWeave = 'unweave body'
+          table.insert(Megophrys.givingAffs, 'unweavingbody')
+        elseif not tarAff("unweavingmind") then
+          nextWeave = 'unweave mind'
+          table.insert(Megophrys.givingAffs, 'unweavingmind')
+        else
+          nextWeave = 'sever'
+          imSoClever = 'warcry'
+          chanceToMouthOff = 0.1
+          table.insert(Megophrys.givingAffs, 'clumsiness')
+        end
+      elseif not tarAff("stupidity") then
+        chanceToMouthOff = 0.4
+        if math.random() < 0.5 then
           nextWeave = 'backhand'
           imSoClever = 'say SLAP!!'
-          chanceToMouthOff = 0.8
           table.insert(Megophrys.givingAffs, 'stupidity')
           table.insert(Megophrys.givingAffs, 'dizziness')
         else
-          if not tarAff("unweavingbody") then
-            nextWeave = 'unweave body'
-            table.insert(Megophrys.givingAffs, 'unweavingbody')
-          elseif not tarAff("unweavingmind") then
-            nextWeave = 'unweave mind'
-            table.insert(Megophrys.givingAffs, 'unweavingmind')
+          nextWeave = 'overhand'
+          imSoClever = 'say BONK!!'
+          if tarAff('prone') or lb[target].hits.head > 100 then
+            table.insert(Megophrys.givingAffs, 'impatience')
+          else
+            table.insert(Megophrys.givingAffs, 'stupidity')
           end
-        end
-      elseif not tarAff("clumsiness") then
-        nextWeave = 'sever'
-        imSoClever = 'warcry'
-        chanceToMouthOff = 0.1
-        table.insert(Megophrys.givingAffs, 'clumsiness')
-      elseif not tarAff("asthma") then
-        nextWeave = 'deathblow'
-        imSoClever = 'warcry'
-        chanceToMouthOff = 0.1
-        if not Megophrys.givingAffs:contains('asthma') then
-          table.insert(Megophrys.givingAffs, 'asthma')
         end
       elseif tarAff("impatience") and tarAff("bloodfire") then
         nextWeave = 'exsanguinate'
@@ -193,15 +203,6 @@ Megophrys.Psion.nextAttack = function()
         end
         imSoClever = ''
         chanceToMouthOff = 0
-      elseif targetHits % 2 == 1 then
-        nextWeave = 'overhand'
-        imSoClever = 'say BONK!!'
-        chanceToMouthOff = 0.4
-        if tarAff('prone') or lb[target].hits.head > 100 then
-          table.insert(Megophrys.givingAffs, 'impatience')
-        else
-          table.insert(Megophrys.givingAffs, 'stupidity')
-        end
       else
         nextWeave = 'deathblow'
         imSoClever = 'warcry'
@@ -255,8 +256,12 @@ Megophrys.Psion.nextAttack = function()
 
   Psion.nextPsiMoveButton:echo(nextPsi or '', uiColor, 'c')
 
-  if imSoClever ~= '' and math.random() < chanceToMouthOff then
-    setNextAttack = setNextAttack ..' / '.. imSoClever
+  if wsysf.affs.prone then
+    send('stand')
+  else
+    if imSoClever ~= '' and math.random() < chanceToMouthOff then
+      setNextAttack = setNextAttack ..' / '.. imSoClever
+    end
   end
 
   sendAll(setNextAttack, 'queue addclear eqbal nextAttack')

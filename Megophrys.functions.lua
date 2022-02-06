@@ -538,3 +538,17 @@ Megophrys.toggleTwo = Megophrys.toggleDualPrep
 Megophrys.toggleThree = Megophrys.toggleTargetLimb
 Megophrys.toggleFour = Megophrys.toggleSkipTorso
 Megophrys.toggleFive = Megophrys.toggleLimbsPrepped
+
+Megophrys.tumbleRandom = function()
+  local stopTrying = false
+  local lastDir = nil
+  for dir, roomID in pairs(gmcp.Room.Info.exits) do
+    if math.random(1, 2) % 2 == 0 then
+      send('tumble '.. dir)
+      stopTrying = true
+      break
+    end
+    lastDir = dir
+  end
+  if not stopTrying then send('tumble '.. lastDir) end
+end

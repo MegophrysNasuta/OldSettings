@@ -98,6 +98,13 @@ Megophrys.Blademaster.onConnect = function()
   wsys.setSettings('automount', 'off')
   mmp.settings:setOption('gallop', false)
   mmp.settings:setOption('dash', true)
+  sendAll(
+    'unwield all',
+    'remove armour',
+    'put armour in pack370332',
+    'get scalemail from pack370332',
+    'wear scalemail'
+  )
 end
 
 Megophrys.Blademaster.setNextStrike = function(strikeTarget)
@@ -107,10 +114,14 @@ end
 
 Megophrys.Blademaster.nextAttack = function()
   local killStrat = Megophrys.killStrat
-  local setNextAttack = 'setalias nextAttack stand / stand / '
+  local setNextAttack = 'setalias nextAttack '
   local infuseElem = Blademaster.infuseElem
   local nextSlash = nil
   local targetAffs = affstrack.score
+
+  if not wsysf.affs.stupidity then
+    setNextAttack = setNextAttack .. 'stand / '
+  end
 
   if infuseElem == 'water' then
     infuseElem = 'ice'
