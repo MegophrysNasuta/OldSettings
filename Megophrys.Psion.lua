@@ -98,7 +98,7 @@ Megophrys.Psion.nextAttack = function()
   local chanceToMouthOff = 0
   local imSoClever = ''
   local killStrat = Megophrys.killStrat
-  local nextWeave = 'overhand'
+  local nextWeave = 'overhand &tar'
   local nextPsi = ''
   local preAlias = 'setalias nextAttack '
   local targetAffs = affstrack.score
@@ -126,7 +126,7 @@ Megophrys.Psion.nextAttack = function()
   else
     if ak.defs.shield then
       Megophrys.nextMoveButton:echo('Cleave Shield', Megophrys.fgColors[killStrat], 'c')
-      nextWeave = 'cleave'
+      nextWeave = 'cleave &tar'
     else
       if not tarAff("paralysis") then
         Megophrys.Psion.setWeavePrep('paralysis')
@@ -141,25 +141,37 @@ Megophrys.Psion.nextAttack = function()
       local targetManaPct = (ak.currentmana or 0) / (ak.maxmana or 1)
       if targetManaPct <= 0.3 then
         nextPsi = 'excise'
-        nextWeave = 'deathblow'
+        nextWeave = 'deathblow &tar'
         imSoClever = 'say You cannot resist!'
         chanceToMouthOff = 1
       elseif ((unweavingBody > 3 and unweavingMind > 3) or
               (unweavingBody > 3 and unweavingSpirit > 3) or
               (unweavingMind > 3 and unweavingSpirit > 3)) then
         nextPsi = 'deconstruct'
-        nextWeave = 'deathblow'
+        nextWeave = 'deathblow &tar'
         imSoClever = 'say Another enemy unmade. Hah!'
         chanceToMouthOff = 1
+      elseif unweavingBody > 4 and unweavingMind < 1 then
+        nextWeave = 'invert &tar body spirit'
+        imSoClever = ''
+        chanceToMouthOff = 0
+      elseif unweavingMind > 4 and unweavingBody < 1 then
+        nextWeave = 'invert &tar mind spirit'
+        imSoClever = ''
+        chanceToMouthOff = 0
+      elseif unweavingSpirit > 4 then
+        nextWeave = 'flurry &tar'
+        imSoClever = 'say *forcefully Die, heretic!'
+        chanceToMouthOff = 0.2
       elseif targetHits % 2 == 0 then
         if not tarAff("unweavingbody") then
-          nextWeave = 'unweave body'
+          nextWeave = 'unweave &tar body'
           table.insert(Megophrys.givingAffs, 'unweavingbody')
         elseif not tarAff("unweavingmind") then
-          nextWeave = 'unweave mind'
+          nextWeave = 'unweave &tar mind'
           table.insert(Megophrys.givingAffs, 'unweavingmind')
         else
-          nextWeave = 'sever'
+          nextWeave = 'sever &tar'
           imSoClever = 'warcry'
           chanceToMouthOff = 0.1
           table.insert(Megophrys.givingAffs, 'clumsiness')
@@ -167,12 +179,12 @@ Megophrys.Psion.nextAttack = function()
       elseif not tarAff("stupidity") then
         chanceToMouthOff = 0.4
         if math.random() < 0.5 then
-          nextWeave = 'backhand'
+          nextWeave = 'backhand &tar'
           imSoClever = 'say SLAP!!'
           table.insert(Megophrys.givingAffs, 'stupidity')
           table.insert(Megophrys.givingAffs, 'dizziness')
         else
-          nextWeave = 'overhand'
+          nextWeave = 'overhand &tar'
           imSoClever = 'say BONK!!'
           if tarAff('prone') or lb[target].hits.head > 100 then
             table.insert(Megophrys.givingAffs, 'impatience')
@@ -181,7 +193,7 @@ Megophrys.Psion.nextAttack = function()
           end
         end
       elseif tarAff("impatience") and tarAff("bloodfire") then
-        nextWeave = 'exsanguinate'
+        nextWeave = 'exsanguinate &tar'
         imSoClever = 'say *forcefully Die, heretic!'
         chanceToMouthOff = 0.2
         table.insert(Megophrys.givingAffs, 'nausea')
@@ -190,13 +202,13 @@ Megophrys.Psion.nextAttack = function()
         end
       elseif tarAff("impatience") and tarAff("bloodfire") and tarAff("anorexia") then
         if not tarAff("unweavingbody") then
-          nextWeave = 'unweave body'
+          nextWeave = 'unweave &tar body'
           table.insert(Megophrys.givingAffs, 'unweavingbody')
         elseif not tarAff("unweavingmind") then
-          nextWeave = 'unweave mind'
+          nextWeave = 'unweave &tar mind'
           table.insert(Megophrys.givingAffs, 'unweavingmind')
         else
-          nextWeave = 'deathblow'
+          nextWeave = 'deathblow &tar'
           if not Megophrys.givingAffs:contains('asthma') then
             table.insert(Megophrys.givingAffs, 'asthma')
           end
@@ -204,7 +216,7 @@ Megophrys.Psion.nextAttack = function()
         imSoClever = ''
         chanceToMouthOff = 0
       else
-        nextWeave = 'deathblow'
+        nextWeave = 'deathblow &tar'
         imSoClever = 'warcry'
         chanceToMouthOff = 0.1
         if not Megophrys.givingAffs:contains('asthma') then
@@ -245,7 +257,7 @@ Megophrys.Psion.nextAttack = function()
     setNextAttack = setNextAttack ..' / weave prepare '.. Psion.weavePrep
   end
 
-  setNextAttack = setNextAttack ..'/ weave '.. nextWeave ..' &tar'
+  setNextAttack = setNextAttack ..'/ weave '.. nextWeave
 
   if killStrat ~= 'denizen' then
     setNextAttack = setNextAttack ..' / contemplate &tar'

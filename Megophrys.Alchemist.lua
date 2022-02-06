@@ -58,9 +58,15 @@ Megophrys.Alchemist.onConnect = function()
     'unwield all',
     'remove armour',
     'put armour in pack370332',
-    'get ringmail from pack370332',
-    'wear ringmail',
-    'wield shield268649 right'
+    'get ringmail from pack370332'
+  )
+  tempTimer(0.2, Megophrys.Alchemist.gearUp)
+end
+
+Megophrys.Alchemist.gearUp = function()
+  sendAll(
+    'wield shield268649 right',
+    'wear ringmail'
   )
 end
 
@@ -91,10 +97,15 @@ Megophrys.Alchemist.nextAttack = function()
       send('queue prepend eqbal throw caustic at &tar')
     end
   elseif killStrat == 'los' then
-    local LOSCommand = 'enact destruction '.. target
-    if target2 then LOSCommand = LOSCommand ..' '.. target2 end
-    if target3 then LOSCommand = LOSCommand ..' '.. target3 end
-    send(LOSCommand)
+    local LOSCommand = 'throw'
+    if Megophrys.targetHits % 3 == 0 then
+      LOSCommand = LOSCommand ..' devitalisation '
+    elseif Megophrys.targetHits % 2 == 0 then
+      LOSCommand = LOSCommand ..' incendiary '
+    else
+      LOSCommand = LOSCommand ..' intoxicant '
+    end
+    send(LOSCommand .. Megophrys.LOSDirection)
   else
     if ak.defs.shield then
       Megophrys.nextMoveButton:echo('Educe Copper', Megophrys.fgColors[killStrat], 'c')
@@ -105,53 +116,63 @@ Megophrys.Alchemist.nextAttack = function()
       if targetManaPct <= 0.6 and (targetHealthPct <= 0.6 or 
                                    (targetHealthPct <= 0.66 and cholericHumour > 2) or
                                    (targetHealthPct <= 0.72 and cholericHumour > 4)) then
-        nextTemper = 'inundate choleric'
+        nextTemper = 'inundate &tar choleric'
         nextWrack = 'aurify &tar'
       else
         if sanguineHumour < 3 then
           Alchemist.setHumour('sanguine')
-        elseif cholericHumour < 5 then
-          Alchemist.setHumour('choleric')
-        elseif targetManaPct > 0.85 then
+        elseif melancholicHumour < 3 then
           Alchemist.setHumour('melancholic')
-        elseif targetHealthPct > 0.8 then
-          Alchemist.setHumour('sanguine')
+        elseif cholericHumour < 2 then
+          Alchemist.setHumour('choleric')
+        elseif phlegmaticHumour < 2 then
+          Alchemist.setHumour('phlegmatic')
         else
           Alchemist.setHumour('choleric')
+        end
+
+        local chooseAff = function(ignoreAff)
+          if melancholicHumour > 0 then
+            if not tarAff("stupidity") and ignoreAff ~= "stupidity" then
+              return "stupidity"
+            elseif not tarAff("impatience") and ignoreAff ~= "impatience" then
+              return "impatience"
+            elseif not tarAff("anorexia") and ignoreAff ~= "anorexia" then
+              return "anorexia"
+            end
+          end
+          if not firstAff and cholericHumour > 0 then
+            if not tarAff("slickness") and ignoreAff ~= "slickness" then
+              return "slickness"
+            elseif not tarAff("nausea") and ignoreAff ~= "nausea" then
+              return "nausea"
+            end
+          end
+          if not firstAff and phlegmaticHumour > 0 then
+            if not tarAff("asthma") and ignoreAff ~= "asthma" then
+              return "asthma"
+            elseif not tarAff("clumsiness") and ignoreAff ~= "clumsiness" then
+              return "clumsiness"
+            elseif not tarAff("weariness") and ignoreAff ~= "weariness" then
+              return "weariness"
+            end
+          end
+          if not firstAff and not tarAff("recklessness") and ignoreAff ~= "recklessness" then
+            return "recklessness"
+          else
+            return "haemophilia"
+          end
         end
 
         local firstAff = ''
         local secondAff = ''
-        if not tarAff("paralysis") then
+        if sanguineHumour > 2 and not tarAff("paralysis") then
           firstAff = "paralysis"
         else
-          if melancholicHumour > 0 then
-            if not tarAff("stupidity") then
-              firstAff = "stupidity"
-            elseif not tarAff("anorexia") then
-              firstAff = "anorexia"
-            elseif not tarAff("impatience") then
-              firstAff = "impatience"
-            end
-          end
-          if not firstAff and cholericHumour > 0 then
-            if not tarAff("slickness") then
-              firstAff = "slickness"
-            elseif not tarAff("nausea") then
-              firstAff = "nausea"
-            end
-          end
+          firstAff = chooseAff()
         end
 
-        local remainingAffs = {
-          'clumsiness', 'stupidity', 'slickness', 'impatience',
-          'asthma', 'anorexia'
-        }
-        for _, aff in pairs(remainingAffs) do
-          if not tarAff(aff) and firstAff ~= aff then
-            secondAff = aff
-          end
-        end
+        secondAff = chooseAff(firstAff)
 
         imSoClever = 'warcry'
         chanceToMouthOff = 0.1
@@ -165,29 +186,39 @@ Megophrys.Alchemist.nextAttack = function()
     secondAff = ''
   end
 
-  setNextAttack = setNextAttack .. (nextTemper or
-                                    'temper &tar '.. Alchemist.humour)
-  if not secondAff then
-    setNextAttack = setNextAttack ..' / wrack &tar '.. firstAff
+  local targetIsLocked = (
+    tarAff("paralysis") and tarAff("anorexia") and tarAff("asthma") and
+    tarAff("slickness") and tarAff("impatience")
+  )
+
+  if targetIsLocked then
+    sendAll('wield toxin', 'throw toxin at ground')
   else
-    setNextAttack = (setNextAttack ..' / truewrack &tar '..
-                     firstAff ..' '.. secondAff)
-  end
+    setNextAttack = setNextAttack .. (nextTemper or
+                                      'temper &tar '.. Alchemist.humour)
+    table.insert(Megophrys.givingAffs, firstAff)
+    if not secondAff then
+      setNextAttack = setNextAttack ..' / wrack &tar '.. firstAff
+    else
+      setNextAttack = (setNextAttack ..' / truewrack &tar '..
+                       firstAff ..' '.. secondAff)
+      table.insert(Megophrys.givingAffs, secondAff)
+    end
 
+    Alchemist.nextWrackButton:echo(firstAff ..' '.. secondAff, uiColor, 'c')
 
-  if killStrat ~= 'denizen' then
-    setNextAttack = setNextAttack ..' / evaluate &tar humours'
-  end
+    if wsysf.affs.prone then
+      send('stand')
+    else
+      if imSoClever ~= '' and math.random() < chanceToMouthOff then
+        setNextAttack = setNextAttack ..' / '.. imSoClever
+      end
+    end
 
-  Alchemist.nextWrackButton:echo(firstAff ..' '.. secondAff, uiColor, 'c')
-
-  if imSoClever ~= '' and math.random() < chanceToMouthOff then
-    setNextAttack = setNextAttack ..' / '.. imSoClever
-  end
-
-  sendAll(setNextAttack, 'queue addclear eqbal nextAttack')
-  if not ak.defs.shield then
-    Megophrys.targetHits = targetHits + 1
+    sendAll(setNextAttack, 'queue addclear eqbal nextAttack')
+    if not ak.defs.shield then
+      Megophrys.targetHits = targetHits + 1
+    end
   end
 
   if killStrat ~= 'denizen' then
