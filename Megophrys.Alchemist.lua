@@ -88,7 +88,7 @@ Megophrys.Alchemist.nextAttack = function()
   local phlegmaticHumour = (ak.alchemist.humour.phlegmatic or 0)
 
   local preAlias = 'setalias nextAttack evaluate &tar / homunculus attack &tar / '
-  if not wsysf.affs.stupidity then
+  if not wsys.aff.stupidity then
     preAlias = preAlias .. 'stand / '
   end
 
@@ -111,6 +111,7 @@ Megophrys.Alchemist.nextAttack = function()
       Megophrys.nextMoveButton:echo('Educe Copper', Megophrys.fgColors[killStrat], 'c')
       nextEduce = 'copper'
     else
+      local tarAff = affstrack.score
       local targetManaPct = (ak.currentmana or 0) / (ak.maxmana or 1)
       local targetHealthPct = (ak.currenthealth or 0) / (ak.maxhealth or 1)
       if targetManaPct <= 0.6 and (targetHealthPct <= 0.6 or 
@@ -133,31 +134,31 @@ Megophrys.Alchemist.nextAttack = function()
 
         local chooseAff = function(ignoreAff)
           if melancholicHumour > 0 then
-            if not tarAff("stupidity") and ignoreAff ~= "stupidity" then
-              return "stupidity"
-            elseif not tarAff("impatience") and ignoreAff ~= "impatience" then
+            if tarAff["impatience"] < 80 and ignoreAff ~= "impatience" then
               return "impatience"
-            elseif not tarAff("anorexia") and ignoreAff ~= "anorexia" then
+            elseif tarAff["stupidity"] < 80 and ignoreAff ~= "stupidity" then
+              return "stupidity"
+            elseif tarAff["anorexia"] < 80 and ignoreAff ~= "anorexia" then
               return "anorexia"
             end
           end
           if not firstAff and cholericHumour > 0 then
-            if not tarAff("slickness") and ignoreAff ~= "slickness" then
+            if tarAff["slickness"] < 80 and ignoreAff ~= "slickness" then
               return "slickness"
-            elseif not tarAff("nausea") and ignoreAff ~= "nausea" then
+            elseif tarAff["nausea"] < 80 and ignoreAff ~= "nausea" then
               return "nausea"
             end
           end
           if not firstAff and phlegmaticHumour > 0 then
-            if not tarAff("asthma") and ignoreAff ~= "asthma" then
+            if tarAff["asthma"] < 80 and ignoreAff ~= "asthma" then
               return "asthma"
-            elseif not tarAff("clumsiness") and ignoreAff ~= "clumsiness" then
+            elseif tarAff["clumsiness"] < 80 and ignoreAff ~= "clumsiness" then
               return "clumsiness"
-            elseif not tarAff("weariness") and ignoreAff ~= "weariness" then
+            elseif tarAff["weariness"] < 80 and ignoreAff ~= "weariness" then
               return "weariness"
             end
           end
-          if not firstAff and not tarAff("recklessness") and ignoreAff ~= "recklessness" then
+          if not firstAff and tarAff["recklessness"] < 80 and ignoreAff ~= "recklessness" then
             return "recklessness"
           else
             return "haemophilia"
@@ -166,7 +167,7 @@ Megophrys.Alchemist.nextAttack = function()
 
         local firstAff = ''
         local secondAff = ''
-        if sanguineHumour > 2 and not tarAff("paralysis") then
+        if sanguineHumour > 2 and tarAff["paralysis"] < 80 then
           firstAff = "paralysis"
         else
           firstAff = chooseAff()
@@ -187,8 +188,8 @@ Megophrys.Alchemist.nextAttack = function()
   end
 
   local targetIsLocked = (
-    tarAff("paralysis") and tarAff("anorexia") and tarAff("asthma") and
-    tarAff("slickness") and tarAff("impatience")
+    tarAff["paralysis"] > 80 and tarAff["anorexia"] > 80 and tarAff["asthma"] > 80 and
+    tarAff["slickness"] > 80 and tarAff["impatience"] > 80
   )
 
   if targetIsLocked then
@@ -207,7 +208,7 @@ Megophrys.Alchemist.nextAttack = function()
 
     Alchemist.nextWrackButton:echo(firstAff ..' '.. secondAff, uiColor, 'c')
 
-    if wsysf.affs.prone then
+    if wsys.aff.prone then
       send('stand')
     else
       if imSoClever ~= '' and math.random() < chanceToMouthOff then

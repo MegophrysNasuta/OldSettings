@@ -174,7 +174,7 @@ Megophrys.Magi.nextAttack = function()
   local killStrat = Megophrys.killStrat
   local staffCasts = Magi.staffCasts
   local setNextAttack = 'setalias nextAttack '
-  if not wsysf.affs.stupidity then
+  if not wsys.aff.stupidity then
     setNextAttack = setNextAttack .. 'stand / '
   end
 
@@ -186,6 +186,8 @@ Megophrys.Magi.nextAttack = function()
             'queue addclear eqbal nextAttack')
   else
     Magi.setGolemStrat()
+    local tarAff = affstrack.score
+
     if killStrat == 'raid' then
       if not Megophrys.Magi.targetTransfixed then
         Megophrys.nextMoveButton:echo('Transfix', Megophrys.fgColors[killStrat], 'c')
@@ -241,7 +243,7 @@ Megophrys.Magi.nextAttack = function()
         end
         Magi.setElement('air', 'proning')
       elseif Megophrys.killPreConditionsMet then
-        if tarAff('prone') then
+        if tarAff["prone"] == 100 then
           if killStrat == 'pummel' then
             Magi.setElement('water', 'freezing')
           elseif killStrat == 'fiyah' then
@@ -253,17 +255,17 @@ Megophrys.Magi.nextAttack = function()
       end
 
       if killStrat == 'pummel' then
-        if Megophrys.killPreConditionsMet and not tarAff('shivering') then
+        if Megophrys.killPreConditionsMet and tarAff["shivering"] < 80 then
           sendAll('clearqueue all', 'cast deepfreeze')
           Megophrys.killPreConditionsMet = false
           Megophrys.nextMoveButton:echo('Hypothermia', Megophrys.fgColors[killStrat], 'c')
           return
-        elseif tarAff('shivering') then
+        elseif tarAff["shivering"] > 80 then
           -- kill condition met: pummel to death
           Megophrys.priorityLabel:echo('<center>Priority: PUMMEL</center>')
           Magi.setElement('water', 'freezing')
           cmd = 'staffstrike &tar with '.. Magi.element
-          if not tarAff('frozen') then
+          if tarAff["frozen"] < 80 then
             Magi.followUp = 'golem hypothermia &tar'
           else
             Magi.followUp = 'golem pummel &tar'
@@ -272,7 +274,7 @@ Megophrys.Magi.nextAttack = function()
           targetTorso = true
         end
       elseif killStrat == 'fiyah' then
-        if tarAff('dehydrated') then
+        if tarAff["dehydrated"] > 80 then
           Megophrys.priorityLabel:echo('<center>Priority: DESTROY</center>')
           Magi.setElement('fire', 'burning')
           cmd = 'staffstrike &tar with '.. Magi.element
@@ -342,7 +344,7 @@ end
 Magi.setGolemStrat = function()
   Magi.golemSmashTarget = 'arms'
   Magi.golemSmashButton:echo('Arms', Megophrys.fgColors[Megophrys.killStrat], 'c')
-  if tarAff('timeflux') then
+  if tarAff["timeflux"] > 80 then
     if Megophrys.killStrat == 'fiyah' then
       if Magi.infernoDown then
         Magi.followUp = 'golem inferno'

@@ -121,9 +121,9 @@ Megophrys.Blademaster.nextAttack = function()
   local setNextAttack = 'setalias nextAttack '
   local infuseElem = Blademaster.infuseElem
   local nextSlash = nil
-  local targetAffs = affstrack.score
+  local tarAff = affstrack.score
 
-  if not wsysf.affs.stupidity then
+  if not wsys.aff.stupidity then
     setNextAttack = setNextAttack .. 'stand / '
   end
 
@@ -148,7 +148,7 @@ Megophrys.Blademaster.nextAttack = function()
     local targetSide = nil
     Megophrys.nextMoveButton:echo('Staffstrike', Megophrys.fgColors[killStrat], 'c')
 
-    if Megophrys.killPreConditionsMet and not tarAff('impaled') then
+    if Megophrys.killPreConditionsMet and tarAff["impaled"] < 80 then
       sendAll('clearqueue all', 'impale '.. target)
       Megophrys.killPreConditionsMet = false
       Megophrys.nextMoveButton:echo('Impslash', Megophrys.fgColors[killStrat], 'c')
@@ -159,7 +159,7 @@ Megophrys.Blademaster.nextAttack = function()
       Megophrys.nextMoveButton:echo('Bladetwist', Megophrys.fgColors[killStrat], 'c')
       if (ak.bleeding or 0) > 699 then
         sendAll('clearqueue all', 'brokenstar '.. target)
-      elseif not tarAff('impaleslash') then
+      elseif tarAff["impaleslash"] < 80 then
         sendAll('clearqueue all', 'impaleslash')
       else
         sendAll('clearqueue all', 'bladetwist')
