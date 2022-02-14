@@ -82,10 +82,11 @@ Megophrys.Alchemist.nextAttack = function()
   local targetHits = Megophrys.targetHits or 0
   local uiColor = Megophrys.fgColors[killStrat]
 
-  local sanguineHumour = (ak.alchemist.humour.sanguine or 0)
-  local melancholicHumour = (ak.alchemist.humour.melancholic or 0)
-  local cholericHumour = (ak.alchemist.humour.choleric or 0)
-  local phlegmaticHumour = (ak.alchemist.humour.phlegmatic or 0)
+  local targetHumour = {}
+  targetHumour.sanguine = (ak.alchemist.humour.sanguine or 0)
+  targetHumour.melancholic = (ak.alchemist.humour.melancholic or 0)
+  targetHumour.choleric = (ak.alchemist.humour.choleric or 0)
+  targetHumour.phlegmatic = (ak.alchemist.humour.phlegmatic or 0)
 
   local preAlias = 'setalias nextAttack evaluate &tar / homunculus attack &tar / '
   if not wsys.aff.stupidity then
@@ -115,65 +116,50 @@ Megophrys.Alchemist.nextAttack = function()
       local targetManaPct = (ak.currentmana or 0) / (ak.maxmana or 1)
       local targetHealthPct = (ak.currenthealth or 0) / (ak.maxhealth or 1)
       if targetManaPct <= 0.6 and (targetHealthPct <= 0.6 or 
-                                   (targetHealthPct <= 0.66 and cholericHumour > 2) or
-                                   (targetHealthPct <= 0.72 and cholericHumour > 4)) then
+                                   (targetHealthPct <= 0.66 and targetHumour.choleric > 2) or
+                                   (targetHealthPct <= 0.72 and targetHumour.choleric > 4)) then
         nextTemper = 'inundate &tar choleric'
         nextWrack = 'aurify &tar'
       else
-        if sanguineHumour < 3 then
+        if targetHumour.sanguine < 1 then
           Alchemist.setHumour('sanguine')
-        elseif melancholicHumour < 3 then
+        elseif targetHumour.melancholic < 1 then
           Alchemist.setHumour('melancholic')
-        elseif cholericHumour < 2 then
-          Alchemist.setHumour('choleric')
-        elseif phlegmaticHumour < 2 then
+        elseif targetHumour.phlegmatic < 1 then
           Alchemist.setHumour('phlegmatic')
+        elseif targetHumour.choleric < 1 then
+          Alchemist.setHumour('choleric')
+        elseif targetHumour.melancholic < 2 then
+          Alchemist.setHumour('melancholic')
         else
           Alchemist.setHumour('choleric')
         end
 
         local chooseAff = function(ignoreAff)
-          if melancholicHumour > 0 then
-            if tarAff["impatience"] < 80 and ignoreAff ~= "impatience" then
-              return "impatience"
-            elseif tarAff["stupidity"] < 80 and ignoreAff ~= "stupidity" then
-              return "stupidity"
-            elseif tarAff["anorexia"] < 80 and ignoreAff ~= "anorexia" then
-              return "anorexia"
+          local affPrios = {
+            paralysis = 'sanguine',       -- eat bloodroot
+            impatience = 'melancholic',   -- eat goldenseal
+            asthma = 'phlegmatic',        -- eat kelp
+            clumsiness = 'phlegmatic',    -- eat kelp
+            sensitivity = 'choleric',     -- eat kelp
+            slickness = 'choleric',       -- smoke valerian, eat bloodroot
+            nausea = 'choleric',          -- eat ginseng
+            anorexia = 'melancholic',     -- apply epidermal
+            haemophilia = 'sanguine',     -- eat ginseng
+            recklessness = 'sanguine',    -- eat lobelia, focus
+            stupidity = 'melancholic',    -- eat goldenseal
+            weariness = 'phlegmatic',     -- eat kelp
+          }
+          for aff, humour in pairs(affPrios) do
+            if (ignoreAff ~= aff and
+                targetHumour[humour] > 0 and tarAff[aff] < 80) then
+              return aff
             end
-          end
-          if not firstAff and cholericHumour > 0 then
-            if tarAff["slickness"] < 80 and ignoreAff ~= "slickness" then
-              return "slickness"
-            elseif tarAff["nausea"] < 80 and ignoreAff ~= "nausea" then
-              return "nausea"
-            end
-          end
-          if not firstAff and phlegmaticHumour > 0 then
-            if tarAff["asthma"] < 80 and ignoreAff ~= "asthma" then
-              return "asthma"
-            elseif tarAff["clumsiness"] < 80 and ignoreAff ~= "clumsiness" then
-              return "clumsiness"
-            elseif tarAff["weariness"] < 80 and ignoreAff ~= "weariness" then
-              return "weariness"
-            end
-          end
-          if not firstAff and tarAff["recklessness"] < 80 and ignoreAff ~= "recklessness" then
-            return "recklessness"
-          else
-            return "haemophilia"
           end
         end
 
-        local firstAff = ''
-        local secondAff = ''
-        if sanguineHumour > 2 and tarAff["paralysis"] < 80 then
-          firstAff = "paralysis"
-        else
-          firstAff = chooseAff()
-        end
-
-        secondAff = chooseAff(firstAff)
+        local firstAff = chooseAff()
+        local secondAff = chooseAff(firstAff)
 
         imSoClever = 'warcry'
         chanceToMouthOff = 0.1
