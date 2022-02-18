@@ -40,6 +40,63 @@ Megophrys.autoResist = function()
   end
 end
 
+Megophrys.dgradient = function(text, fgColorTable, bgColorTable)
+  if type(fgColorTable) ~= "table" then
+    error("Argument #2 expects a table not ".. type(fgColorTable))
+  end
+  if type(bgColorTable) ~= "table" then
+    error("Argument #3 expects a table not ".. type(bgColorTable))
+  end
+
+  if #fgColorTable > 1 and #bgColorTable > 1 and #fgColorTable ~= #bgColorTable then
+    error("Please use the same number of colors for both foreground "..
+          "and background gradients.")
+  end
+
+  if #fgColorTable == 1 and #bgColorTable > 1 then
+    for i=2, #bgColorTable do
+      fgColorTable[i] = fgColorTable[1]
+    end
+  elseif #bgColorTable == 1 and #fgColorTable > 1 then
+    for i=2, #fgColorTable do
+      bgColorTable[i] = bgColorTable[1]
+    end
+  end
+
+  local lenGradient = #fgColorTable
+  if lenGradient > #text then
+    error("Text provided is too short for this gradient!")
+  end
+
+  local _dgradient = Megophrys.Util._dgradient
+
+  if lenGradient > 2 then
+    -- switch colors every nth character (rounded to integer b/c no half characters)
+    local interval = math.floor((#text / lenGradient) + 0.5)
+    local resultStr = ''
+    for i=0, lenGradient - 2 do
+      local chunk = string.sub(text, (interval * i) + 1, interval * (i + 1))
+      resultStr = resultStr .. _dgradient(chunk,
+                                          fgColorTable[i + 1],
+                                          fgColorTable[i + 2],
+                                          bgColorTable[lenGradient - i],
+                                          bgColorTable[lenGradient - (i + 1)])
+    end
+    local chunk = string.sub(text, (interval * (lenGradient - 1)) + 1)
+    resultStr = resultStr .. _dgradient(chunk,
+                                        fgColorTable[lenGradient - 1],
+                                        fgColorTable[lenGradient],
+                                        bgColorTable[2],
+                                        bgColorTable[1])
+    return resultStr
+  elseif lenGradient == 2 then
+    return _dgradient(text, fgColorTable[1], fgColorTable[2],
+                            bgColorTable[1], bgColorTable[2])
+  else
+    return fgColorTable[1] ..','.. bgColorTable[1].gsub('#', '') .. text
+  end
+end
+
 Megophrys.eStopAuto = function(message)
   if Megophrys.autoAttacking then
     cecho('\n<red>Emergency stop: No more auto-attacks.\n')
