@@ -70,28 +70,19 @@ Megophrys.dgradient = function(text, fgColorTable, bgColorTable)
 
   local _dgradient = Megophrys.Util._dgradient
 
-  if lenGradient > 2 then
+  if lenGradient > 1 then
     -- switch colors every nth character (rounded to integer b/c no half characters)
-    local interval = math.floor((#text / (lenGradient - 1)) + 0.5)
+    local interval = math.floor((#text / lenGradient) + 0.5)
     local resultStr = ''
-    for i=0, lenGradient - 2 do
-      local chunk = string.sub(text, (interval * i) + 1, interval * (i + 1))
+    for i=1, lenGradient - 1 do
+      local chunk = string.sub(text, (interval * (i - 1)) + 1, interval * i)
       resultStr = resultStr .. _dgradient(chunk,
+                                          fgColorTable[i],
                                           fgColorTable[i + 1],
-                                          fgColorTable[i + 2],
-                                          bgColorTable[lenGradient - i],
-                                          bgColorTable[lenGradient - (i + 1)])
+                                          bgColorTable[i],
+                                          bgColorTable[i + 1])
     end
-    local chunk = string.sub(text, (interval * (lenGradient - 1)) + 1)
-    resultStr = resultStr .. _dgradient(chunk,
-                                        fgColorTable[lenGradient - 1],
-                                        fgColorTable[lenGradient],
-                                        bgColorTable[2],
-                                        bgColorTable[1])
     return resultStr
-  elseif lenGradient == 2 then
-    return _dgradient(text, fgColorTable[1], fgColorTable[2],
-                            bgColorTable[1], bgColorTable[2])
   else
     return fgColorTable[1] ..','.. bgColorTable[1].gsub('#', '') .. text
   end
