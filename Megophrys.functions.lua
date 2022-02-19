@@ -72,7 +72,7 @@ Megophrys.dgradient = function(text, fgColorTable, bgColorTable)
 
   if lenGradient > 2 then
     -- switch colors every nth character (rounded to integer b/c no half characters)
-    local interval = math.floor((#text / lenGradient) + 0.5)
+    local interval = math.floor((#text / (lenGradient - 1)) + 0.5)
     local resultStr = ''
     for i=0, lenGradient - 2 do
       local chunk = string.sub(text, (interval * i) + 1, interval * (i + 1))
