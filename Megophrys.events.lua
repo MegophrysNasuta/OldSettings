@@ -3,7 +3,16 @@ Megophrys.onDisconnect = function()
 end
 
 Megophrys.onConnect = function()
-  sendAll('health', 'mana')  -- reset power bars
+  sendGMCP([[Core.Supports.Add ["IRE.Time 1"] ]])
+  registerAnonymousEventHandler('gmcp.Comm.Channel.Players', 'Megophrys.updateWhosOnline')
+  registerAnonymousEventHandler('gmcp.Char.Items.List', 'Megophrys.updateWhatHere')
+  registerAnonymousEventHandler('gmcp.Char.Items.Add', 'Megophrys.updateWhatHere')
+  registerAnonymousEventHandler('gmcp.Char.Items.Remove', 'Megophrys.updateWhatHere')
+  registerAnonymousEventHandler('gmcp.Char.Items.Update', 'Megophrys.updateWhatHere')
+  registerAnonymousEventHandler('gmcp.Room.Players', 'Megophrys.updateWhoHere')
+  registerAnonymousEventHandler('gmcp.Room.AddPlayer', 'Megophrys.updateWhoHere')
+  registerAnonymousEventHandler('gmcp.Room.RemovePlayer', 'Megophrys.updateWhoHere')
+  registerAnonymousEventHandler('gmcp.IRE.Time.Update', 'Megophrys.showTime')
   wsys.unkeepup('shield')
   wsys.unkeepup('reflections')
   wsys.setSettings('automount', 'on')

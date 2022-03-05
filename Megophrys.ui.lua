@@ -89,6 +89,14 @@ Megophrys.showTime = function()
     d = "2nd"
   elseif tl.day == "3" then
     d = "3rd"
+  elseif tl.day == "21" then
+    d = "21st"
+  elseif tl.day == "22" then
+    d = "22nd"
+  elseif tl.day == "23" then
+    d = "23rd"
+  elseif tl.day == "31" then
+    d = "31st"
   else
     d = tl.day .."th"
   end
@@ -196,19 +204,6 @@ Megophrys.updateBars = function()
     border-style: solid;
     border-radius: 7;
     padding: 3px;]])
-
-  local whoHereTable = '<b>Players Here:</b> '
-  for _, player in spairs(gmcp.Room.Players) do
-    whoHereTable = whoHereTable .. player.name
-    if _ ~= #gmcp.Room.Players then
-      whoHereTable = whoHereTable ..', '
-    end
-    if _ % 7 == 0 then
-      whoHereTable = whoHereTable ..'<br>'
-    end
-  end
-  whoHereTable = whoHereTable ..'</ul>'
-  Megophrys.whoHereTable:echo(whoHereTable)
 
   local fmtPctLabel = function(portion, maxAmt)
     return ('<center>'..
@@ -496,4 +491,97 @@ Megophrys.updatePrepGauges = function()
   Megophrys.topGauge:setValue(targetLimbWounds, 100, '<center>'.. topLabel ..'</center>')
   Megophrys.middleGauge:setValue(otherLimbWounds, 100, '<center>'.. middleLabel ..'</center>')
   Megophrys.bottomGauge:setValue(targetOtherWounds, 100, '<center>'.. bottomLabel ..'</center>')
+end
+
+Megophrys.updateWhatHere = function()
+  local win = "Info Here"
+  openUserWindow(win, true, false, "f")
+  setWindowWrap(win, 80)
+  setFontSize(win, 12)
+  clearWindow(win)
+
+  local guardCount = 0
+  for _, item in pairs(gmcp.Char.Items.List.items) do
+    local color = ''
+    local isMob = (item.attrib or ''):starts('m')
+    if item.icon == 'guard' then
+      guardCount = guardCount + 1
+      color = '<PaleTurquoise>'
+    elseif item.icon == 'container' or item.icon == 'magical' or item.icon == 'profile' then
+      color = '<goldenrod>'
+    elseif item.icon == 'rune' then
+      color = '<SteelBlue>'
+    elseif isMob then
+      color = '<orchid>'
+    end
+    cecho(win, color .. item.name)
+    if isMob then
+      cechoLink(win, '\t(set target)\n', function() Megophrys.setTarget(item.id) end,
+                'Target '.. tostring(item.id), true)
+    else
+      echo(win, '\n')
+    end
+  end
+
+  cecho(win, '\n<PaleTurquoise>Number of guards: '.. tostring(guardCount))
+  cecho(win, '\nNumber of objects: '.. tostring(#gmcp.Char.List.Items.items))
+end
+
+Megophrys.updateWhoHere = function()
+  if not Megophrys.whoHereTable then return end
+  local whoHereTable = '<b>Players Here:</b> '
+  for _, player in spairs(gmcp.Room.Players) do
+    whoHereTable = whoHereTable .. player.name
+    if _ ~= #gmcp.Room.Players then
+      whoHereTable = whoHereTable ..', '
+    end
+    if _ % 7 == 0 then
+      whoHereTable = whoHereTable ..'<br>'
+    end
+  end
+  Megophrys.whoHereTable:echo(whoHereTable)
+end
+
+Megophrys.updateWhosOnline = function()
+  local win = "Who's Online (Achaea)"
+  openUserWindow(win, true, false, "f")
+  setWindowWrap(win, 80)
+  setFontSize(win, 16)
+  clearWindow(win)
+
+  local fullnames = {}
+  local players = {}
+  for _, player in spairs(gmcp.Comm.Channel.Players) do
+    local city = 'unknown'
+    if cdb.db and cdb.db[player.name] and cdb.db[player.name].city then
+      city = cdb.db[player.name].city
+      fullnames[player.name] = cdb.db[player.name].fullname
+    else
+      fullnames[player.name] = player.name
+    end
+    if not players[city] then players[city] = {} end
+    players[city][#players[city] + 1] = player.name
+  end
+
+  for _, city in spairs({'targossas', 'ashtan', 'mhaldor', 'eleusis',
+                         'cyrene', 'hashan', '(none)', 'unknown'}) do
+    local color = 'DeepSkyBlue'
+    if cdb.styles[city] then color = cdb.styles[city].color end
+    cecho(win, '<'.. color ..'>'.. city:title())
+    cecho(win, ' ('.. tostring(#(players[city] or {})) ..')')
+    if (city == 'targossas' or city == 'ashtan'
+            or city == 'mhaldor' or city == 'eleusis') then
+      cecho(win, '\n')
+      table.sort(players[city])
+      for _, name in spairs(players[city] or {}) do
+        cechoLink(win, '<'.. color ..'>'.. name ..' ',
+                  function() expandAlias('wi '.. name) end,
+                  fullnames[name], true)
+      end
+      cecho(win, '\n\n')
+    else
+      cecho(win, ' ')
+    end
+  end
+  cecho(win, tostring(#gmcp.Comm.Channel.Players) ..' Total.')
 end
