@@ -568,16 +568,20 @@ Megophrys.updateWhosOnline = function(_, url, online)
                          'cyrene', 'hashan', '(none)', 'unknown'}) do
     local color = 'DeepSkyBlue'
     if cdb.styles[city] then color = cdb.styles[city].color end
-    cecho(win, '<'.. color ..'>'.. city:title())
+    cechoLink(win, '<'.. color ..'>'.. city:title(),
+              function() send('qw '.. city) end,
+              table.concat(players[city] or {}, ', '), true)
     cecho(win, ' ('.. tostring(#(players[city] or {})) ..')')
     if (city == 'targossas' or city == 'ashtan'
             or city == 'mhaldor' or city == 'eleusis') then
       cecho(win, '\n')
       table.sort(players[city])
       for _, name in spairs(players[city] or {}) do
-        cechoLink(win, '<'.. color ..'>'.. name ..' ',
-                  function() expandAlias('wi '.. name) end,
-                  fullnames[name], true)
+        if cdb.db[name] and tonumber(cdb.db[name].level) > 69 then
+          cechoLink(win, '<'.. color ..'>'.. name ..' ',
+                    function() expandAlias('wi '.. name) end,
+                    fullnames[name], true)
+        end
       end
       cecho(win, '\n\n')
     else
