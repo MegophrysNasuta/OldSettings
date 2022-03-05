@@ -377,7 +377,7 @@ Megophrys.setMode = function(mode)
   Megophrys.priorityLabel = nil
   Megophrys.priorityLabel = Geyser.Label:new({
     name='priorityLabel',
-    x='35%', y=0,
+    x='36%', y=0,
     width='15%', height='2%',
     fgColor=Megophrys.fgColors[Megophrys.killStrat], color='black',
     message='<center>Priority: IDLE</center>'
@@ -463,8 +463,8 @@ Megophrys.setTarget = function(t)
   Megophrys.targetLabel = nil
   Megophrys.targetLabel = Geyser.Label:new({
     name='targetLabel',
-    x='35%', y='2%',
-    width='15%', height='2%',
+    x='36%', y='2%',
+    width='14%', height='2%',
     fgColor=Megophrys.fgColors[Megophrys.killStrat], color='black',
     message='<center>Target: '.. target ..'</center>'
   })

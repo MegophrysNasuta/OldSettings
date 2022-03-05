@@ -34,7 +34,7 @@ Megophrys.highlightPanicRoom = function()
   Megophrys.panicRoomLabel = Geyser.Label:new({
     name='panicRoomLabel',
     x='57.5%', y='2%',
-    height='2%', width='15%',
+    height='2%', width='14%',
     fgColor=Megophrys.fgColors[Megophrys.killStrat], color='black',
     message=message
   })
@@ -59,7 +59,7 @@ Megophrys.highlightTargetRoom = function(roomName, foundPlayer)
   Megophrys.targetRoomLabel = Geyser.Label:new({
     name='targetRoomLabel',
     x='57.5%', y=0,
-    height='2%', width='15%',
+    height='2%', width='14%',
     fgColor=Megophrys.fgColors[Megophrys.killStrat], color='black',
     message=message
   })

@@ -1,7 +1,7 @@
 Megophrys.makeClassToolbars = function()
   setBorderRight(768)
   setBorderTop(120)
-  setBorderBottom(520)
+  setBorderBottom(420)
 
   Megophrys.modeToolbar = Geyser.Container:new({
     name='mode_switches',
