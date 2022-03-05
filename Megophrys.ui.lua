@@ -524,7 +524,7 @@ Megophrys.updateWhatHere = function()
   end
 
   cecho(win, '\n<PaleTurquoise>Number of guards: '.. tostring(guardCount))
-  cecho(win, '\nNumber of objects: '.. tostring(#gmcp.Char.List.Items.items))
+  cecho(win, '\nNumber of objects: '.. tostring(#gmcp.Char.Items.List.items))
 end
 
 Megophrys.updateWhoHere = function()
@@ -542,16 +542,16 @@ Megophrys.updateWhoHere = function()
   Megophrys.whoHereTable:echo(whoHereTable)
 end
 
-Megophrys.updateWhosOnline = function()
+Megophrys.updateWhosOnline = function(_, url, online)
   local win = "Who's Online (Achaea)"
   openUserWindow(win, true, false, "f")
   setWindowWrap(win, 80)
   setFontSize(win, 16)
   clearWindow(win)
 
-  local fullnames = {}
-  local players = {}
-  for _, player in spairs(gmcp.Comm.Channel.Players) do
+  local numOnline = 0
+  local fullnames, players = {}, {}
+  for _, player in spairs(yajl.to_value(online).characters) do
     local city = 'unknown'
     if cdb.db and cdb.db[player.name] and cdb.db[player.name].city then
       city = cdb.db[player.name].city
@@ -561,6 +561,7 @@ Megophrys.updateWhosOnline = function()
     end
     if not players[city] then players[city] = {} end
     players[city][#players[city] + 1] = player.name
+    numOnline = numOnline + 1
   end
 
   for _, city in spairs({'targossas', 'ashtan', 'mhaldor', 'eleusis',
@@ -583,5 +584,5 @@ Megophrys.updateWhosOnline = function()
       cecho(win, ' ')
     end
   end
-  cecho(win, tostring(#gmcp.Comm.Channel.Players) ..' Total.')
+  cecho(win, tostring(numOnline) ..' Total.')
 end
