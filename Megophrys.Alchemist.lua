@@ -82,20 +82,28 @@ Megophrys.Alchemist.nextAttack = function()
   local targetHits = Megophrys.targetHits or 0
   local uiColor = Megophrys.fgColors[killStrat]
 
+  local tarAff = affstrack.score
   local targetHumour = {}
   targetHumour.sanguine = (ak.alchemist.humour.sanguine or 0)
   targetHumour.melancholic = (ak.alchemist.humour.melancholic or 0)
   targetHumour.choleric = (ak.alchemist.humour.choleric or 0)
   targetHumour.phlegmatic = (ak.alchemist.humour.phlegmatic or 0)
 
-  local preAlias = 'setalias nextAttack evaluate &tar / homunculus attack &tar / '
+  local preAlias = 'setalias nextAttack homunculus attack &tar / '
+  if killStrat ~= 'denizen' then
+    preAlias = preAlias .. 'evaluate &tar / '
+  end
   if not wsys.aff.stupidity then
     preAlias = preAlias .. 'stand / '
   end
 
+  local firstAff = nil
+  local secondAff = nil
   if killStrat == 'denizen' then
     if ak.defs.shield then
       send('queue prepend eqbal throw caustic at &tar')
+    else
+      nextEduce = 'educe iron &tar'
     end
   elseif killStrat == 'los' then
     local LOSCommand = 'throw'
@@ -112,7 +120,6 @@ Megophrys.Alchemist.nextAttack = function()
       Megophrys.nextMoveButton:echo('Educe Copper', Megophrys.fgColors[killStrat], 'c')
       nextEduce = 'copper'
     else
-      local tarAff = affstrack.score
       local targetManaPct = (ak.currentmana or 0) / (ak.maxmana or 1)
       local targetHealthPct = (ak.currenthealth or 0) / (ak.maxhealth or 1)
       if targetManaPct <= 0.6 and (targetHealthPct <= 0.6 or 
@@ -158,8 +165,8 @@ Megophrys.Alchemist.nextAttack = function()
           end
         end
 
-        local firstAff = chooseAff()
-        local secondAff = chooseAff(firstAff)
+        firstAff = chooseAff()
+        secondAff = chooseAff(firstAff)
 
         imSoClever = 'warcry'
         chanceToMouthOff = 0.1
@@ -184,15 +191,16 @@ Megophrys.Alchemist.nextAttack = function()
     setNextAttack = setNextAttack .. (nextTemper or
                                       'temper &tar '.. Alchemist.humour)
     table.insert(Megophrys.givingAffs, firstAff)
-    if not secondAff then
-      setNextAttack = setNextAttack ..' / wrack &tar '.. firstAff
-    else
-      setNextAttack = (setNextAttack ..' / truewrack &tar '..
-                       firstAff ..' '.. secondAff)
-      table.insert(Megophrys.givingAffs, secondAff)
+    if firstAff then
+      if not secondAff then
+        setNextAttack = setNextAttack ..' / wrack &tar '.. firstAff
+      else
+        setNextAttack = (setNextAttack ..' / truewrack &tar '..
+                         firstAff ..' '.. secondAff)
+        table.insert(Megophrys.givingAffs, secondAff)
+      end
+      Alchemist.nextWrackButton:echo(firstAff ..' '.. secondAff, uiColor, 'c')
     end
-
-    Alchemist.nextWrackButton:echo(firstAff ..' '.. secondAff, uiColor, 'c')
 
     if wsys.aff.prone then
       send('stand')

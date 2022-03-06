@@ -501,9 +501,18 @@ Megophrys.updateWhatHere = function()
   setFontSize(win, 12)
   clearWindow(win)
 
-  local infoHere = infoHere or gmcp.Char.Items.List.items
+  local infoHere = gmcp.Char.Items.List.items
   if gmcp.Char.Items.Add.location == 'room' then
-    infoHere[#infoHere + 1] = gmcp.Char.Items.Add.item
+    local found = false
+    for _, item in pairs(infoHere) do
+      if item.id == gmcp.Char.Items.Add.item.id then
+        found = true
+        break
+      end
+    end
+    if not found then
+      infoHere[#infoHere + 1] = gmcp.Char.Items.Add.item
+    end
   end
   if gmcp.Char.Items.Remove.location == 'room' then
     for index, item in pairs(infoHere) do
