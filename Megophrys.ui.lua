@@ -538,6 +538,8 @@ Megophrys.updateWhatHere = function()
     local isLoyal = (item.name or ''):ends('Nasuta') or (
                         (item.name or ''):ends('hippogriff') and
                         item.id == '506577')
+    local isHomeGuard = ((item.icon or '') == 'guard' and
+                         gmcp.Room.Info.area == 'Mhaldor')
     if item.icon == 'guard' then
       guardCount = guardCount + 1
       color = '<PaleTurquoise>'
@@ -549,7 +551,7 @@ Megophrys.updateWhatHere = function()
       color = '<orchid>'
     end
     cecho(win, color .. item.name)
-    if isMob and not isLoyal then
+    if isMob and not isLoyal and not isHomeGuard then
       cechoLink(win, '\n(set target)\n', function() Megophrys.setTarget(item.id) end,
                 'Target '.. tostring(item.id), true)
     else
