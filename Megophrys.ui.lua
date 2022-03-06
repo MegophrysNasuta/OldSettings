@@ -550,7 +550,8 @@ Megophrys.updateWhatHere = function()
     elseif isMob then
       color = '<orchid>'
     end
-    cecho(win, color .. item.name)
+    cechoLink(win, color .. item.name,
+              function() send('p '.. item.id) end, tostring(item.id), true)
     if isMob and not isLoyal and not isHomeGuard then
       cechoLink(win, '\n(set target)\n', function() Megophrys.setTarget(item.id) end,
                 'Target '.. tostring(item.id), true)
