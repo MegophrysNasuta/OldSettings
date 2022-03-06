@@ -494,14 +494,36 @@ Megophrys.updatePrepGauges = function()
 end
 
 Megophrys.updateWhatHere = function()
+  if gmcp.Char.Items.List.location ~= 'room' then return end
   local win = "Info Here"
   openUserWindow(win, true, false, "f")
   setWindowWrap(win, 80)
   setFontSize(win, 12)
   clearWindow(win)
 
+  local infoHere = infoHere or gmcp.Char.Items.List.items
+  if gmcp.Char.Items.Add.location == 'room' then
+    infoHere[#infoHere + 1] = gmcp.Char.Items.Add.item
+  end
+  if gmcp.Char.Items.Remove.location == 'room' then
+    for index, item in pairs(infoHere) do
+      if gmcp.Char.Items.Remove.item.id == item.id then
+        table.remove(infoHere, index)
+        break
+      end
+    end
+  end
+  if gmcp.Char.Items.Update.location == 'room' then
+    for index, item in pairs(infoHere) do
+      if gmcp.Char.Items.Update.item.id == item.id then
+        infoHere[index] = item
+        break
+      end
+    end
+  end
+
   local guardCount = 0
-  for _, item in pairs(gmcp.Char.Items.List.items) do
+  for _, item in pairs(infoHere) do
     local color = ''
     local isMob = (item.attrib or ''):starts('m')
     if item.icon == 'guard' then
@@ -588,5 +610,6 @@ Megophrys.updateWhosOnline = function(_, url, online)
       cecho(win, ' ')
     end
   end
+  if #(players.unknown or {}) > 0 then expandAlias('qwg') end
   cecho(win, tostring(numOnline) ..' Total.')
 end
