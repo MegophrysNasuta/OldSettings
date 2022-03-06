@@ -114,15 +114,19 @@ Megophrys.hitRebounding = function()
 end
 
 Megophrys.hitShield = function()
-  if (Megophrys.autoAttacking and 
-      Megophrys.killStrat == 'denizen') then
-    if Megophrys.class == 'Magi' then
-      send('cast disintegrate on '.. target)
-    elseif Megophrys.class == 'Psion' then
-      send('weave pulverise '.. target)
-    elseif Megophrys.class == 'Blademaster' then
-      send('shin shatter '.. target)
-    end
+  if not Megophrys.autoAttacking or Megophrys.killStrat ~= 'denizen' then
+    return
+  end
+
+  brage_dshield = {
+    Alchemist='throw caustic at ',
+    Blademaster='shin shatter ',
+    Magi='cast disintegrate on ',
+    Psion='weave pulverise ',
+  }
+
+  if brage_dshield[Megophrys.class] then
+    send(brage_dshield[Megophrys.class] .. target)
   end
 end
 

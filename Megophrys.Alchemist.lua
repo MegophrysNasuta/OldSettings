@@ -89,9 +89,9 @@ Megophrys.Alchemist.nextAttack = function()
   targetHumour.choleric = (ak.alchemist.humour.choleric or 0)
   targetHumour.phlegmatic = (ak.alchemist.humour.phlegmatic or 0)
 
-  local preAlias = 'setalias nextAttack homunculus attack &tar / '
+  local preAlias = 'setalias nextAttack '
   if killStrat ~= 'denizen' then
-    preAlias = preAlias .. 'evaluate &tar / '
+    preAlias = preAlias .. 'homunculus attack &tar / evaluate &tar / '
   end
   if not wsys.aff.stupidity then
     preAlias = preAlias .. 'stand / '
