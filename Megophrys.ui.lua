@@ -535,6 +535,9 @@ Megophrys.updateWhatHere = function()
   for _, item in pairs(infoHere) do
     local color = ''
     local isMob = (item.attrib or ''):starts('m')
+    local isLoyal = (item.name or ''):ends('Nasuta') or (
+                        (item.name or ''):ends('hippogriff') and
+                        item.id == '506577')
     if item.icon == 'guard' then
       guardCount = guardCount + 1
       color = '<PaleTurquoise>'
@@ -546,8 +549,8 @@ Megophrys.updateWhatHere = function()
       color = '<orchid>'
     end
     cecho(win, color .. item.name)
-    if isMob then
-      cechoLink(win, '\t(set target)\n', function() Megophrys.setTarget(item.id) end,
+    if isMob and not isLoyal then
+      cechoLink(win, '\n(set target)\n', function() Megophrys.setTarget(item.id) end,
                 'Target '.. tostring(item.id), true)
     else
       echo(win, '\n')
