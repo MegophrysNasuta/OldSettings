@@ -339,3 +339,4 @@ end
 Megophrys.Blademaster.toggleOne = function(altMode)
   Blademaster.setElement('void', nil, altMode)
 end
+Megophrys.Blademaster.toggleOneLabel = 'Set primary element to VOID'

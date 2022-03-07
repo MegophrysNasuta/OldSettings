@@ -378,7 +378,7 @@ Megophrys.setMode = function(mode)
   Megophrys.priorityLabel = Geyser.Label:new({
     name='priorityLabel',
     x='36%', y=0,
-    width='15%', height='2%',
+    width='14%', height='2%',
     fgColor=Megophrys.fgColors[Megophrys.killStrat], color='black',
     message='<center>Priority: IDLE</center>'
   })
