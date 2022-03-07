@@ -133,11 +133,12 @@ Megophrys.Blademaster.nextAttack = function()
     infuseElem = 'lightning'
   end
 
-  if infuseElem then
+  if killStrat ~= 'denizen' and infuseElem then
     setNextAttack = setNextAttack ..'infuse '.. infuseElem .. ' / '
   end
 
   if killStrat == 'denizen' then
+    setNextAttack = setNextAttack .. 'leapstrike &tar / spinslash &tar / '
     nextSlash = 'drawslash'
   elseif killStrat == 'raid' then
     nextSlash = 'balanceslash'

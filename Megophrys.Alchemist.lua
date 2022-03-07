@@ -100,11 +100,8 @@ Megophrys.Alchemist.nextAttack = function()
   local firstAff = nil
   local secondAff = nil
   if killStrat == 'denizen' then
-    if ak.defs.shield then
-      send('queue prepend eqbal throw caustic at &tar')
-    else
-      nextEduce = 'educe iron &tar'
-    end
+    preAlias = preAlias .. 'throw miasma at &tar / educe magnesium &tar / '
+    nextEduce = 'iron'
   elseif killStrat == 'los' then
     local LOSCommand = 'throw'
     if Megophrys.targetHits % 3 == 0 then
@@ -176,7 +173,7 @@ Megophrys.Alchemist.nextAttack = function()
 
   local setNextAttack = preAlias
   if nextEduce then
-    setNextAttack = setNextAttack .. nextEduce .. ' / '
+    setNextAttack = setNextAttack ..'educe '.. nextEduce .. ' &tar / '
     secondAff = ''
   end
 

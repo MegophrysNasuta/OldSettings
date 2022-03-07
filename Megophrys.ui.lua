@@ -533,14 +533,21 @@ Megophrys.updateWhatHere = function()
 
   local guardCount = 0
   for _, item in pairs(infoHere) do
+    local charName = (gmcp.Char and gmcp.Char.Name.name) or ''
     local color = ''
     local isMob = (item.attrib or ''):starts('m')
-    local isLoyal = (item.name or ''):ends('Nasuta') or (
+    local isLoyal = (item.name or ''):ends(charName) or (
                         (item.name or ''):ends('hippogriff') and
-                        item.id == '506577')
+                        (item.id == '506577' or item.id == '552688'))
     local isHomeGuard = ((item.icon or '') == 'guard' and
                          gmcp.Room.Info.area == 'Mhaldor')
-    if item.icon == 'guard' then
+
+    if isLoyal then
+      if item.name == 'a diminutive homunculus resembling '.. charName then
+        Megophrys.homunculus = item.id
+      end
+      color = '<tomato>'
+    elseif item.icon == 'guard' then
       guardCount = guardCount + 1
       color = '<PaleTurquoise>'
     elseif item.icon == 'container' or item.icon == 'magical' or item.icon == 'profile' then
@@ -612,7 +619,7 @@ Megophrys.updateWhosOnline = function(_, url, online)
     if (city == 'targossas' or city == 'ashtan'
             or city == 'mhaldor' or city == 'eleusis') then
       cecho(win, '\n')
-      table.sort(players[city])
+      table.sort(players[city] or {})
       for _, name in spairs(players[city] or {}) do
         if cdb.db[name] and tonumber(cdb.db[name].level) > 69 then
           cechoLink(win, '<'.. color ..'>'.. name ..' ',

@@ -100,7 +100,7 @@ Megophrys.Psion.nextAttack = function()
   local killStrat = Megophrys.killStrat
   local nextWeave = 'overhand &tar'
   local nextPsi = ''
-  local preAlias = 'setalias nextAttack '
+  local setNextAttack = 'setalias nextAttack '
   local targetAffs = affstrack.score
   local targetHits = Megophrys.targetHits or 0
   local targetLimbSet = (Megophrys.targetLimbSet or 'leg')
@@ -117,9 +117,8 @@ Megophrys.Psion.nextAttack = function()
   end
 
   if killStrat == 'denizen' then
-    if ak.defs.shield then
-      send('queue prepend eqbal weave pulverise &tar')
-    end
+    setNextAttack = (setNextAttack .. 'weave whirlwind &tar / '..
+                                      'weave barbedblade &tar / ')
   elseif killStrat == 'los' then
     if Psion.clarityUp then
       send('enact clarity')
@@ -235,7 +234,7 @@ Megophrys.Psion.nextAttack = function()
 
   if tonumber(ak.psion.transcend or 0) > 99 then
     if killStrat == 'denizen' then
-      nextPsi = 'shatter'
+      nextPsi = 'devastate'
     else
       if (ak.bleeding or 0) > 150 then
         nextPsi = 'combustion'
@@ -256,20 +255,19 @@ Megophrys.Psion.nextAttack = function()
     end
   end
 
-  local setNextAttack = preAlias
   if nextPsi ~= '' then
-    setNextAttack = setNextAttack ..'/ psi '.. nextPsi ..' &tar'
+    setNextAttack = setNextAttack ..'psi '.. nextPsi ..' &tar / '
   end
   if Psion.weavePrep ~= '' then
-    setNextAttack = setNextAttack ..' / weave prepare '.. Psion.weavePrep
+    setNextAttack = setNextAttack ..'weave prepare '.. Psion.weavePrep ..' / '
   end
 
-  setNextAttack = setNextAttack ..'/ weave '.. nextWeave
+  setNextAttack = setNextAttack ..'weave '.. nextWeave ..' / '
 
   if killStrat ~= 'denizen' then
-    setNextAttack = setNextAttack ..' / contemplate &tar'
+    setNextAttack = setNextAttack ..'contemplate &tar / '
     if not Psion.lightBindUp then
-      setNextAttack = setNextAttack ..' / enact lightbind &tar'
+      setNextAttack = setNextAttack ..'enact lightbind &tar'
     end
   end
 
