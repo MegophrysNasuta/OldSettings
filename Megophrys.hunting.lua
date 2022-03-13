@@ -28,8 +28,10 @@ Megophrys.targetPriority = {
   fairy = 2,
   firetender = 2,
   ghaser = 2,
+  gillib = 2,
   gour = 2,
   guard = 2,
+  grela = 2,
   hydra = 2,
   kelpie = 2,
   lynx = 2,
@@ -38,13 +40,18 @@ Megophrys.targetPriority = {
   shark = 2,
   slugbeast = 2,
   snake = 2,
+  toogar = 2,
   trag = 2,
+  turga = 2,
   weaponsmith = 2,
   xabat = 2,
   aldroga = 3,
+  burgam = 3,
   ghoul = 3,
+  grizzly = 3,
   hobgoblin = 3,
   huntress = 3,
+  leesha = 3,
   mage = 3,
   noble = 3,
   ogre = 3,
@@ -114,6 +121,7 @@ Megophrys.autoSelectHuntingTargetLine = function(matches)
         gmcp.Room.Info.area == 'the Peshwar Delta' or
         gmcp.Room.Info.area == 'the village of Tasur\'ke' or
         gmcp.Room.Info.area == 'the Isle of New Hope' or
+        gmcp.Room.Info.area == 'the Southern Vashnar Mountains' or
         gmcp.Room.Info.area == 'Annwyn') then
       if (matches[2] ~= 'toad' and
           matches[4] ~= 'a buckawn youth' and
@@ -126,4 +134,3 @@ Megophrys.autoSelectHuntingTargetLine = function(matches)
     end
   end
 end
-

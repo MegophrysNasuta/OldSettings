@@ -220,8 +220,12 @@ Megophrys.updateBars = function()
   Megophrys.hpGauge:setValue(currHealth, maxhp, healthPct)
   Megophrys.mpGauge:setValue(currMana, maxmp, manaPct)
 
-  local affPressure = tonumber(#wsys.aff or 0)
-  if affPressure > 5 then affPressure = 5 end
+  local affPressure = 0
+  for lockAff in pairs({'paralysis', 'anorexia', 'asthma', 'impatience', 'slickness'}) do
+    if wsys.aff[lockAff] then
+      affPressure = affPressure + 1
+    end
+  end
 
   local affPressureDesc = {
     [0] = '',
@@ -522,7 +526,8 @@ Megophrys.updateWhatHere = function()
       end
     end
   end
-  if gmcp.Char.Items.Update.location == 'room' then
+  if (gmcp.Char.Items.Update and
+      gmcp.Char.Items.Update.location == 'room') then
     for index, item in pairs(infoHere) do
       if gmcp.Char.Items.Update.item.id == item.id then
         infoHere[index] = item
@@ -593,26 +598,35 @@ Megophrys.updateWhosOnline = function(_, url, online)
   setFontSize(win, 16)
   clearWindow(win)
 
-  local numOnline = 0
-  local fullnames, players = {}, {}
+  Megophrys.playerFullnames = {}
+  Megophrys.playersOnline = {}
+  local players = {}
   for _, player in spairs(yajl.to_value(online).characters) do
     local city = 'unknown'
     if cdb.db and cdb.db[player.name] and cdb.db[player.name].city then
-      city = cdb.db[player.name].city
-      fullnames[player.name] = cdb.db[player.name].fullname
+      if table.contains({'Evisi', 'Harenae', 'Sphera'}, player.name) then
+        city = 'tent'
+      else
+        city = cdb.db[player.name].city
+      end
+      Megophrys.playerFullnames[player.name] = cdb.db[player.name].fullname
     else
-      fullnames[player.name] = player.name
+      Megophrys.playerFullnames[player.name] = player.name
     end
     if not players[city] then players[city] = {} end
     players[city][#players[city] + 1] = player.name
-    numOnline = numOnline + 1
+    Megophrys.playersOnline[#Megophrys.playersOnline + 1] = player.name
   end
 
   for _, city in spairs({'targossas', 'ashtan', 'mhaldor', 'eleusis',
-                         'cyrene', 'hashan', '(none)', 'unknown'}) do
+                         'cyrene', 'hashan', '(none)', 'tent', 'unknown'}) do
     local color = 'DeepSkyBlue'
+    if city == 'tent' then color = 'khaki' end
     if cdb.styles[city] then color = cdb.styles[city].color end
-    cechoLink(win, '<'.. color ..'>'.. city:title(),
+    local cityTitle = city:title()
+    if city == '(none)' then cityTitle = 'Rogue' end
+    if city == 'unknown' then cityTitle = 'Anonz' end
+    cechoLink(win, '<'.. color ..'>'.. cityTitle,
               function() send('qw '.. city) end,
               table.concat(players[city] or {}, ', '), true)
     cecho(win, ' ('.. tostring(#(players[city] or {})) ..')')
@@ -624,7 +638,7 @@ Megophrys.updateWhosOnline = function(_, url, online)
         if cdb.db[name] and tonumber(cdb.db[name].level) > 69 then
           cechoLink(win, '<'.. color ..'>'.. name ..' ',
                     function() expandAlias('wi '.. name) end,
-                    fullnames[name], true)
+                    Megophrys.playerFullnames[name], true)
         end
       end
       cecho(win, '\n\n')
@@ -633,5 +647,5 @@ Megophrys.updateWhosOnline = function(_, url, online)
     end
   end
   if #(players.unknown or {}) > 0 then expandAlias('qwg') end
-  cecho(win, tostring(numOnline) ..' Total.')
+  cecho(win, tostring(#Megophrys.playersOnline) ..' Total.')
 end
