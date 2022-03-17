@@ -60,13 +60,14 @@ Megophrys.Alchemist.onConnect = function()
     'put armour in pack370332',
     'get ringmail from pack370332'
   )
-  tempTimer(0.2, Megophrys.Alchemist.gearUp)
+  tempTimer(3, Megophrys.Alchemist.gearUp)
 end
 
 Megophrys.Alchemist.gearUp = function()
   sendAll(
     'wield shield268649 right',
-    'wear ringmail'
+    'wear ringmail',
+    'wear robes'
   )
 end
 

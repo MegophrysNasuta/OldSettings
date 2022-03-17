@@ -104,7 +104,7 @@ Megophrys.Blademaster.onConnect = function()
     'put armour in pack370332',
     'get scalemail from pack370332'
   )
-  tempTimer(0.2, Megophrys.Blademaster.gearUp)
+  tempTimer(3, Megophrys.Blademaster.gearUp)
 end
 
 Megophrys.Blademaster.gearUp = function()

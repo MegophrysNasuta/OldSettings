@@ -34,6 +34,7 @@ Megophrys.targetPriority = {
   grela = 2,
   hydra = 2,
   kelpie = 2,
+  kurgo = 2,
   lynx = 2,
   orc = 2,
   rakrr = 2,

@@ -24,6 +24,10 @@ Megophrys.makeClassToolbars = function()
     Megophrys.alchToolbar:hide()
   end
 
+  if Megophrys.aposToolbar then
+    Megophrys.aposToolbar:hide()
+  end
+
   Megophrys.modeLabel = Geyser.Label:new({
     name='mode_label',
     x=0, y=0, width=100, height=20,
@@ -604,11 +608,7 @@ Megophrys.updateWhosOnline = function(_, url, online)
   for _, player in spairs(yajl.to_value(online).characters) do
     local city = 'unknown'
     if cdb.db and cdb.db[player.name] and cdb.db[player.name].city then
-      if table.contains({'Evisi', 'Harenae', 'Sphera'}, player.name) then
-        city = 'tent'
-      else
-        city = cdb.db[player.name].city
-      end
+      city = cdb.db[player.name].city
       Megophrys.playerFullnames[player.name] = cdb.db[player.name].fullname
     else
       Megophrys.playerFullnames[player.name] = player.name
@@ -619,7 +619,7 @@ Megophrys.updateWhosOnline = function(_, url, online)
   end
 
   for _, city in spairs({'targossas', 'ashtan', 'mhaldor', 'eleusis',
-                         'cyrene', 'hashan', '(none)', 'tent', 'unknown'}) do
+                         'cyrene', 'hashan', '(none)', 'unknown'}) do
     local color = 'DeepSkyBlue'
     if city == 'tent' then color = 'khaki' end
     if cdb.styles[city] then color = cdb.styles[city].color end
