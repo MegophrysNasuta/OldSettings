@@ -4,6 +4,8 @@ Alchemist.overdraw = false
 
 Alchemist.doSpecial = function() send('educe tin') end
 
+-- this code is experimental and needs way more work to be good
+
 Megophrys.Alchemist.makeClassToolbars = function()
   Megophrys.alchToolbar = Geyser.Container:new({
     name='alch_toolbar',
@@ -70,6 +72,8 @@ Megophrys.Alchemist.gearUp = function()
     'wear robes'
   )
 end
+
+-- don't use this in combat without extensive testing
 
 Megophrys.Alchemist.nextAttack = function()
   local Alchemist = Megophrys.Alchemist
